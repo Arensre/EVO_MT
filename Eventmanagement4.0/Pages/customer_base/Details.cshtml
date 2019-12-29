@@ -1,0 +1,237 @@
+﻿@page
+@model Eventmanagement4._0.Pages.customer_base.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+    <div class="navbar sticky-top navbar-expand-lg bg-white shadow bg-white rounded">
+        <div class="col-sm">
+            <nav aria-label="breadcrumb" style="margin-top:2.5px">
+                <ol class="breadcrumb bg-white">
+                    <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"><a href="#"></a></li>
+                    <li class="breadcrumb-item " aria-current="page">Kundenstammverwaltung</li>
+                    <li class="breadcrumb-item active" aria-current="page">Details</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-sm">
+            <a asp-page="Edit" asp-route-id="@Model.customer.ID" class=" btn rounded-circle btn-outline-primary" style="margin-top:10px; float:right"> <i class="fa fa-pencil"></i></a>
+        </div>
+    </div>
+
+<!--Customer Detail Informations-->
+<br />
+<div class="container-fluid">
+    <div class="row justify-content-around">
+        <div class="col-sm">
+            <div class=" card">
+                <div class="card-header">Allgemein Daten</div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.customer.customer_id)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.customer.customer_id)
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.customer.customer_name)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.customer.customer_name)
+                        </dd>
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.customer.telefphone_number)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.customer.telefphone_number)
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm">
+            <div class="card">
+                <div class="card-header">Anschrift</div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.customer.land)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.customer.land)
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.customer.place)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.customer.place)
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.customer.post_code)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.customer.post_code)
+                        </dd>
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.customer.street)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.customer.street)
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">Zusätzliche Informationen</div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-4">
+                    @Html.DisplayNameFor(model => model.customer.website)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.customer.website)
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>
+
+        <br />
+
+        <!-- List of Contact Adresses from customer-->
+
+<div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                Ansprechpartner
+                <a asp-page="./contact_person/Create" asp-route-id="@Model.customer.customer_id" class=" btn rounded-circle btn-outline-primary" style= "float:right"> <i class="fa fa-plus-square-o"></i></a>
+            </div>
+            <div class="card-body">
+                <table class="table bg-white">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.contact_person[0].gender)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.contact_person[0].first_name)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.contact_person[0].surname)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.contact_person[0].telephone_number)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.contact_person[0].mobile_number)
+                            </th>
+
+                            <th>
+                                @Html.DisplayNameFor(model => model.contact_person[0].mail_adress)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.contact_person[0].departmend)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.contact_person[0].post_code)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.contact_person[0].place)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.contact_person)
+                {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.gender)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.first_name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.surname)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.telephone_number)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.mobile_number)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.mail_adress)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.departmend)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.post_code)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.place)
+                            </td>
+                            <td>
+                                <a asp-page="./contact_person/Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a> |
+                                <a asp-page="./contact_person/Details" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-info"></i></a> |
+                                <a asp-page="./contact_person/Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+                            </td>
+                        </tr>
+                }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+</div>
+
+
+        <!--  Paging -->
+        <br />
+        @{
+    var prevDisabled = !Model.contact_person.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.contact_person.HasNextPage ? "disabled" : "";
+        }
+        <div class="container-fluid bg-transparent">
+            <div class="row">
+                <div class="col-auto mr-auto">
+                </div>
+                <div class=" col-auto">
+                    <ul class="pagination ">
+                        <li class="page-item @prevDisabled">
+                            <a asp-page="./Index" asp-route-PageIndex="@(Model.contact_person.PageIndex -1)" class="page-link"><i class="fa fa-arrow-circle-o-left"></i></a>
+                        </li>
+
+                        <!-- Create Button for each Page -->
+
+                        @for (var i = 1; i <= Model.contact_person.TotalPages; i++)
+                {
+                        <li class="page-item @(i == Model.contact_person.PageIndex ? "active" : "")">
+                            <a asp-page="./Index" asp-route-PageIndex="@i" class="page-link">@i</a>
+                        </li>
+                }
+                        <li class="page-item @nextDisabled">
+                            <a asp-page="./Index" asp-route-PageIndex="@(Model.contact_person.PageIndex +1)" class="page-link"><i class="fa fa-arrow-circle-o-right"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <br />
+
+        <div>
+            <a class="btn btn-success" asp-page="./Edit" asp-route-id="@Model.customer.ID">Speichern</a> |
+            <a class="btn btn-primary" asp-page="./Index">Zurück zur Liste</a>
+        </div>

@@ -1,0 +1,133 @@
+﻿@page
+@model Eventmanagement4._0.Pages.items.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="navbar sticky-top navbar-expand-lg bg-white shadow bg-white rounded">
+
+    <div class="col-sm">
+        <nav aria-label="breadcrumb" style="margin-top:2.5px">
+            <ol class="breadcrumb bg-white">
+                <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"><a href="#"></a></li>
+                <li class="breadcrumb-item active" aria-current="page">Artikelstammverwaltung</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="col-sm">
+        <a asp-page="Create" class=" btn btn-outline-primary rounded-circle" style="margin-top:10px; float:right"> <i class="fa fa-plus-square-o"></i> </a>
+    </div>
+</div>
+<br />
+@if (TempData["create_success"] is "true")
+{
+
+    <div class="alert alert-success" role="alert">
+        Artikel erfolgreich angelegt.
+    </div>
+
+}
+@if (TempData["delete_success"] is "true")
+{
+
+    <div class="alert alert-success" role="alert">
+        Artikel erfolgreich gelöscht.
+    </div>
+
+}
+
+<div class="card">
+    <div class="card-body">
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.main_items[0].item_name)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.main_items[0].manufacturer)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.main_items[0].discription)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.main_items)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.item_name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.manufacturer)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.discription)
+                        </td>
+                        <td>
+                            <a asp-page="./Edit" asp-route-id="@item.id" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a> |
+                            <a asp-page="./Details" asp-route-id="@item.id" class="btn btn-outline-primary"><i class="fa fa-info"></i></a> |
+                            <a asp-page="./Delete" asp-route-id="@item.id" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+
+<br />
+
+<!-- Paging  -->
+
+@{
+    var prevDisabled = !Model.main_items.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.main_items.HasNextPage ? "disabled" : "";
+}
+<div class="container-fluid bg-transparent">
+    <div class="row">
+        <div class="col-auto mr-auto">
+            <!--<form class="form-inline">
+                <div class="form-group mx-sm-3 mb-2 ">
+                    Items pro Seite
+                    <select class="form-control" id="pagesize" asp-for="pagesize">
+                        <option>1</option>
+                        <option>3</option>
+                        <option>5</option>
+                        <option>100</option>
+                        <option>200</option>
+                    </select>
+
+                </div>
+                <button type="submit" class="btn btn-outline-primary mb-2">Übernehmen</button>
+            </form>-->
+        </div>
+        <div class=" col-auto">
+            <ul class="pagination ">
+                <li class="page-item @prevDisabled">
+                    <a asp-page="./Index" asp-route-PageIndex="@(Model.main_items.PageIndex -1)" class="page-link"><i class="fa fa-arrow-circle-o-left"></i></a>
+                </li>
+
+                <!-- Create Button for each Page -->
+
+                @for (var i = 1; i <= Model.main_items.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.main_items.PageIndex ? "active" : "")">
+                        <a asp-page="./Index" asp-route-PageIndex="@i" class="page-link">@i</a>
+                    </li>
+                }
+                <li class="page-item @nextDisabled">
+                    <a asp-page="./Index" asp-route-PageIndex="@(Model.main_items.PageIndex +1)" class="page-link"><i class="fa fa-arrow-circle-o-right"></i></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

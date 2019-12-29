@@ -1,0 +1,75 @@
+﻿@page
+@model Eventmanagement4._0.Pages.items.DeleteModel
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<br />
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">Startseite</a></li>
+        <li class="breadcrumb-item"><a href="#">Artikelstammverwaltung</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Datensatz löschen</li>
+    </ol>
+</nav>
+<hr />
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.main_items.item_name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.main_items.item_name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.main_items.manufacturer)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.main_items.manufacturer)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.main_items.discription)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.main_items.discription)
+        </dd>
+    </dl>
+
+    <form method="post">
+        <input type="hidden" asp-for="main_items.id" />
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+            Löschen
+        </button>
+
+
+        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Datensatz wirklich löschen ?</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger" role="alert">
+                            Möchten Sie den Artikel wirklich löschen ?
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button> | 
+                        <input type="submit" value="Löschen" class="btn btn-danger" /> 
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!--<input type="submit" value="löschen" class="btn btn-danger" /> -->|
+
+        <a class="btn btn-primary" asp-page="Index">Zurück zur Liste</a>
+    </form>
+</div>
+

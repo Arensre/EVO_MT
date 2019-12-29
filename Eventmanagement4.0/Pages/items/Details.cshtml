@@ -1,0 +1,42 @@
+﻿@page
+@model Eventmanagement4._0.Pages.items.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+<br/>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">Startseite</a></li>
+        <li class="breadcrumb-item"><a href="#">Artikelstammverwaltung</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Details</li>
+    </ol>
+</nav>
+<hr />
+<div>
+
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.main_items.item_name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.main_items.item_name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.main_items.manufacturer)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.main_items.manufacturer)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.main_items.discription)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.main_items.discription)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a class="btn btn-success" asp-page="./Edit" asp-route-id="@Model.main_items.id">Speichern</a> |
+    <a class="btn btn-primary" asp-page="./Index">Zurück zur Liste</a>
+</div>

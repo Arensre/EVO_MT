@@ -1,0 +1,179 @@
+﻿@page
+@model Eventmanagement4._0.Pages.customer_base.IndexModel
+
+@{
+    Layout = "_Layout";
+}
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+<div class="navbar sticky-top navbar-expand-lg bg-white shadow bg-white rounded">
+    <div class="col-sm">
+        <nav aria-label="breadcrumb" style="margin-top:2.5px">
+            <ol class="breadcrumb bg-white">
+                <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"><a href="#"></a></li>
+                <li class="breadcrumb-item active" aria-current="page">Kundenstammverwaltung</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="col-sm">
+        <a asp-page="Create" class=" btn rounded-circle btn-outline-primary" style="margin-top:10px; float:right"> <i class="fa fa-plus-square-o"></i></a>
+    </div>
+</div>
+<br />
+
+@if (TempData["create_success"] is "true")
+{
+
+    <div class="alert alert-success" role="alert">
+        Kunde erfolgreich angelegt.
+    </div>
+
+}
+@if (TempData["delete_success"] is "true")
+{
+
+    <div class="alert alert-success" role="alert">
+        Kunde erfolgreich gelöscht.
+    </div>
+
+}
+
+
+<div class="card">
+
+    <div class="card-body">
+        <table id="customer" class="table bg-white ">
+            <thead>
+                <tr>
+                    <th>
+                        <a asp-page="./Index" asp-route-sortOrder="@Model.numbersort"
+                           asp-route-currentFilter="@Model.CurrentFilter">
+                            @Html.DisplayNameFor(model => model.customer[0].ID)
+                        </a>
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.customer[0].land)
+                    </th>
+                    <th>
+                        <a asp-page="./Index" asp-route-sortOrder="@Model.namesort"
+                           asp-route-currentFilter="@Model.CurrentFilter">
+                            @Html.DisplayNameFor(model => model.customer[0].customer_name)
+                        </a>
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.customer[0].street)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.customer[0].telefphone_number)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.customer[0].website)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.customer[0].post_code)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.customer[0].place)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.customer)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.customer_id)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.land)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.customer_name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.street)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.telefphone_number)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.website)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.post_code)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.place)
+                        </td>
+                        <td>
+                            <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a> |
+                            <a asp-page="./Details" asp-route-id="@item.ID" asp-route-customer_search_id="@item.customer_id" class="btn btn-outline-primary"><i class="fa fa-info"></i></a> |
+                            <a asp-page="./Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+    </div>
+</div>
+
+<br />
+
+
+
+<!-- Paging  -->
+
+
+@{
+    var prevDisabled = !Model.customer.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.customer.HasNextPage ? "disabled" : "";
+}
+<div class="container-fluid bg-transparent">
+    <div class="row">
+        <div class="col-auto mr-auto">
+            <!--<form class="form-inline">
+                <div class="form-group mx-sm-3 mb-2 ">
+                    Items pro Seite
+                    <select class="form-control" id="pagesize" asp-for="pagesize">
+                        <option>3</option>
+                        <option>5</option>
+                        <option>50</option>
+                        <option>100</option>
+                        <option>200</option>
+                    </select>
+
+                </div>
+                <button type="submit" class="btn btn-outline-primary mb-2">Übernehmen</button>
+            </form>-->
+        </div>
+        <div class=" col-auto">
+            <ul class="pagination ">
+                <li class="page-item @prevDisabled">
+                    <a asp-page="./Index" asp-route-PageIndex="@(Model.customer.PageIndex -1)" class="page-link"><i class="fa fa-arrow-circle-o-left"></i></a>
+                </li>
+
+                <!-- Create Button for each Page -->
+
+                @for (var i = 1; i <= Model.customer.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.customer.PageIndex ? "active" : "")">
+                        <a asp-page="./Index" asp-route-PageIndex="@i" class="page-link">@i</a>
+                    </li>
+                }
+                <li class="page-item @nextDisabled">
+                    <a asp-page="./Index" asp-route-PageIndex="@(Model.customer.PageIndex +1)" class="page-link"><i class="fa fa-arrow-circle-o-right"></i></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+
+

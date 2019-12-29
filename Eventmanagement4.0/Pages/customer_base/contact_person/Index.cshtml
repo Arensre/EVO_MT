@@ -1,0 +1,96 @@
+﻿@page
+@model Eventmanagement4._0.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].gender)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].customer_id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].first_name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].surname)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].telephone_number)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].mobile_number)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].land)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].mail_adress)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].departmend)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].post_code)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.contact_person[0].place)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.contact_person) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.gender)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.customer_id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.first_name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.surname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.telephone_number)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.mobile_number)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.land)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.mail_adress)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.departmend)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.post_code)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.place)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

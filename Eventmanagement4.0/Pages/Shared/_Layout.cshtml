@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title class="text-light">@ViewData["Title"] - Eventmanagement4._0</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/lib/sidebar/css/sidebar.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.css" />
+
+</head>
+<body>
+    <div class="d-flex wrapper" style=" background: #d9d9d9; height:100vh">
+
+        <div class="d-flex" style="width:100%">
+            <div id="sidebar-container" class="bg-dark sidebar-expanded d-md-block" style="height:100%">
+
+                <!-- Bootstrap List Group -->
+                <ul class="list-group list-group-flush">
+
+                    <a href="#" data-toggle="sidebar-colapse" aria-expanded="false" style="border-radius:0; height:56px" class=" sticky-top list-group-item list-group-item-action bg-dark text-light">
+                        <div class="d-flex w-100 justify-content-start align-items-center">
+                            <span class="fa fa-bars fa-fw mr-3"></span>
+                            <span class="menu-collapsed">Event MES System</span>
+                            <span class="submenu-icon ml-auto"></span>
+                        </div>
+                    </a>
+
+                    <!-- Main menue Dashboard-->
+                    <a href="#submenu1" data-toggle="collapse" aria-expanded="false" style="border-radius:0; height:56px" class=" list-group-item list-group-item-action bg-dark text-light">
+                        <div class="d-flex w-100 justify-content-start align-items-center">
+                            <span class="fa fa-bar-chart fa-fw mr-3"></span>
+                            <span class="menu-collapsed">Dashboard</span>
+                            <span class="submenu-icon ml-auto"></span>
+                        </div>
+                    </a>
+                    <!-- Submenu Dashboard -->
+                    <div id='submenu1' class="collapse sidebar-submenu">
+                        <a href="#" class="list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
+                            <small><span class="align-middle menu-collapsed"> &bull; Charts</span></small>
+                        </a>
+                        <a href="#" class=" list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
+                            <small><span class="align-middle menu-collapsed"> &bull; Reports</span></small>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
+                            <small><span class=" menu-collapsed"> &bull; Tables</span></small>
+                        </a>
+                    </div>
+
+
+                    <!--Main menue base data-->
+                    <a href="#submenu2" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action  bg-dark  text-light">
+                        <div class="d-flex w-100 justify-content-start align-items-center">
+                            <span class="fa fa-database fa-fw mr-3"></span>
+                            <span class="menu-collapsed">Stammdaten</span>
+                            <span class="submenu-icon ml-auto"></span>
+                        </div>
+                    </a>
+                    <!-- Submenu base data -->
+                    <div id='submenu2' class="collapse sidebar-submenu">
+                        <a href="/customer_base/Index" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
+                            <small><span class="menu-collapsed"> &bull; Kundenstammdaten</span></small>
+                        </a>
+                        <a href="/items/Index" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
+                            <small><span class="menu-collapsed"> &bull; Artikelstammdaten</span></small>
+                        </a>
+                    </div>
+
+                    <!--main manue assignment-->
+                    <a href="#submenu3" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark text-light">
+                        <div class="d-flex w-100 justify-content-start align-items-center">
+                            <span class="fa fa-tasks fa-fw mr-3"></span>
+                            <span class="menu-collapsed">Aufträge</span>
+                            <span class="submenu-icon ml-auto"></span>
+                        </div>
+                    </a>
+
+
+                    <!-- /END Separator -->
+                    <a href="#" style="border-radius:0" class=" list-group-item list-group-item-action  bg-dark  text-light">
+                        <div class="d-flex w-100 justify-content-start align-items-center">
+                            <span class="fa fa-cogs fa-fw mr-3"></span>
+                            <span class="menu-collapsed">Systemeinstellungen</span>
+                        </div>
+                    </a>
+
+
+                    <!-- /END Separator -->
+                    <a href="#" class="bg-primary list-group-item list-group-item-action bg-dark text-light">
+                        <div class="d-flex w-100 justify-content-start align-items-center">
+                            <span class="fa fa-question fa-fw mr-3"></span>
+                            <span class="menu-collapsed">Hilfe</span>
+                        </div>
+                    </a>
+
+                </ul>
+                <partial name="_LoginPartial" />
+            </div>
+
+            <!--Header menue-->
+            <div id="page-content-wrapper" class="container-fluid overflow-auto">
+                <div class="wrapper">
+                    <main role="main" class="pb-3">
+                        @RenderBody()
+                    </main>
+                </div>
+            </div>
+
+        </div>
+
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/lib/sidebar/js/sidebar.js"></script>
+        
+        @RenderSection("scripts", required: false)
+       
+    </div>
+
+</body>
+
+</html>
