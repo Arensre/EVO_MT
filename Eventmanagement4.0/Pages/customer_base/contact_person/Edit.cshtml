@@ -76,8 +76,9 @@
     </div>
 </div>
 
+
 <div>
-    <a asp-page="./Index">Back to List</a>
+    <a asp-page="/customer_base/Details" asp-route-id="@ViewData["customer_number"]" asp-route-customer_search_id=@Html.DisplayNameFor(model => model.contact_person.customer_id)>zurück zur Anischt</a>
 </div>
 
 @section Scripts {

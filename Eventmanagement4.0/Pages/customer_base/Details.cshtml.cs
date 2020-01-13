@@ -23,18 +23,18 @@ namespace Eventmanagement4._0.Pages.customer_base
         public customer customer { get; set; }
         public global_functions.PaginatedList<Eventmanagement4._0.Models.customer_base.contact_person> contact_person { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id,string customer_search_id)
+        public async Task<IActionResult> OnGetAsync(string customer_id_in)
         {
 
             IQueryable<Eventmanagement4._0.Models.customer_base.contact_person> contact_person_filtered = from s in _context.contact_person select s;
 
 
-            if (id == null)
+            if (customer_id_in == null)
             {
                 return NotFound();
             }
 
-            customer = await _context.customer.FirstOrDefaultAsync(m => m.ID == id);
+            customer = await _context.customer.FirstOrDefaultAsync(m => m.customer_id == customer_id_in);
         
 
             if (customer == null)
@@ -42,9 +42,9 @@ namespace Eventmanagement4._0.Pages.customer_base
                 return NotFound();
             }
 
-            if (!String.IsNullOrEmpty(customer_search_id))
+            if (!String.IsNullOrEmpty(customer_id_in))
             {
-                contact_person_filtered = contact_person_filtered.Where(s => s.customer_id == customer_search_id);
+                contact_person_filtered = contact_person_filtered.Where(s => s.customer_id == customer_id_in);
 
             }
 

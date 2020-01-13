@@ -23,7 +23,7 @@ namespace Eventmanagement4._0
         [BindProperty]
         public contact_person contact_person { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(int? id, int? customer)
         {
             if (id == null)
             {
@@ -36,6 +36,8 @@ namespace Eventmanagement4._0
             {
                 return NotFound();
             }
+            ViewData["customer_number"] = customer;
+
             return Page();
         }
 

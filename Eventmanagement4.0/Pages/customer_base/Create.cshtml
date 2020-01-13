@@ -5,22 +5,27 @@
     ViewData["Title"] = "Create";
 }
 
+<div class="navbar sticky-top navbar-expand-lg bg-white shadow rounded">
+    <div class="col-sm">
+        <nav aria-label="breadcrumb" style="margin-top:2.5px">
+            <ol class="breadcrumb bg-white">
+                <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"></li>
+                <li class="breadcrumb-item" aria-current="page">Kundenstammverwaltung</li>
+                <li class="breadcrumb-item active" aria-current="page">neuen Kunden Anlegen</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
 <br />
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="#">Startseite</a></li>
-        <li class="breadcrumb-item"><a href="#">Kundenstammverwaltung</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Datensatz erstellen</li>
-    </ol>
-</nav>
 <div class="container-fluid">
-
-        <div class="col-md-8">
+    <div class="row justify-content-around">
+        <div class="col-sm">
             <form method="post">
                 <div class="form-row">
                     <div class="col">
-                        <div class="card bg-light">
+                        <div class="card">
                             <h5 class="card-header">Allgemeine Daten</h5>
                             <div class="card-body">
                                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -42,20 +47,26 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col">
-                        <div class="card bg-light">
+                    <div class="col-sm">
+                        <div class="card">
                             <h5 class="card-header">Anschrift</h5>
                             <div class="card-body">
                                 <div class="form-group">
                                     <label asp-for="customer.land" class="control-label"></label>
                                     <input asp-for="customer.land" class="form-control" />
                                     <span asp-validation-for="customer.land" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
                                     <label asp-for="customer.place" class="control-label"></label>
                                     <input asp-for="customer.place" class="form-control" />
                                     <span asp-validation-for="customer.place" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
                                     <label asp-for="customer.post_code" class="control-label"></label>
                                     <input asp-for="customer.post_code" class="form-control" />
                                     <span asp-validation-for="customer.post_code" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
                                     <label asp-for="customer.street" class="control-label"></label>
                                     <input asp-for="customer.street" class="form-control" />
                                     <span asp-validation-for="customer.street" class="text-danger"></span>
@@ -64,13 +75,20 @@
                         </div>
                     </div>
                 </div>
+                <br>
 
-                <div class="form-group">
-                    <label asp-for="customer.website" class="control-label"></label>
-                    <input asp-for="customer.website" class="form-control" />
-                    <span asp-validation-for="customer.website" class="text-danger"></span>
+                <div class="card">
+                    <div class="card-header">Zusätzliche Informationen</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label asp-for="customer.website" class="control-label"></label>
+                            <input asp-for="customer.website" class="form-control" />
+                            <span asp-validation-for="customer.website" class="text-danger"></span>
+                        </div>
+                    </div>
                 </div>
 
+                <br>
                 <div class="form-group">
                     <input type="submit" value="Datensatz erstellen" class="btn btn-success" /> |
                     <a class="btn btn-primary" asp-page="Index">Zurück zur Liste</a>
@@ -78,27 +96,28 @@
             </form>
         </div>
     </div>
+</div>
 
 
-    @section Scripts {
-        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    }
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
 
-    <!-- Codespeicher-->
-    <!--<div class="form-group">
-            <label asp-for="customer.place" class="control-label"></label>
-            <input asp-for="customer.place" class="form-control" />
-            <span asp-validation-for="customer.place" class="text-danger"></span>
-        </div>
+<!-- Codespeicher-->
+<!--<div class="form-group">
+        <label asp-for="customer.place" class="control-label"></label>
+        <input asp-for="customer.place" class="form-control" />
+        <span asp-validation-for="customer.place" class="text-danger"></span>
+    </div>
 
-        <div class="form-group">
-            <label asp-for="customer.post_code" class="control-label"></label>
-            <input asp-for="customer.post_code" class="form-control" />
-            <span asp-validation-for="customer.post_code" class="text-danger"></span>
-        </div>
+    <div class="form-group">
+        <label asp-for="customer.post_code" class="control-label"></label>
+        <input asp-for="customer.post_code" class="form-control" />
+        <span asp-validation-for="customer.post_code" class="text-danger"></span>
+    </div>
 
-        <div class="form-group">
-            <label asp-for="customer.street" class="control-label"></label>
-            <input asp-for="customer.street" class="form-control" />
-            <span asp-validation-for="customer.street" class="text-danger"></span>
-        </div>-->
+    <div class="form-group">
+        <label asp-for="customer.street" class="control-label"></label>
+        <input asp-for="customer.street" class="form-control" />
+        <span asp-validation-for="customer.street" class="text-danger"></span>
+    </div>-->

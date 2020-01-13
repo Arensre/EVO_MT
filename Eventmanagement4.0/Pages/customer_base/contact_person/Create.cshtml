@@ -18,10 +18,13 @@
                 <input asp-for="contact_person.gender" class="form-control" />
                 <span asp-validation-for="contact_person.gender" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="display:none">
                 <label asp-for="contact_person.customer_id" class="control-label"></label>
-                <input asp-for="contact_person.customer_id" class="form-control" />
+                <select asp-for="contact_person.customer_id" class="form-control" >
+                <option>@ViewData["customer_id"]</option>
+                    </select>
                 <span asp-validation-for="contact_person.customer_id" class="text-danger"></span>
+
             </div>
             <div class="form-group">
                 <label asp-for="contact_person.first_name" class="control-label"></label>

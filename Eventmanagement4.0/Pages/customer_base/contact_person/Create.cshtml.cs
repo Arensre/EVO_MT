@@ -19,8 +19,10 @@ namespace Eventmanagement4._0
             _context = context;
         }
 
-        public IActionResult OnGet()
+        public IActionResult OnGet(int? customer_id_in)
         {
+            ViewData["customer_id"] = customer_id_in;
+
             return Page();
         }
 
@@ -29,17 +31,21 @@ namespace Eventmanagement4._0
 
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(int? customer_id_in)
         {
             if (!ModelState.IsValid)
             {
+                
                 return Page();
             }
 
             _context.contact_person.Add(contact_person);
             await _context.SaveChangesAsync();
 
-            return RedirectToPage("./Index");
+            TempData["create_contact_person_success"] = "true";
+            
+
+            return RedirectToPage("/customer_base/Details", new { customer_id_in = customer_id_in});
         }
     }
 }

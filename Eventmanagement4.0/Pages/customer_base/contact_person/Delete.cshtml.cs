@@ -38,9 +38,9 @@ namespace Eventmanagement4._0
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(int? id)
+        public async Task<IActionResult> OnPostAsync(int? customer_id_in, int? id)
         {
-            if (id == null)
+            if (customer_id_in == null)
             {
                 return NotFound();
             }
@@ -52,8 +52,10 @@ namespace Eventmanagement4._0
                 _context.contact_person.Remove(contact_person);
                 await _context.SaveChangesAsync();
             }
+            TempData["delete_contact_person_success"] = "true";
 
-            return RedirectToPage("./Index");
+
+            return RedirectToPage("/customer_base/Details", new { customer_id_in = customer_id_in });
         }
     }
 }
