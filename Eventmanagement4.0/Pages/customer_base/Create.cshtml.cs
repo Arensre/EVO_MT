@@ -7,10 +7,13 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Eventmanagement4._0.Data;
 using Eventmangement_4._0.Model.customer_base;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace Eventmanagement4._0.Pages.customer_base
 {
+
+    [Authorize(Roles = "bd__customer_delete")]
     public class CreateModel : PageModel
     {
         private readonly Eventmanagement4._0.Data.Data_customer _context;

@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Eventmanagement4._0.Data;
-using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Identity;
+using Eventmanagement4._0.Models.systemsettings;
 
 
 
@@ -26,7 +21,7 @@ namespace Eventmanagement4._0
         }
 
         public IConfiguration Configuration { get; }
-
+       
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -37,9 +32,22 @@ namespace Eventmanagement4._0
 
             services.AddDbContext<Main_Items>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("Main_Items")));
-         
-            
-        }
+
+            services.AddDbContext<UserContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("UserContext")));
+
+            services.AddDbContext<ApplicationDbContext>(options => 
+            options.UseSqlServer(Configuration.GetConnectionString("UserContext")));
+
+           /* services.AddDefaultIdentity<IdentityUser>()
+                .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();*/
+
+            services.AddControllersWithViews();
+            services.AddRazorPages();
+            services.AddAuthorization();
+
+        } 
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Eventmanagement4._0.Data;
 using Eventmangement_4._0.Model.customer_base;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Eventmanagement4._0.Pages.customer_base
 {
-    [Authorize]
+
+
+    [Authorize(Roles ="bd_customer")]
     public class IndexModel : PageModel
     {
-       
         private readonly Eventmanagement4._0.Data.Data_customer _context;
 
         public IndexModel(Eventmanagement4._0.Data.Data_customer context)
@@ -27,14 +25,13 @@ namespace Eventmanagement4._0.Pages.customer_base
         public string CurrentFilter { get; set; }
         public string CurrentSort { get; set; }
         public string numberpages { get; set; }
-        public int ? pagesize { get; set; }
-         
+        public int? pagesize { get; set; }
+
         public global_functions.PaginatedList<customer> customer { get; set; }
 
-
-        public async Task OnGetAsync(string sortOrder,string currentFilter, string searchString, int? pageIndex, int? pagesize)
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? pagesize)
         {
-            
+
             CurrentSort = sortOrder;
 
             namesort = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";

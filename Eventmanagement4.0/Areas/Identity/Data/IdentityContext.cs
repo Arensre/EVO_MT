@@ -16,6 +16,8 @@ namespace Eventmanagement4._0.Data
         {
         }
 
+       
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

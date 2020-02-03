@@ -7,34 +7,32 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Eventmanagement4._0.Data;
-using Eventmangement_4._0.Model.customer_base;
-using Microsoft.AspNetCore.Authorization;
+using Eventmanagement4._0.Models.systemsettings;
 
-namespace Eventmanagement4._0.Pages.customer_base
+namespace Eventmanagement4._0.Pages.systemsettings.usermanagement
 {
-    [Authorize(Roles = "bd__customer_edit")]
     public class EditModel : PageModel
     {
-        private readonly Eventmanagement4._0.Data.Data_customer _context;
+        private readonly Eventmanagement4._0.Data.UserContext _context;
 
-        public EditModel(Eventmanagement4._0.Data.Data_customer context)
+        public EditModel(Eventmanagement4._0.Data.UserContext context)
         {
             _context = context;
         }
 
         [BindProperty]
-        public customer customer { get; set; }
+        public AspNetUsers user { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(string id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            customer = await _context.customer.FirstOrDefaultAsync(m => m.ID == id);
+            user = await _context.AspNetUsers.FirstOrDefaultAsync(m => m.ID == id);
 
-            if (customer == null)
+            if (user == null)
             {
                 return NotFound();
             }
@@ -50,7 +48,7 @@ namespace Eventmanagement4._0.Pages.customer_base
                 return Page();
             }
 
-            _context.Attach(customer).State = EntityState.Modified;
+            _context.Attach(user).State = EntityState.Modified;
 
             try
             {
@@ -58,7 +56,7 @@ namespace Eventmanagement4._0.Pages.customer_base
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!customerExists(customer.ID))
+                if (!userExists(user.ID))
                 {
                     return NotFound();
                 }
@@ -71,9 +69,9 @@ namespace Eventmanagement4._0.Pages.customer_base
             return RedirectToPage("./Index");
         }
 
-        private bool customerExists(int id)
+        private bool userExists(string id)
         {
-            return _context.customer.Any(e => e.ID == id);
+            return _context.AspNetUsers.Any(e => e.ID == id);
         }
     }
 }

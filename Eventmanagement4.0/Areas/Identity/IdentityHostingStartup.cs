@@ -21,7 +21,8 @@ namespace Eventmanagement4._0.Areas.Identity
                         context.Configuration.GetConnectionString("IdentityContextConnection")));
 
                 services.AddDefaultIdentity<Eventmanagement4_0User>(options => options.SignIn.RequireConfirmedAccount = true)
-                    .AddEntityFrameworkStores<IdentityContext>();
+                 .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<IdentityContext>();
             });
         }
     }

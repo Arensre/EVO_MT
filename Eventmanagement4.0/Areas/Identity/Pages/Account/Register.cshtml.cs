@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Eventmanagement4._0.Areas.Identity.Pages.Account
 {
-    [AllowAnonymous]
+    [Authorize]
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<Eventmanagement4_0User> _signInManager;

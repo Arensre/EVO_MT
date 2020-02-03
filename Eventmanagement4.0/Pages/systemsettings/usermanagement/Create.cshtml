@@ -1,0 +1,79 @@
+﻿@page
+@model Eventmanagement4._0.Pages.systemsettings.usermanagement.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>user</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <!-- <div class="form-group">
+         <label asp-for="user.ID" class="control-label"></label>
+         <input asp-for="user.ID" class="form-control" />
+         <span asp-validation-for="user.ID" class="text-danger"></span>
+     </div>-->
+            <div class="form-group">
+                <label class="sr-only" for="username" asp-for="Input.email">E-Mail</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text" style="width:45px"><i class="fa fa-envelope-o"></i></div>
+                    </div>
+                    <input asp-for="Input.email" class="form-control" />
+                    <span asp-validation-for="Input.email" class="text-danger"></span>
+                </div>
+                </div>
+                <!--<div class="form-group">
+        <label asp-for="user.NormalizedUserName" class="control-label"></label>
+        <input asp-for="user.NormalizedUserName" class="form-control" />
+        <span asp-validation-for="user.NormalizedUserName" class="text-danger"></span>
+    </div>-->
+                <div class="form-group">
+                    <label class="sr-only" for="password" asp-for="Input.password">E-Mail</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text" style="width:45px"><i class="fa fa-lock"></i></div>
+                        </div>
+                        <input asp-for="Input.password" class="form-control" />
+                        <span asp-validation-for="Input.password" class="text-danger"></span>
+                    </div>
+                    </div>
+                    <!--<div class="form-group">
+        <label asp-for="user.NormalizedEmail" class="control-label"></label>
+        <input asp-for="user.NormalizedEmail" class="form-control" />
+        <span asp-validation-for="user.NormalizedEmail" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="user.PhoneNumber" class="control-label"></label>
+        <input asp-for="user.PhoneNumber" class="form-control" />
+        <span asp-validation-for="user.PhoneNumber" class="text-danger"></span>
+    </div>-->
+                    <div class="form-group">
+                        <label class="sr-only" for="password" asp-for="Input.password">E-Mail</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text" style="width:45px"><i class="fa fa-lock"></i></div>
+                            </div>
+                            <input asp-for="Input.confirmpassword" class="form-control" />
+                            <span asp-validation-for="Input.confirmpassword" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Create" class="btn btn-primary" />
+                        </div>
+</form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<partial name="_ValidationScriptsPartial" />
+}

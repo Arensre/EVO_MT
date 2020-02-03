@@ -1,0 +1,60 @@
+﻿@page
+@model Eventmanagement4._0.Pages.systemsettings.usermanagement.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>user</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="user.ID" />
+            <div class="form-group">
+                <label asp-for="user.UserName" class="control-label"></label>
+                <input asp-for="user.UserName" class="form-control" />
+                <span asp-validation-for="user.UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="user.NormalizedUserName" class="control-label"></label>
+                <input asp-for="user.NormalizedUserName" class="form-control" />
+                <span asp-validation-for="user.NormalizedUserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="user.Email" class="control-label"></label>
+                <input asp-for="user.Email" class="form-control" />
+                <span asp-validation-for="user.Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="user.NormalizedEmail" class="control-label"></label>
+                <input asp-for="user.NormalizedEmail" class="form-control" />
+                <span asp-validation-for="user.NormalizedEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="user.PhoneNumber" class="control-label"></label>
+                <input asp-for="user.PhoneNumber" class="form-control" />
+                <span asp-validation-for="user.PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="user.PasswordHash" class="control-label"></label>
+                <input asp-for="user.PasswordHash" class="form-control" />
+                <span asp-validation-for="user.PasswordHash" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,81 @@
+﻿@page
+@model Eventmanagement4._0.Pages.systemsettings.usermanagement.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="navbar sticky-top navbar-expand-lg bg-white shadow bg-white rounded">
+    <div class="col-sm">
+        <nav aria-label="breadcrumb" style="margin-top:2.5px">
+            <ol class="breadcrumb bg-white">
+                <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"><a href="#"></a></li>
+                <li class="breadcrumb-item active" aria-current="page">Benutzerverwaltung</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="col-sm">
+        <a asp-page="Create" class=" btn rounded-circle btn-outline-success" style="margin-top:10px; float:right"> <i class="fa fa-plus-square-o"></i></a>
+    </div>
+</div>
+<br />
+
+
+@if (TempData["create_success"] is "true")
+{
+
+    <div class="alert alert-success" role="alert">
+        Benutzer erfolgreich angelegt.
+    </div>
+
+}
+@if (TempData["create_success"] is "false")
+{
+
+    <div class="alert alert-danger" role="alert">
+        Probleme beim Anlegen des Benutzers
+    </div>
+
+}
+
+
+<div calss="container">
+    <div class="row">
+        <div class=" col-md-5">
+            <div class="card">
+                <div class="card-body">
+
+                    <table class="table bg-white">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.user[0].UserName)
+                                </th>
+                                <th>
+
+                                </th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.user)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.UserName)
+                                    </td>
+                                    <td style="width:160px;">
+                                        <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a> |
+                                        <a asp-page="./Details" asp-route-customer_id_in="@item.ID" class="btn btn-outline-primary"><i class="fa fa-info"></i></a> |
+                                        <a asp-page="./Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

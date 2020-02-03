@@ -1,6 +1,7 @@
 ﻿@page
 @model Eventmanagement4._0.Pages.customer_base.IndexModel
 
+
 @{
     Layout = "_Layout";
 }
@@ -79,6 +80,9 @@
                     <th>
                         @Html.DisplayNameFor(model => model.customer[0].place)
                     </th>
+                    <th>
+
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -109,10 +113,16 @@
                         <td>
                             @Html.DisplayFor(modelItem => item.place)
                         </td>
-                        <td>
-                            <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a> |
-                            <a asp-page="./Details"  asp-route-customer_id_in="@item.customer_id" class="btn btn-outline-primary"><i class="fa fa-info"></i></a> |
-                            <a asp-page="./Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+                        <td style="width:160px;">
+                            @if (User.IsInRole("bd_customer_edit"))
+                            {
+                                <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a>
+                            }
+                            <a asp-page="./Details" asp-route-customer_id_in="@item.customer_id" class="btn btn-outline-primary"><i class="fa fa-info"></i></a>
+                            @if (User.IsInRole("bd_customer_delete"))
+                            {
+                                <a asp-page="./Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+                            }
                         </td>
                     </tr>
                 }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -28,14 +28,14 @@
                     </a>
 
                     <!-- Main menue Dashboard-->
-                    <a href="#submenu1" data-toggle="collapse" aria-expanded="false" style="border-radius:0; height:56px" class=" list-group-item list-group-item-action bg-dark text-light">
+                   <!-- <a href="#submenu1" data-toggle="collapse" aria-expanded="false" style="border-radius:0; height:56px" class=" list-group-item list-group-item-action bg-dark text-light">
                         <div class="d-flex w-100 justify-content-start align-items-center">
                             <span class="fa fa-bar-chart fa-fw mr-3"></span>
                             <span class="menu-collapsed">Dashboard</span>
                             <span class="submenu-icon ml-auto"></span>
                         </div>
                     </a>
-                    <!-- Submenu Dashboard -->
+                    <!-- Submenu Dashboard 
                     <div id='submenu1' class="collapse sidebar-submenu">
                         <a href="#" class="list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
                             <small><span class="align-middle menu-collapsed"> &bull; Charts</span></small>
@@ -46,9 +46,9 @@
                         <a href="#" class="list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
                             <small><span class=" menu-collapsed"> &bull; Tables</span></small>
                         </a>
-                    </div>
+                    </div>-->
 
-
+                   
                     <!--Main menue base data-->
                     <a href="#submenu2" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action  bg-dark  text-light">
                         <div class="d-flex w-100 justify-content-start align-items-center">
@@ -59,31 +59,47 @@
                     </a>
                     <!-- Submenu base data -->
                     <div id='submenu2' class="collapse sidebar-submenu">
-                        <a href="/customer_base/Index" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
-                            <small><span class="menu-collapsed"> &bull; Kundenstammdaten</span></small>
-                        </a>
+                        @if (User.IsInRole("bd_customer"))
+                        {
+                            <a href="/customer_base/Index" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
+                                <small><span class="menu-collapsed"> &bull; Kundenstammdaten</span></small>
+                            </a>
+                        }
                         <a href="/items/Index" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
                             <small><span class="menu-collapsed"> &bull; Artikelstammdaten</span></small>
                         </a>
                     </div>
 
                     <!--main manue assignment-->
-                    <a href="#submenu3" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark text-light">
+                    <!--<a href="#submenu3" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark text-light">
                         <div class="d-flex w-100 justify-content-start align-items-center">
                             <span class="fa fa-tasks fa-fw mr-3"></span>
                             <span class="menu-collapsed">Aufträge</span>
                             <span class="submenu-icon ml-auto"></span>
                         </div>
-                    </a>
+                    </a>-->
 
 
-                    <!-- /END Separator -->
-                    <a href="#" style="border-radius:0" class=" list-group-item list-group-item-action  bg-dark  text-light">
+
+                    <!--Main menue system settings-->
+                    <a href="#submenu4"  data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action  bg-dark  text-light">
                         <div class="d-flex w-100 justify-content-start align-items-center">
-                            <span class="fa fa-cogs fa-fw mr-3"></span>
+                            <span class="fa fa-database fa-fw mr-3"></span>
                             <span class="menu-collapsed">Systemeinstellungen</span>
+                            <span class="submenu-icon ml-auto"></span>
                         </div>
                     </a>
+                    <!-- Submenu base data -->
+                    <div id='submenu4' class="collapse sidebar-submenu">
+                        <a href="/systemsettings/usermanagement/" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
+                            <small><span class="menu-collapsed"> &bull; Benutzerverwaltung</span></small>
+                        </a>
+                        <a href="#" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
+                            <small><span class="menu-collapsed"> &bull; Platzhalter</span></small>
+                        </a>
+                    </div>
+
+
 
 
                     <!-- /END Separator -->

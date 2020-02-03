@@ -203,7 +203,7 @@
                         <td>
                             @Html.DisplayFor(modelItem => item.place)
                         </td>
-                        <td>
+                        <td style="width:160px;">
                             <!--Button for Details or Edit and Delete-->
                             <a asp-page="./contact_person/Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a> |
                             <a asp-page="./contact_person/Details" asp-route-id="@item.ID" asp-route-contact_person="@item.customer_id" class="btn btn-outline-primary"><i class="fa fa-info"></i></a> |

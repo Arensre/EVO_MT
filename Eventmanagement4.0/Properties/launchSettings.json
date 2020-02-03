@@ -7,16 +7,15 @@
       "sslPort": 0
     },
     "iisExpress": {
-      "applicationUrl": "http://localhost:57858",
-      "sslPort": 44374
+      "applicationUrl": "http://85.214.37.185",
+      "sslPort": 0
     }
   },
   "profiles": {
     "IIS Express": {
-      "commandName": "IIS",
-      "launchBrowser": true,
+      "commandName": "IISExpress",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "debugging"
       }
     },
     "Eventmanagement4._0": {
