@@ -20,7 +20,6 @@
 </div>
 <br />
 
-
 @if (TempData["create_success"] is "true")
 {
 
@@ -37,37 +36,50 @@
     </div>
 
 }
+@if (TempData["save_success"] is true)
+{
 
+    <div class="alert alert-success" role="alert">
+        Berechtigungen erfolgreich gespeichert.
+    </div>
+
+}
+@if (TempData["save_success"] is false)
+{
+
+    <div class="alert alert-danger" role="alert">
+        Beim speichern der Berechtigungen ist einer Fehler aufgetreten.
+    </div>
+
+}
 
 <div calss="container">
     <div class="row">
         <div class=" col-md-5">
             <div class="card">
                 <div class="card-body">
-
                     <table class="table bg-white">
                         <thead>
                             <tr>
                                 <th>
-                                    @Html.DisplayNameFor(model => model.user[0].UserName)
+                                    @Html.DisplayNameFor(model => model.AspNetUsers[0].UserName)
                                 </th>
                                 <th>
-
                                 </th>
-
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model.user)
+                            @foreach (var item in Model.AspNetUsers)
                             {
                                 <tr>
                                     <td>
                                         @Html.DisplayFor(modelItem => item.UserName)
                                     </td>
-                                    <td style="width:160px;">
-                                        <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a> |
-                                        <a asp-page="./Details" asp-route-customer_id_in="@item.ID" class="btn btn-outline-primary"><i class="fa fa-info"></i></a> |
+                                    <td style="width:220px;">
+                                        <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a>
+                                        <a asp-page="./Details" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-info"></i></a>
                                         <a asp-page="./Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+                                        <a asp-page="./Index" asp-route-UserId="@item.ID" class="btn btn-outline-primary"><i class="fa fa-arrow-right"></i></a>
                                     </td>
                                 </tr>
                             }
@@ -76,6 +88,85 @@
                 </div>
             </div>
         </div>
+        @if (TempData["nores"] is true)
+        {
+            <div class="col-md-6">
+
+                <form method="post">
+                    <div class="card">
+                        <div class="card-header">
+                            <b>Stammdaten</b>
+                        </div>
+
+                        <div class="card-body">
+                            <table class="table bg-white">
+                                <thead>
+                                    <tr>
+                                        <th>
+
+                                        </th>
+                                        <th>
+                                            lesen <i class="fa fa-info"></i>
+                                        </th>
+                                        <th>
+                                            bearbeiten <i class="fa fa-pencil"></i>
+                                        </th>
+                                        <th>
+                                            erstellen und löschen <i class="fa fa-trash"></i>
+
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    <tr>
+                                        <td>
+                                            Stammdaten
+                                        </td>
+                                        <td>
+                                            <input asp-for="base_data" />
+                                        </td>
+                                    <tr>
+                                        <td>
+                                            Kundenstammdaten
+                                        </td>
+                                        <td>
+                                            <input asp-for="base_data_customer" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="base_data_customer_edit" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="base_data_customer_cd" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Artikelstamm
+                                        </td>
+                                        <td>
+                                            <input asp-for="base_data_item" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="base_data_item_edit" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="base_data_item_cd" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <br />
+                    <input type="submit" value="Speichern" class="btn btn-success" />
+                </form>
+            </div>
+        }
+
     </div>
 </div>
 
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

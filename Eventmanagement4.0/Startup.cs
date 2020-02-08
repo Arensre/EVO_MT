@@ -39,13 +39,12 @@ namespace Eventmanagement4._0
             services.AddDbContext<ApplicationDbContext>(options => 
             options.UseSqlServer(Configuration.GetConnectionString("UserContext")));
 
-           /* services.AddDefaultIdentity<IdentityUser>()
-                .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();*/
 
             services.AddControllersWithViews();
             services.AddRazorPages();
             services.AddAuthorization();
+
+            
 
         } 
 

@@ -15,6 +15,7 @@ namespace Eventmanagement4._0.Data
         }
 
         public DbSet<Eventmanagement4._0.Models.systemsettings.AspNetUsers> AspNetUsers { get; set; }
-     
+        public DbSet<Eventmanagement4._0.Models.systemsettings.AspNetUserRoles> AspNetUserRoles { get; set; }
+        public DbSet<Eventmanagement4._0.Models.systemsettings.AspNetRoles> AspNetRoles { get; set; }
     }
 }

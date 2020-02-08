@@ -79,3 +79,7 @@ navbar-side
     padding-right : inherit;
 
 }
+
+.custom-control-input ~ .custom-control-label {
+    cursor: pointer;
+}

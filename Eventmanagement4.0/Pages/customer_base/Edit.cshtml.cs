@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Eventmanagement4._0.Pages.customer_base
 {
-    [Authorize(Roles = "bd__customer_edit")]
+    [Authorize(Roles = "bd_customer_edit")]
     public class EditModel : PageModel
     {
         private readonly Eventmanagement4._0.Data.Data_customer _context;
