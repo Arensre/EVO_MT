@@ -6,19 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Eventmanagement4._0.Data;
-using Eventmangement_4._0.Model.customer_base;
-using Microsoft.AspNetCore.Authorization;
+using Eventmanagement4._0.Models.items;
 
-
-namespace Eventmanagement4._0.Pages.customer_base
+namespace Eventmanagement4._0.Pages.systemsettings.itemmanagement
 {
-
-    [Authorize(Roles = "bd_customer_cd")]
     public class CreateModel : PageModel
     {
-        private readonly Eventmanagement4._0.Data.Data_customer _context;
+        private readonly Eventmanagement4._0.Data.itemgroupsContext _context;
 
-        public CreateModel(Eventmanagement4._0.Data.Data_customer context)
+        public CreateModel(Eventmanagement4._0.Data.itemgroupsContext context)
         {
             _context = context;
         }
@@ -29,7 +25,7 @@ namespace Eventmanagement4._0.Pages.customer_base
         }
 
         [BindProperty]
-        public customer customer { get; set; }
+        public item_groups item_groups { get; set; }
 
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
@@ -40,10 +36,8 @@ namespace Eventmanagement4._0.Pages.customer_base
                 return Page();
             }
 
-            _context.customer.Add(customer);
+            _context.item_groups.Add(item_groups);
             await _context.SaveChangesAsync();
-
-            TempData["create_success"] = "true";
 
             return RedirectToPage("./Index");
         }

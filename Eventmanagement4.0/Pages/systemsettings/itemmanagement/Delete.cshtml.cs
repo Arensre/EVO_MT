@@ -6,23 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Eventmanagement4._0.Data;
-using Eventmangement_4._0.Model.customer_base;
-using Microsoft.AspNetCore.Authorization;
+using Eventmanagement4._0.Models.items;
 
-namespace Eventmanagement4._0.Pages.customer_base
+namespace Eventmanagement4._0.Pages.systemsettings.itemmanagement
 {
-    [Authorize(Roles = "bd_customer_cd")]
     public class DeleteModel : PageModel
     {
-        private readonly Eventmanagement4._0.Data.Data_customer _context;
+        private readonly Eventmanagement4._0.Data.itemgroupsContext _context;
 
-        public DeleteModel(Eventmanagement4._0.Data.Data_customer context)
+        public DeleteModel(Eventmanagement4._0.Data.itemgroupsContext context)
         {
             _context = context;
         }
 
         [BindProperty]
-        public customer customer { get; set; }
+        public item_groups item_groups { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -31,9 +29,9 @@ namespace Eventmanagement4._0.Pages.customer_base
                 return NotFound();
             }
 
-            customer = await _context.customer.FirstOrDefaultAsync(m => m.ID == id);
+            item_groups = await _context.item_groups.FirstOrDefaultAsync(m => m.id == id);
 
-            if (customer == null)
+            if (item_groups == null)
             {
                 return NotFound();
             }
@@ -47,14 +45,14 @@ namespace Eventmanagement4._0.Pages.customer_base
                 return NotFound();
             }
 
-            customer = await _context.customer.FindAsync(id);
+            item_groups = await _context.item_groups.FindAsync(id);
 
-            if (customer != null)
+            if (item_groups != null)
             {
-                _context.customer.Remove(customer);
+                _context.item_groups.Remove(item_groups);
                 await _context.SaveChangesAsync();
             }
-            TempData["delete_success"] = "true";
+
             return RedirectToPage("./Index");
         }
     }

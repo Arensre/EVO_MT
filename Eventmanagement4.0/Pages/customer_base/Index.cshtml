@@ -10,20 +10,50 @@
     ViewData["Title"] = "Index";
 }
 
+<!--Navigation Bar-->
+<div class="pos-f-t">
+    <nav class="navbar sticky-top bg-white shadow row">
+        <div class="col-sm">
+            <nav aria-label="breadcrumb" style="margin-top:2.5px">
+                <ol class="breadcrumb bg-white">
+                    <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"></li>
+                    <li class="breadcrumb-item " aria-current="page">Kundenstammverwaltung</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-sm-auto">
+            <a asp-page="./Dashboard" class=" btn  btn-outline-primary" style="margin-top:10px; margin-right:5px;">
+                <i class="fa fa-arrow-circle-left"></i>
+            </a>
+            <a asp-page="Create" class=" btn btn-outline-success" style="margin-top:10px; margin-right:5px;"> <i class="fa fa-plus-square-o"></i></a>
+            <a asp-page="Details" class="btn btn-outline-dark" data-toggle="collapse" data-target="#navbarToggleExternalContent" style="margin-top:10px; margin-right:5px;">
+                <span><i class="fa fa-filter"></i></span>
+            </a>
+        </div>
+    </nav>
 
-<div class="navbar sticky-top navbar-expand-lg bg-white shadow bg-white rounded">
-    <div class="col-sm">
-        <nav aria-label="breadcrumb" style="margin-top:2.5px">
-            <ol class="breadcrumb bg-white">
-                <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"><a href="#"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Kundenstammverwaltung</li>
-            </ol>
-        </nav>
-    </div>
-    <div class="col-sm">
-        <a asp-page="Create" class=" btn rounded-circle btn-outline-success" style="margin-top:10px; float:right"> <i class="fa fa-plus-square-o"></i></a>
+    <!--Filter section-->
+    <div class="collapse" id="navbarToggleExternalContent">
+        <div class="bg-light p-4">
+            <form>
+                <div class="col">
+                    <p>
+                        Kundennummer: <input class="input-group-text" type="text" asp-for="search_customer_number" />
+                    </p>
+                </div>
+                <div class="col">
+                    <p>
+                        Name: <input class="input-group-text" type="text" asp-for="search_customer_name" />
+                    </p>
+                    <button class="btn btn-outline-dark" type="submit" style="float:right"><i class="fa fa-search"> Filter anwenden</i></button>
+                </div>
+                <br />
+                
+            </form>
+        </div>
     </div>
 </div>
+
 <br />
 
 @if (TempData["create_success"] is "true")
@@ -116,10 +146,10 @@
                         <td style="width:160px;">
                             @if (User.IsInRole("bd_customer_edit"))
                             {
-                                <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a>
+                                <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-warning"><i class="fa fa-pencil"></i></a>
                             }
                             <a asp-page="./Details" asp-route-customer_id_in="@item.customer_id" class="btn btn-outline-primary"><i class="fa fa-info"></i></a>
-                            @if (User.IsInRole("bd_customer_delete"))
+                            @if (User.IsInRole("bd_customer_cd"))
                             {
                                 <a asp-page="./Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
                             }

@@ -25,15 +25,19 @@ namespace Eventmanagement4._0.Pages.customer_base
         public customer customer { get; set; }
         public global_functions.PaginatedList<Eventmanagement4._0.Models.customer_base.contact_person> contact_person { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string customer_id_in)
+        public async Task<IActionResult> OnGetAsync(string customer_id_in, string filter)
         {
 
             IQueryable<Eventmanagement4._0.Models.customer_base.contact_person> contact_person_filtered = from s in _context.contact_person select s;
 
 
+            if (!String.IsNullOrEmpty(filter))
+            {
+                TempData["Filter"] = true;
+            }
+
             if (customer_id_in == null)
             {
-                return NotFound();
             }
 
             customer = await _context.customer.FirstOrDefaultAsync(m => m.customer_id == customer_id_in);

@@ -1,0 +1,60 @@
+﻿@page
+@model Eventmanagement4._0.Pages.systemsettings.itemmanagement.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.item_groups[0].prestring)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.item_groups[0].mainnumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.item_groups[0].subnumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.item_groups[0].mainname)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.item_groups[0].subname)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.item_groups) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.prestring)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.mainnumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.subnumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.mainname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.subname)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.id">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.id">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

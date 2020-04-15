@@ -44,6 +44,9 @@ namespace Eventmanagement4._0
             services.AddRazorPages();
             services.AddAuthorization();
 
+            services.AddDbContext<itemgroupsContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("itemgroupsContext")));
+
             
 
         } 

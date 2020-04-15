@@ -24,8 +24,12 @@ namespace Eventmanagement4._0.Pages.systemsettings.usermanagement
         {
             _context = context;
         }
+
+        //base data rights
         [BindProperty]
         public bool base_data { get; set; }
+
+        //base data customer rights
         [BindProperty]
         public bool base_data_customer { get; set; }
         [BindProperty]
@@ -33,13 +37,34 @@ namespace Eventmanagement4._0.Pages.systemsettings.usermanagement
         [BindProperty]
         public bool base_data_customer_cd { get; set; }
 
-
+        //base data item rights
         [BindProperty]
         public bool base_data_item { get; set; }
         [BindProperty]
         public bool base_data_item_edit { get; set; }
         [BindProperty]
         public bool base_data_item_cd { get; set; }
+
+
+        //systemsettings rights
+        [BindProperty]
+        public bool systemsettings { get; set; }
+
+        //systemsettings user rights
+        [BindProperty]
+        public bool systemsettings_user { get; set; }
+        [BindProperty]
+        public bool systemsettings_user_edit { get; set; }
+        [BindProperty]
+        public bool systemsettings_user_cd { get; set; }
+
+        //systemsettings item rights
+        [BindProperty]
+        public bool systemsettings_item { get; set; }
+        [BindProperty]
+        public bool systemsettings_item_edit { get; set; }
+        [BindProperty]
+        public bool systemsettings_item_cd { get; set; }
 
         public global_functions.PaginatedList<AspNetUserRoles> AspNetUserRoles { get; set; }
         public global_functions.PaginatedList<AspNetUsers> AspNetUsers { get; set; }
@@ -49,10 +74,20 @@ namespace Eventmanagement4._0.Pages.systemsettings.usermanagement
 
             IQueryable<AspNetUserRoles> roles = from r in _context.AspNetUserRoles select r;
 
+            if (UserId == null)
+            {
+                TempData["userid"] = "empty";
+            }
+            else
+            {
+                TempData["userid"] = UserId;
+            }
+
 
             if (!String.IsNullOrEmpty(searchString))
             {
                 user = user.Where(s => s.UserName.Contains(searchString));
+                
             }
 
             if (!String.IsNullOrEmpty(UserId))
@@ -70,72 +105,42 @@ namespace Eventmanagement4._0.Pages.systemsettings.usermanagement
                 var base_data_item_edit_search = roles.Where(s => s.UserId == UserId && s.RoleId == "7").FirstOrDefault();
                 var base_data_item_cd_search = roles.Where(s => s.UserId == UserId && s.RoleId == "8").FirstOrDefault();
 
+                //read roles systemsettings user for user
+                var systemsettings_search = roles.Where(s => s.UserId == UserId && s.RoleId == "9").FirstOrDefault();
+                var systemsettings_user_search = roles.Where(s => s.UserId == UserId && s.RoleId == "10").FirstOrDefault();
+                var systemsettings_user_edit_search = roles.Where(s => s.UserId == UserId && s.RoleId == "11").FirstOrDefault();
+                var systemsettings_user_cd_search = roles.Where(s => s.UserId == UserId && s.RoleId == "12").FirstOrDefault();
+
+                //read roles systemsettings user for item
+                var systemsettings_item_search = roles.Where(s => s.UserId == UserId && s.RoleId == "13").FirstOrDefault();
+                var systemsettings_item_edit_search = roles.Where(s => s.UserId == UserId && s.RoleId == "14").FirstOrDefault();
+                var systemsettings_item_cd_search = roles.Where(s => s.UserId == UserId && s.RoleId == "15").FirstOrDefault();
+
                 //check if user has roles "base data customer"
-                if (base_data_search != null)
-                {
-                    base_data = true;
-                }
-                else
-                {
-                    base_data = false;
-                }
-                if (base_data_customer_search != null)
-                {
-                    base_data_customer = true;
-                }
-                else
-                {
-                    base_data_customer = false;
-                }
-                if (base_data_customer_edit_search != null)
-                {
-                    base_data_customer_edit = true;
-                }
-                else
-                {
-                    base_data_customer_edit = false;
-                }
-                if (base_data_customer_cd_search != null)
-                {
-                    base_data_customer_cd = true;
-                }
-                else
-                {
-                    base_data_customer_cd = false;
-                }
+                base_data = check_role(base_data_search);
+                base_data_customer = check_role(base_data_customer_search);
+                base_data_customer_edit = check_role(base_data_customer_edit_search);
+                base_data_customer_cd = check_role(base_data_customer_cd_search);
 
                 //check if user has roles "base data items"
-                if (base_data_item_search != null)
-                {
-                    base_data_item = true;
-                }
-                else
-                {
-                    base_data_item = false;
-                }
-                if (base_data_item_edit_search != null)
-                {
-                    base_data_item_edit = true;
-                }
-                else
-                {
-                    base_data_item_edit = false;
-                }
-                if (base_data_item_cd_search != null)
-                {
-                    base_data_item_cd = true;
-                }
-                else
-                {
-                    base_data_item_cd = false;
-                }
+                base_data_item = check_role(base_data_item_search);
+                base_data_item_edit = check_role(base_data_item_edit_search);
+                base_data_item_cd = check_role(base_data_item_cd_search);
+
+                //check if user has roles "systemsettings user"
+                systemsettings = check_role(systemsettings_search);
+                systemsettings_user = check_role(systemsettings_user_search);
+                systemsettings_user_edit = check_role(systemsettings_user_edit_search);
+                systemsettings_user_cd = check_role(systemsettings_user_cd_search);
+
+                //check if user has roles "systemsettings item"
+                systemsettings_item = check_role(systemsettings_item_search);
+                systemsettings_item_edit = check_role(systemsettings_item_edit_search);
+                systemsettings_item_cd = check_role(systemsettings_item_cd_search);
 
             }
 
             AspNetUsers = await global_functions.PaginatedList<AspNetUsers>.CreateAsync(user, pageIndex ?? 1, pagesize ?? 25);
-
-
-
 
 
             return Page();
@@ -159,6 +164,19 @@ namespace Eventmanagement4._0.Pages.systemsettings.usermanagement
                 SQLupdate(base_data_item, UserId, "6");
                 SQLupdate(base_data_item_edit, UserId, "7");
                 SQLupdate(base_data_item_cd, UserId, "8");
+
+                //user rights for systemsettings
+                SQLupdate(systemsettings, UserId, "9");
+
+                // user rights for systemsettings_user section
+                SQLupdate(systemsettings_user, UserId, "10");
+                SQLupdate(systemsettings_user_edit, UserId, "11");
+                SQLupdate(systemsettings_user_cd, UserId, "12");
+
+                //user rights for systemsettings_item section
+                SQLupdate(systemsettings_item, UserId, "13");
+                SQLupdate(systemsettings_item_edit, UserId, "14");
+                SQLupdate(systemsettings_item_cd, UserId, "15");
 
 
                 await _context.SaveChangesAsync();
@@ -189,6 +207,20 @@ namespace Eventmanagement4._0.Pages.systemsettings.usermanagement
                 }
             }
             _context.SaveChangesAsync();
+        }
+
+        private bool check_role(AspNetUserRoles searchstring)
+        {
+            bool binding;
+            if (searchstring != null)
+            {
+                binding = true;
+            }
+            else
+            {
+                binding = false;
+            }
+            return binding;
         }
 
         private bool roleExists(string UserId, string role)

@@ -5,109 +5,117 @@
     ViewData["Title"] = "Edit";
 }
 
-<div class="navbar sticky-top navbar-expand-lg bg-white shadow rounded">
-    <div class="col-sm">
-        <nav aria-label="breadcrumb" style="margin-top:2.5px">
-            <ol class="breadcrumb bg-white">
-                <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"></li>
-                <li class="breadcrumb-item" aria-current="page">Kundenstammverwaltung</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Kunden bearbeiten</li>
-            </ol>
-        </nav>
 
-    </div>
-
-</div>
-
-<br>
-
-<div class="container-fluid">
-    <div class="row justify-content-around">
-        <div class="col-sm">
-            <form method="post">
-                <div class="form-row">
-                    <div class="col">
-                        <div class="card">
-                            <h5 class="card-header">Allgemeine Daten</h5>
-                            <div class="card-body">
-                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                <input type="hidden" asp-for="customer.ID" />
-                                <div class="form-group">
-                                    <label asp-for="customer.customer_id" class="control-label"></label>
-                                    <input asp-for="customer.customer_id" class="form-control" />
-                                    <span asp-validation-for="customer.customer_id" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="customer.customer_name" class="control-label"></label>
-                                    <input asp-for="customer.customer_name" class="form-control" />
-                                    <span asp-validation-for="customer.customer_name" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="customer.telefphone_number" class="control-label"></label>
-                                    <input asp-for="customer.telefphone_number" class="form-control" />
-                                    <span asp-validation-for="customer.telefphone_number" class="text-danger"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-sm">
-                        <div class="card">
-                            <h5 class="card-header">Anschrift</h5>
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label asp-for="customer.land" class="control-label"></label>
-                                    <input asp-for="customer.land" class="form-control" />
-                                    <span asp-validation-for="customer.land" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="customer.place" class="control-label"></label>
-                                    <input asp-for="customer.place" class="form-control" />
-                                    <span asp-validation-for="customer.place" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="customer.post_code" class="control-label"></label>
-                                    <input asp-for="customer.post_code" class="form-control" />
-                                    <span asp-validation-for="customer.post_code" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="customer.street" class="control-label"></label>
-                                    <input asp-for="customer.street" class="form-control" />
-                                    <span asp-validation-for="customer.street" class="text-danger"></span>
-                                </div>
-
-                                <div class="form-group">
-                                    <label asp-for="customer.website" class="control-label"></label>
-                                    <input asp-for="customer.website" class="form-control" />
-                                    <span asp-validation-for="customer.website" class="text-danger"></span>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
+        <div class="pos-f-t">
+            <nav class="navbar sticky-top bg-white shadow  row">
+                <div class="col-sm">
+                    <nav aria-label="breadcrumb" style="margin-top:2.5px">
+                        <ol class="breadcrumb bg-white">
+                            <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"></li>
+                            <li class="breadcrumb-item " aria-current="page">Kundenstammverwaltung</li>
+                            <li class="breadcrumb-item active" aria-current="page">Kunden bearbeiten</li>
+                        </ol>
+                    </nav>
                 </div>
-                <br>
-                <div class="card">
-                    <div class="card-header">Zusättliche Informationen</div>
-                    <div class="card-body">
+                    <div class="col-sm-auto">
                         <div class="form-group">
-                            <label asp-for="customer.website" class="control-label"></label>
-                            <input asp-for="customer.website" class="form-control" />
-                            <span asp-validation-for="customer.website" class="text-danger"></span>
+                            <button type="submit" form="main-form" class="btn  btn-outline-success" style="margin-top:10px; margin-right:5px; float:right">
+                                <i class="fa fa-save"></i>
+                            </button>
+                            <a asp-page="Index" class=" btn  btn-outline-primary" style="margin-top:10px; margin-right:5px; float:right">
+                                <i class="fa fa-arrow-circle-left"></i>
+                            </a>
+
                         </div>
                     </div>
-                </div>
-                <br>
-                <div class="form-group">
-                    <input type="submit" value="Speichern" class="btn btn-success" /> |
-                    <a class="btn btn-primary" asp-page="Index">Zurück zur Liste</a>
-                </div>
+            </nav>
+            </div>
 
-            </form>
+            <br>
+
+            <div class="container-fluid">
+                <div class="row justify-content-around">
+                    <div class="col-sm">
+                        <form id="main-form" method="post">
+                            <div class="form-row">
+                                <div class="col">
+                                    <div class="card">
+                                        <h5 class="card-header">Allgemeine Daten</h5>
+                                        <div class="card-body">
+                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                            <input type="hidden" asp-for="customer.ID" />
+                                            <div class="form-group">
+                                                <label asp-for="customer.customer_id" class="control-label"></label>
+                                                <input asp-for="customer.customer_id" class="form-control" />
+                                                <span asp-validation-for="customer.customer_id" class="text-danger"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label asp-for="customer.customer_name" class="control-label"></label>
+                                                <input asp-for="customer.customer_name" class="form-control" />
+                                                <span asp-validation-for="customer.customer_name" class="text-danger"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label asp-for="customer.telefphone_number" class="control-label"></label>
+                                                <input asp-for="customer.telefphone_number" class="form-control" />
+                                                <span asp-validation-for="customer.telefphone_number" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm">
+                                    <div class="card">
+                                        <h5 class="card-header">Anschrift</h5>
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <label asp-for="customer.land" class="control-label"></label>
+                                                <input asp-for="customer.land" class="form-control" />
+                                                <span asp-validation-for="customer.land" class="text-danger"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label asp-for="customer.place" class="control-label"></label>
+                                                <input asp-for="customer.place" class="form-control" />
+                                                <span asp-validation-for="customer.place" class="text-danger"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label asp-for="customer.post_code" class="control-label"></label>
+                                                <input asp-for="customer.post_code" class="form-control" />
+                                                <span asp-validation-for="customer.post_code" class="text-danger"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label asp-for="customer.street" class="control-label"></label>
+                                                <input asp-for="customer.street" class="form-control" />
+                                                <span asp-validation-for="customer.street" class="text-danger"></span>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label asp-for="customer.website" class="control-label"></label>
+                                                <input asp-for="customer.website" class="form-control" />
+                                                <span asp-validation-for="customer.website" class="text-danger"></span>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="card">
+                                <div class="card-header">Zusättliche Informationen</div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label asp-for="customer.website" class="control-label"></label>
+                                        <input asp-for="customer.website" class="form-control" />
+                                        <span asp-validation-for="customer.website" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+
+                        </form>
+                    </div>
+            </div>
         </div>
-    </div>
-</div>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+        @section Scripts {
+            @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+        }

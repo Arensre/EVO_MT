@@ -5,16 +5,29 @@
     ViewData["Title"] = "Create";
 }
 
-<div class="navbar sticky-top navbar-expand-lg bg-white shadow rounded">
-    <div class="col-sm">
-        <nav aria-label="breadcrumb" style="margin-top:2.5px">
-            <ol class="breadcrumb bg-white">
-                <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"></li>
-                <li class="breadcrumb-item" aria-current="page">Kundenstammverwaltung</li>
-                <li class="breadcrumb-item active" aria-current="page">neuen Kunden Anlegen</li>
-            </ol>
-        </nav>
-    </div>
+<div class="pos-f-t">
+    <nav class="navbar sticky-top bg-white shadow rounded row">
+        <div class="col-sm">
+            <nav aria-label="breadcrumb" style="margin-top:2.5px">
+                <ol class="breadcrumb bg-white">
+                    <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"></li>
+                    <li class="breadcrumb-item " aria-current="page">Kundenstammverwaltung</li>
+                    <li class="breadcrumb-item active" aria-current="page">neuen Kunden anlegen</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-sm-auto">
+            <div class="form-group">
+                <a asp-page="Index" class=" btn  btn-outline-primary" style="margin-top:10px; margin-right:5px;">
+                    <i class="fa fa-arrow-circle-left"></i>
+                </a>
+                <button type="submit" form="main-form" class="btn  btn-outline-success" style="margin-top:10px; margin-right:5px;">
+                    <i class="fa fa-save"></i>
+                </button>
+
+            </div>
+        </div>
+    </nav>
 </div>
 
 <br />
@@ -22,7 +35,7 @@
 <div class="container-fluid">
     <div class="row justify-content-around">
         <div class="col-sm">
-            <form method="post">
+            <form id="main-form" method="post">
                 <div class="form-row">
                     <div class="col">
                         <div class="card">
@@ -87,13 +100,7 @@
                         </div>
                     </div>
                 </div>
-
-                <br>
-                <div class="form-group">
-                    <input type="submit" value="Datensatz erstellen" class="btn btn-success" /> |
-                    <a class="btn btn-primary" asp-page="Index">Zurück zur Liste</a>
-                </div>
-            </form>
+                </form>
         </div>
     </div>
 </div>

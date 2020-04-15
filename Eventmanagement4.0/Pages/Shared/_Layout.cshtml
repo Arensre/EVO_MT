@@ -1,4 +1,4 @@
-﻿ <!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -19,90 +19,101 @@
                 <!-- Bootstrap List Group -->
                 <ul class="list-group list-group-flush">
 
-                    <a href="#" data-toggle="collapse" aria-expanded="false" style="border-radius:0; height:56px" class=" sticky-top list-group-item list-group-item-action bg-dark text-light">
+                    <a href="#" data-toggle="collapse" aria-expanded="false" style="border-radius:0; height:83px" class=" sticky-top list-group-item list-group-item-action bg-primary text-light">
                         <div class="d-flex w-100 justify-content-start align-items-center">
-                            <span class="fa fa-bars fa-fw mr-3"></span>
-                            <span class="menu-collapsed">Event MES System</span>
+                            <span class="menu-collapsed" >Event MES System</span>
                             <span class="submenu-icon ml-auto"></span>
                         </div>
                     </a>
 
                     <!-- Main menue Dashboard-->
-                    <!-- <a href="#submenu1" data-toggle="collapse" aria-expanded="false" style="border-radius:0; height:56px" class=" list-group-item list-group-item-action bg-dark text-light">
-         <div class="d-flex w-100 justify-content-start align-items-center">
-             <span class="fa fa-bar-chart fa-fw mr-3"></span>
-             <span class="menu-collapsed">Dashboard</span>
-             <span class="submenu-icon ml-auto"></span>
-         </div>
-     </a>
-     <!-- Submenu Dashboard
-     <div id='submenu1' class="collapse sidebar-submenu">
-         <a href="#" class="list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
-             <small><span class="align-middle menu-collapsed"> &bull; Charts</span></small>
-         </a>
-         <a href="#" class=" list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
-             <small><span class="align-middle menu-collapsed"> &bull; Reports</span></small>
-         </a>
-         <a href="#" class="list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
-             <small><span class=" menu-collapsed"> &bull; Tables</span></small>
-         </a>
-     </div>-->
+                     <a href="#submenu1" data-toggle="collapse" aria-expanded="false" style="border-radius:0; height:56px" class=" list-group-item list-group-item-action bg-dark text-light">
+                        <div class="d-flex w-100 justify-content-start align-items-center">
+                            <span class="fa fa-bar-chart fa-fw mr-3"></span>
+                            <span class="menu-collapsed">Dashboard</span>
+                            <span class="submenu-icon ml-auto"></span>
+                        </div>
+                    </a>
+                    <!--Submenu Dashboard-->
+                    <div id='submenu1' class="collapse sidebar-submenu">
+                        <a href="/Dashboard" class="list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
+                            <small><span class="align-middle menu-collapsed"> &bull; Allgemein</span></small>
+                        </a>
+                        <a href="#" class=" list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
+                            <small><span class="align-middle menu-collapsed"> &bull; Reports</span></small>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action bg-dark  font-weight-light text-light" style="border-radius:0;">
+                            <small><span class=" menu-collapsed"> &bull; Tables</span></small>
+                        </a>
+                    </div>
 
                     @if (User.IsInRole("bd"))
                     {
                         <!--Main menue base data-->
-                    <a href="#submenu2" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action  bg-dark  text-light">
-                        <div class="d-flex w-100 justify-content-start align-items-center">
-                            <span class="fa fa-database fa-fw mr-3"></span>
-                            <span class="menu-collapsed">Stammdaten</span>
-                            <span class="submenu-icon ml-auto"></span>
+                        <a href="#submenu2" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action  bg-dark  text-light">
+                            <div class="d-flex w-100 justify-content-start align-items-center">
+                                <span class="fa fa-database fa-fw mr-3"></span>
+                                <span class="menu-collapsed">Stammdaten</span>
+                                <span class="submenu-icon ml-auto"></span>
+                            </div>
+                        </a>
+                        <!-- Submenu base data -->
+                        <div id='submenu2' class="collapse sidebar-submenu">
+                            @if (User.IsInRole("bd_customer"))
+                            {
+                                <a href="/customer_base/Index" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
+                                    <small><span class="menu-collapsed"> &bull; Kundenstammdaten</span></small>
+                                </a>
+                            }
+                            @if (User.IsInRole("bd_item"))
+                            {
+                                <a href="/items/Index" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
+                                    <small><span class="menu-collapsed"> &bull; Artikelstammdaten</span></small>
+                                </a>
+                            }
                         </div>
-                    </a>
-                    <!-- Submenu base data -->
-                    <div id='submenu2' class="collapse sidebar-submenu">
-                        @if (User.IsInRole("bd_customer"))
-                        {
-                            <a href="/customer_base/Index" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
-                                <small><span class="menu-collapsed"> &bull; Kundenstammdaten</span></small>
-                            </a>
-                        }
-                        @if (User.IsInRole("bd_item"))
-                        {
-                            <a href="/items/Index" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
-                                <small><span class="menu-collapsed"> &bull; Artikelstammdaten</span></small>
-                            </a>
-                        }
-                    </div>
                     }
                     <!--main manue assignment-->
                     <!--<a href="#submenu3" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark text-light">
-        <div class="d-flex w-100 justify-content-start align-items-center">
-            <span class="fa fa-tasks fa-fw mr-3"></span>
-            <span class="menu-collapsed">Aufträge</span>
-            <span class="submenu-icon ml-auto"></span>
-        </div>
-    </a>-->
-                    <!--Main menue system settings-->
-                    <a href="#submenu4" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action  bg-dark  text-light">
                         <div class="d-flex w-100 justify-content-start align-items-center">
-                            <span class="fa fa-database fa-fw mr-3"></span>
-                            <span class="menu-collapsed">Systemeinstellungen</span>
+                            <span class="fa fa-tasks fa-fw mr-3"></span>
+                            <span class="menu-collapsed">Aufträge</span>
                             <span class="submenu-icon ml-auto"></span>
                         </div>
-                    </a>
-                    <!-- Submenu base data -->
-                    <div id='submenu4' class="collapse sidebar-submenu">
-                        <a href="/systemsettings/usermanagement/" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
-                            <small><span class="menu-collapsed"> &bull; Benutzerverwaltung</span></small>
+                    </a>-->
+                    @if (User.IsInRole("ss"))
+                    {
+                        <!--Main menue system settings-->
+
+                        <a href="#submenu4" data-toggle="collapse" aria-expanded="false" style="border-radius:0" class=" list-group-item list-group-item-action  bg-dark  text-light">
+                            <div class="d-flex w-100 justify-content-start align-items-center">
+                                <span class="fa fa-database fa-fw mr-3"></span>
+                                <span class="menu-collapsed">Systemeinstellungen</span>
+                                <span class="submenu-icon ml-auto"></span>
+                            </div>
                         </a>
-                        <a href="#" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
-                            <small><span class="menu-collapsed"> &bull; Platzhalter</span></small>
-                        </a>
-                    </div>
+
+
+                        <!-- Submenu base data -->
+                        <div id='submenu4' class="collapse sidebar-submenu">
+                            @if (User.IsInRole("ss_user"))
+                            {
+                                <a href="/systemsettings/usermanagement/" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
+                                    <small><span class="menu-collapsed"> &bull; Benutzerverwaltung</span></small>
+                                </a>
+                            }
+                            @if (User.IsInRole("ss_item"))
+                            {
+                                <a href="/systemsettings/itemmanagement/" style="border-radius:0" class=" list-group-item list-group-item-action bg-dark  text-light">
+                                    <small><span class="menu-collapsed"> &bull; Artikelgrundeinstellungen</span></small>
+                                </a>
+                            }
+                        </div>
 
 
 
 
+                    }
                     <!-- /END Separator -->
                     <a href="#" class="bg-primary list-group-item list-group-item-action bg-dark text-light">
                         <div class="d-flex w-100 justify-content-start align-items-center">
@@ -129,9 +140,9 @@
         <script src="~/lib/jquery/dist/jquery.min.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script src="~/lib/sidebar/js/sidebar.js"></script>
-        
+
         @RenderSection("scripts", required: false)
-       
+
     </div>
 
 </body>

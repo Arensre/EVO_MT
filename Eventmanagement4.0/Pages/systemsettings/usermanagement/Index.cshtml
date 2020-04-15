@@ -5,19 +5,31 @@
     ViewData["Title"] = "Index";
 }
 
-<div class="navbar sticky-top navbar-expand-lg bg-white shadow bg-white rounded">
-    <div class="col-sm">
-        <nav aria-label="breadcrumb" style="margin-top:2.5px">
-            <ol class="breadcrumb bg-white">
-                <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"><a href="#"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Benutzerverwaltung</li>
-            </ol>
+<!--Navigation Bar-->
+    <div class="pos-f-t">
+        <nav class="navbar sticky-top bg-white shadow row">
+            <div class="col-sm">
+                <nav aria-label="breadcrumb" style="margin-top:2.5px">
+                    <ol class="breadcrumb bg-white">
+                        <li class="breadcrumb-item fa fa-home fa-fw" style="margin-top:5px"></li>
+                        <li class="breadcrumb-item active" aria-current="page">Benutzerverwaltung</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-sm-auto">
+                <div class="form-group">
+
+                    @if (TempData["nores"] is true)
+                    {
+                        <button type="submit" form="main-form" class="btn  btn-outline-success" style="margin-top:10px; margin-right:5px; float:right">
+                            <i class="fa fa-save"></i>
+                        </button>
+                    }
+                    <a asp-page="Create" class=" btn btn-outline-success" style="margin-top:10px; margin-right:5px; float:right"> <i class="fa fa-plus-square-o"></i></a>
+                </div>
+            </div>
         </nav>
     </div>
-    <div class="col-sm">
-        <a asp-page="Create" class=" btn rounded-circle btn-outline-success" style="margin-top:10px; float:right"> <i class="fa fa-plus-square-o"></i></a>
-    </div>
-</div>
 <br />
 
 @if (TempData["create_success"] is "true")
@@ -72,15 +84,31 @@
                             @foreach (var item in Model.AspNetUsers)
                             {
                                 <tr>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.UserName)
-                                    </td>
-                                    <td style="width:220px;">
-                                        <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a>
-                                        <a asp-page="./Details" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-info"></i></a>
-                                        <a asp-page="./Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
-                                        <a asp-page="./Index" asp-route-UserId="@item.ID" class="btn btn-outline-primary"><i class="fa fa-arrow-right"></i></a>
-                                    </td>
+
+                                    @if (TempData["userid"].ToString() == item.ID)
+                                    {
+                                        <td class="bg-light rounded">
+                                            @Html.DisplayFor(modelItem => item.UserName)
+                                        </td>
+                                        <td style="width:220px;" class="bg-light rounded">
+                                            <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a>
+                                            <a asp-page="./Details" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-info"></i></a>
+                                            <a asp-page="./Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+                                            <a asp-page="./Index" asp-route-UserId="@item.ID" class="btn btn-warning"><i class="fa fa-edit"></i></a>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.UserName)
+                                        </td>
+                                        <td style="width:220px;">
+                                            <a asp-page="./Edit" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-pencil"></i></a>
+                                            <a asp-page="./Details" asp-route-id="@item.ID" class="btn btn-outline-primary"><i class="fa fa-info"></i></a>
+                                            <a asp-page="./Delete" asp-route-id="@item.ID" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+                                            <a asp-page="./Index" asp-route-UserId="@item.ID" class="btn btn-outline-warning"><i class="fa fa-edit"></i></a>
+                                        </td>
+                                    }
                                 </tr>
                             }
                         </tbody>
@@ -92,13 +120,16 @@
         {
             <div class="col-md-6">
 
-                <form method="post">
+                <form method="post" id="main-form">
                     <div class="card">
                         <div class="card-header">
                             <b>Stammdaten</b>
+                            <a asp-action="" class="btn btn-outline-dark" data-toggle="collapse" data-target="#stammdaten" style="margin-top:10px; margin-right:5px; float:right">
+                                <span><i class="fa fa-minus-square"></i></span>
+                            </a>
                         </div>
 
-                        <div class="card-body">
+                        <div class="card-body collapse" id="stammdaten">
                             <table class="table bg-white">
                                 <thead>
                                     <tr>
@@ -158,8 +189,75 @@
                             </table>
                         </div>
                     </div>
+                    
                     <br />
-                    <input type="submit" value="Speichern" class="btn btn-success" />
+                    <div class="card">
+                        <div class="card-header">
+                            <b>Systemeinstellungen</b>
+                            <a asp-action="" class="btn btn-outline-dark" data-toggle="collapse" data-target="#systemeinstellungen" style="margin-top:10px; margin-right:5px; float:right">
+                                <span><i class="fa fa-minus-square"></i></span>
+                            </a>
+                        </div>
+
+                        <div class="card-body collapse" id="systemeinstellungen">
+                            <table class="table bg-white">
+                                <thead>
+                                    <tr>
+                                        <th>
+
+                                        </th>
+                                        <th>
+                                            lesen <i class="fa fa-info"></i>
+                                        </th>
+                                        <th>
+                                            bearbeiten <i class="fa fa-pencil"></i>
+                                        </th>
+                                        <th>
+                                            erstellen und löschen <i class="fa fa-trash"></i>
+
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            Systemeinstellungen
+                                        </td>
+                                        <td>
+                                            <input asp-for="systemsettings" />
+                                        </td>
+                                    <tr>
+                                        <td>
+                                            Benutzerverwaltung
+                                        </td>
+                                        <td>
+                                            <input asp-for="systemsettings_user" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="systemsettings_user_edit" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="systemsettings_user_cd" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Artikelstamm
+                                        </td>
+                                        <td>
+                                            <input asp-for="systemsettings_item" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="systemsettings_item_edit" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="systemsettings_item_cd" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </form>
             </div>
         }
