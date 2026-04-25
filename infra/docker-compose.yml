@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: event-erp-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-eventerp}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: ${DB_NAME:-eventerp}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-eventerp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../src/backend
+      dockerfile: Dockerfile
+    container_name: event-erp-backend
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-eventerp}:${DB_PASSWORD:-changeme}@db:5432/${DB_NAME:-eventerp}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../src/backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ../src/frontend
+      dockerfile: Dockerfile
+    container_name: event-erp-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:3000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../src/frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  postgres_data:
