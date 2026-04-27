@@ -1,0 +1,21 @@
+# Backend
+src/backend/node_modules/
+src/backend/.env
+src/backend/package-lock.json
+
+# Frontend (wenn vorhanden)
+src/frontend/node_modules/
+src/frontend/.env
+src/frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
