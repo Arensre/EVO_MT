@@ -9,12 +9,13 @@ interface CreateCustomerModalProps {
 }
 
 interface CustomerFormData {
-  company_name: string;
-  street: string;
-  zip_code: string;
+  name: string;
+  address: string;
+  postal_code: string;
   city: string;
   email: string;
   phone: string;
+  country: string;
 }
 
 // Use relative URL - Nginx will proxy to backend
@@ -22,12 +23,13 @@ const API_URL = '/api';
 
 export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustomerModalProps) {
   const [formData, setFormData] = useState<CustomerFormData>({
-    company_name: '',
-    street: '',
-    zip_code: '',
+    name: '',
+    address: '',
+    postal_code: '',
     city: '',
     email: '',
-    phone: ''
+    phone: '',
+    country: 'Germany'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,23 +42,25 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
     try {
       await axios.post(`${API_URL}/customers`, formData);
       setFormData({
-        company_name: '',
-        street: '',
-        zip_code: '',
+        name: '',
+        address: '',
+        postal_code: '',
         city: '',
         email: '',
-        phone: ''
+        phone: '',
+        country: 'Germany'
       });
       onSuccess();
       onClose();
-    } catch (err) {
-      setError('Fehler beim Erstellen des Kunden. Bitte versuche es erneut.');
+    } catch (err: any) {
+      console.error('Error:', err);
+      setError(err.response?.data?.error || 'Fehler beim Erstellen des Kunden. Bitte versuche es erneut.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -65,7 +69,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Neuen Kunden anlegen</h2>
           <button
@@ -91,8 +95,8 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
               <Building2 className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                name="company_name"
-                value={formData.company_name}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
                 required
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -109,8 +113,8 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
               <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                name="street"
-                value={formData.street}
+                name="address"
+                value={formData.address}
                 onChange={handleChange}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Musterstraße 123"
@@ -125,8 +129,8 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
               </label>
               <input
                 type="text"
-                name="zip_code"
-                value={formData.zip_code}
+                name="postal_code"
+                value={formData.postal_code}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="12345"
@@ -145,6 +149,26 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
                 placeholder="Musterstadt"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Land
+            </label>
+            <select
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+            >
+              <option value="Germany">Deutschland</option>
+              <option value="Austria">Österreich</option>
+              <option value="Switzerland">Schweiz</option>
+              <option value="Netherlands">Niederlande</option>
+              <option value="France">Frankreich</option>
+              <option value="Belgium">Belgien</option>
+              <option value="Other">Anderes</option>
+            </select>
           </div>
 
           <div>
@@ -192,7 +216,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
             </button>
             <button
               type="submit"
-              disabled={loading || !formData.company_name}
+              disabled={loading || !formData.name}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Speichern...' : 'Kunden anlegen'}
