@@ -1,51 +1,93 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-
-const customerRoutes = require('./routes/customers');
-const personRoutes = require('./routes/persons');
-
-dotenv.config();
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Database
+const pool = new Pool({
+  host: process.env.DB_HOST || 'postgres',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  database: process.env.DB_NAME || 'evo_mt',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+});
+
 // Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// Health check
+// Health
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Customer routes
-app.get('/api/customers', customerRoutes.getCustomers);
-app.get('/api/customers/:id', customerRoutes.getCustomerById);
-app.post('/api/customers', customerRoutes.createCustomer);
-app.put('/api/customers/:id', customerRoutes.updateCustomer);
-app.delete('/api/customers/:id', customerRoutes.deleteCustomer);
-app.get('/api/customers/:id/persons', customerRoutes.getCustomerPersons);
-
-// Person routes
-app.post('/api/persons', personRoutes.createPerson);
-app.put('/api/persons/:id', personRoutes.updatePerson);
-app.delete('/api/persons/:id', personRoutes.deletePerson);
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Not found' });
+// GET /api/customers
+app.get('/api/customers', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM customers ORDER BY name ASC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+// GET /api/customers/:id
+app.get('/api/customers/:id', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM customers WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 EVO_MT Backend API running on port ${PORT}`);
+// POST /api/customers
+app.post('/api/customers', async (req, res) => {
+  try {
+    const { name, type, address, postal_code, city, country, email, phone, status } = req.body;
+    const result = await pool.query(
+      `INSERT INTO customers (name, type, address, postal_code, city, country, email, phone, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [name, type || 'company', address, postal_code, city, country || 'Germany', email, phone, status || 'active']
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// PUT /api/customers/:id
+app.put('/api/customers/:id', async (req, res) => {
+  try {
+    const { name, type, address, postal_code, city, country, email, phone, status } = req.body;
+    const result = await pool.query(
+      `UPDATE customers SET name=$1, type=$2, address=$3, postal_code=$4, city=$5, country=$6, email=$7, phone=$8, status=$9, updated_at=NOW()
+       WHERE id=$10 RETURNING *`,
+      [name, type, address, postal_code, city, country, email, phone, status, req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// DELETE /api/customers/:id
+app.delete('/api/customers/:id', async (req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM customers WHERE id = $1 RETURNING *', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    res.json({ message: 'Deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
 });
