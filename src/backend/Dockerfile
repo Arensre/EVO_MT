@@ -1,17 +1,19 @@
+# Backend Dockerfile
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm ci
 
-# Copy source
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy application code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
+# Expose port
+EXPOSE 3001
 
-EXPOSE 3000
-
-CMD ["npm", "run", "dev"]
+# Start the application
+CMD ["npm", "start"]
