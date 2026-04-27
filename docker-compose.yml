@@ -30,7 +30,7 @@ services:
       - DB_PORT=5432
       - DB_NAME=${DB_NAME:-evo_mt}
       - DB_USER=${DB_USER:-postgres}
-      - DB_PASS=${DB_PASS:-postgres}
+      - DB_PASSWORD=${DB_PASS:-postgres}
       - CORS_ORIGIN=http://localhost
     ports:
       - "3001:3001"
