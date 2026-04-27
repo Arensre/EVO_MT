@@ -4,7 +4,9 @@ import type { Customer, CustomerType } from '../types';
 
 interface CustomerListProps {
   customers: Customer[];
+  selectedId?: number;
   onAddNew: () => void;
+  onSelect: (customer: Customer) => void;
   onEdit: (customer: Customer) => void;
   onDelete: (customer: Customer) => void;
 }
@@ -21,7 +23,7 @@ const typeLabels: Record<CustomerType, string> = {
   private: 'Privat',
 };
 
-export function CustomerList({ customers, onAddNew, onEdit, onDelete }: CustomerListProps) {
+export function CustomerList({ customers, selectedId, onAddNew, onSelect, onEdit, onDelete }: CustomerListProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -66,7 +68,6 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
 
   return (
     <div className="bg-white rounded-lg shadow">
-      {/* Header mit Buttons */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <div>
@@ -77,9 +78,7 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
             </p>
           </div>
 
-          {/* Button Gruppe */}
           <div className="flex items-center gap-2">
-            {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`relative group p-3 rounded-lg transition-all duration-200 ${
@@ -90,36 +89,27 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
               title="Filter"
             >
               <Filter size={20} />
-              {/* Tooltip */}
-              <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2
-                bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100
-                transition-opacity whitespace-nowrap pointer-events-none">
+              <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                 Filter
               </span>
             </button>
 
-            {/* Neuer Kunde Button */}
             <button
               onClick={onAddNew}
               className="relative group p-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all duration-200"
               title="Neuer Kunde"
             >
               <Plus size={20} />
-              {/* Tooltip */}
-              <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2
-                bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100
-                transition-opacity whitespace-nowrap pointer-events-none">
+              <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                 Neuer Kunde
               </span>
             </button>
           </div>
         </div>
 
-        {/* Filterleiste - ausklappbar */}
         {showFilters && (
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {/* Kundennummer Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Kunden-Nr.</label>
                 <input
@@ -127,11 +117,9 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
                   value={filters.customerNumber}
                   onChange={(e) => setFilters({ ...filters, customerNumber: e.target.value })}
                   placeholder="z.B. K00001..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
-
-              {/* Name Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                 <input
@@ -139,17 +127,15 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
                   value={filters.name}
                   onChange={(e) => setFilters({ ...filters, name: e.target.value })}
                   placeholder="Name suchen..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
-
-              {/* Typ Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Typ</label>
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 >
                   <option value="">Alle Typen</option>
                   <option value="company">Firma</option>
@@ -157,8 +143,6 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
                   <option value="private">Privat</option>
                 </select>
               </div>
-
-              {/* Stadt Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Stadt</label>
                 <input
@@ -166,11 +150,9 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
                   value={filters.city}
                   onChange={(e) => setFilters({ ...filters, city: e.target.value })}
                   placeholder="Stadt..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
-
-              {/* Aktive Filter anzeigen + Buttons */}
               <div className="flex items-end gap-2">
                 <button
                   onClick={applyFilters}
@@ -179,7 +161,6 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
                   <Search size={18} />
                   Filtern
                 </button>
-
                 {activeFilters && (
                   <button
                     onClick={clearFilters}
@@ -195,7 +176,6 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
         )}
       </div>
 
-      {/* Kunden Liste */}
       <div className="divide-y divide-gray-200">
         {filteredCustomers.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
@@ -204,10 +184,14 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
         ) : (
           filteredCustomers.map((customer) => {
             const Icon = typeIcons[customer.type] || Building2;
+            const isSelected = selectedId === customer.id;
             return (
               <div
                 key={customer.id}
-                className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                onClick={() => onSelect(customer)}
+                className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-between ${
+                  isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                }`}
               >
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-gray-100 rounded-lg">
@@ -235,7 +219,7 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => onEdit(customer)}
                     className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"

@@ -1,13 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, Calendar, Briefcase } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { CustomerList } from './components/CustomerList';
+import { CustomerDetail } from './components/CustomerDetail';
 import { CustomerModal } from './components/CustomerModal';
 import { customerApi } from './api';
 import type { Customer, CustomerFormData } from './types';
 
 type View = 'home' | 'customers' | 'settings';
+
+// Hook für Bildschirmgröße
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  return isDesktop;
+}
 
 function HomeView() {
   return (
@@ -17,7 +31,6 @@ function HomeView() {
         <p className="text-gray-600">Ihr Management-Tool für Vereine, Firmen und Privatkunden</p>
       </div>
 
-      {/* Schnellstatistiken */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="bg-white p-6 rounded-lg shadow border-l-4 border-primary-500">
           <div className="flex items-center gap-3">
@@ -49,45 +62,6 @@ function HomeView() {
           </div>
         </div>
       </div>
-
-      {/* Info-Bereich */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Tipps zur Nutzung</h2>
-          <ul className="space-y-3 text-gray-600">
-            <li className="flex items-start gap-2">
-              <span className="text-primary-600 font-bold">1.</span>
-              Legen Sie neue Kunden über "Kunden" im Menü an
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary-600 font-bold">2.</span>
-              Der grüne Button "Neuer Kunde" erstellt einen neuen Eintrag
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary-600 font-bold">3.</span>
-              Bearbeiten oder löschen Sie Einträge direkt in der Liste
-            </li>
-          </ul>
-        </div>
-
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Aktuelle Funktionen</h2>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-700">Kundenverwaltung</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-700">Formular-Validierung</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              <span className="text-gray-700">Weitere Features folgen...</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -107,6 +81,8 @@ export default function App() {
   const [activeView, setActiveView] = useState<View>('home');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const isDesktop = useIsDesktop();
 
   const queryClient = useQueryClient();
 
@@ -130,6 +106,10 @@ export default function App() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setIsModalOpen(false);
       setEditingCustomer(null);
+      // Auch selectedCustomer aktualisieren falls geöffnet
+      if (selectedCustomer) {
+        queryClient.invalidateQueries({ queryKey: ['customer', selectedCustomer.id] });
+      }
     },
   });
 
@@ -137,6 +117,9 @@ export default function App() {
     mutationFn: customerApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
+      if (selectedCustomer) {
+        setSelectedCustomer(null);
+      }
     },
   });
 
@@ -148,6 +131,14 @@ export default function App() {
   const handleEdit = (customer: Customer) => {
     setEditingCustomer(customer);
     setIsModalOpen(true);
+  };
+
+  const handleSelect = (customer: Customer) => {
+    setSelectedCustomer(customer);
+  };
+
+  const handleBackToList = () => {
+    setSelectedCustomer(null);
   };
 
   const handleDelete = (customer: Customer) => {
@@ -162,6 +153,55 @@ export default function App() {
     }
   };
 
+  // Desktop Split-View
+  if (activeView === 'customers' && isDesktop) {
+    return (
+      <div className="flex h-screen">
+        <Sidebar activeView={activeView} onViewChange={setActiveView} />
+        
+        <div className="flex-1 flex overflow-hidden">
+          {/* Linke Seite - Kundenliste */}
+          <div className={`${selectedCustomer ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+            {isLoading ? (
+              <div className="text-center py-12">Laden...</div>
+            ) : (
+              <CustomerList
+                customers={customers}
+                selectedId={selectedCustomer?.id}
+                onAddNew={handleAddNew}
+                onSelect={handleSelect}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            )}
+          </div>
+          
+          {/* Rechte Seite - Details (nur wenn Kunde ausgewählt) */}
+          {selectedCustomer && (
+            <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
+              <CustomerDetail
+                customer={selectedCustomer}
+                onClose={handleBackToList}
+                onEdit={() => handleEdit(selectedCustomer)}
+              />
+            </div>
+          )}
+        </div>
+
+        <CustomerModal
+          isOpen={isModalOpen}
+          customer={editingCustomer}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingCustomer(null);
+          }}
+          onSubmit={handleSubmit}
+        />
+      </div>
+    );
+  }
+
+  // Mobile Single-View oder andere Views
   const renderContent = () => {
     if (isLoading) {
       return <div className="text-center py-12">Laden...</div>;
@@ -171,10 +211,22 @@ export default function App() {
       case 'home':
         return <HomeView />;
       case 'customers':
+        // Mobile: Entweder Liste oder Detail
+        if (selectedCustomer) {
+          return (
+            <CustomerDetail
+              customer={selectedCustomer}
+              onBack={handleBackToList}
+              onEdit={() => handleEdit(selectedCustomer)}
+              isMobile
+            />
+          );
+        }
         return (
           <CustomerList
             customers={customers}
             onAddNew={handleAddNew}
+            onSelect={handleSelect}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
@@ -190,7 +242,7 @@ export default function App() {
     <div className="flex h-screen">
       <Sidebar activeView={activeView} onViewChange={setActiveView} />
       
-      <div className="flex-1 overflow-auto p-8">
+      <div className="flex-1 overflow-auto p-6">
         {renderContent()}
       </div>
 
