@@ -31,7 +31,7 @@ export function CustomerList({ selectedCustomerId, onSelectCustomer, onAddCustom
   });
   const [searchInput, setSearchInput] = useState('');
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['customers', filters],
     queryFn: () => customerApi.getAll(filters),
   });
@@ -87,9 +87,9 @@ export function CustomerList({ selectedCustomerId, onSelectCustomer, onAddCustom
           <h2 className="text-lg font-semibold text-gray-900">Kunden</h2>
           <button
             onClick={onAddCustomer}
-            className="btn-primary flex items-center space-x-2"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4 mr-2" />
             <span>Neuer Kunde</span>
           </button>
         </div>
@@ -104,12 +104,12 @@ export function CustomerList({ selectedCustomerId, onSelectCustomer, onAddCustom
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="input pl-10"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
             />
           </div>
           <button
             onClick={handleSearch}
-            className="btn-secondary"
+            className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
           >
             Suchen
           </button>
@@ -121,7 +121,7 @@ export function CustomerList({ selectedCustomerId, onSelectCustomer, onAddCustom
           <select
             value={filters.type || ''}
             onChange={(e) => handleTypeFilter(e.target.value as CustomerType | '')}
-            className="input w-auto py-1 text-sm"
+            className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
           >
             <option value="">Alle Typen</option>
             <option value="company">Firma</option>
@@ -163,7 +163,7 @@ export function CustomerList({ selectedCustomerId, onSelectCustomer, onAddCustom
                   key={customer.id}
                   onClick={() => onSelectCustomer(customer)}
                   className={`cursor-pointer hover:bg-gray-50 ${
-                    selectedCustomerId === customer.id ? 'bg-primary-50 border-l-4 border-primary-500' : ''
+                    selectedCustomerId === customer.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
                   }`}
                 >
                   <td className="px-4 py-3">
