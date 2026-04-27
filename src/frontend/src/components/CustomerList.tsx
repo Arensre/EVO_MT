@@ -42,7 +42,7 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
         </div>
         <button
           onClick={onAddNew}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
         >
           <Plus size={20} />
           Neuer Kunde
@@ -56,7 +56,7 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
           </div>
         ) : (
           customers.map((customer) => {
-            const Icon = typeIcons[customer.type];
+            const Icon = typeIcons[customer.type] || Building2;
             return (
               <div
                 key={customer.id}
@@ -70,7 +70,7 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
                     <div className="font-medium text-gray-900">{customer.name}</div>
                     <div className="text-sm text-gray-500 flex items-center gap-2">
                       <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">
-                        {typeLabels[customer.type]}
+                        {typeLabels[customer.type] || 'Firma'}
                       </span>
                       {customer.city && <span>{customer.city}</span>}
                     </div>
@@ -80,7 +80,7 @@ export function CustomerList({ customers, onAddNew, onEdit, onDelete }: Customer
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => onEdit(customer)}
-                    className="p-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                     title="Bearbeiten"
                   >
                     <Edit size={18} />

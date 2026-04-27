@@ -45,7 +45,7 @@ app.get('/api/customers/:id', async (req, res) => {
   }
 });
 
-// POST /api/customers
+// POST /api/customers - MIT type-Spalte
 app.post('/api/customers', async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status } = req.body;
@@ -61,7 +61,7 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
-// PUT /api/customers/:id
+// PUT /api/customers/:id - MIT type-Spalte
 app.put('/api/customers/:id', async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status } = req.body;

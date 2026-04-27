@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Users, Calendar, Briefcase } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { CustomerList } from './components/CustomerList';
 import { CustomerModal } from './components/CustomerModal';
@@ -10,21 +11,81 @@ type View = 'home' | 'customers' | 'settings';
 
 function HomeView() {
   return (
-    <div className="text-center py-12">
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">Willkommen bei EVO MT</h1>
-      <p className="text-gray-600 mb-8">Ihr Management-Tool für Vereine, Firmen und Privatkunden</p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="text-3xl font-bold text-primary-600 mb-2">Kunden</div>
-          <p className="text-gray-500">Verwalten Sie alle Ihre Kunden an einem Ort</p>
+    <div className="max-w-5xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Willkommen bei EVO MT</h1>
+        <p className="text-gray-600">Ihr Management-Tool für Vereine, Firmen und Privatkunden</p>
+      </div>
+
+      {/* Schnellstatistiken */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-primary-500">
+          <div className="flex items-center gap-3">
+            <Users className="text-primary-600" size={32} />
+            <div>
+              <div className="text-2xl font-bold text-gray-900">Kunden</div>
+              <div className="text-gray-500">Verwalten</div>
+            </div>
+          </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="text-3xl font-bold text-primary-600 mb-2">Mitglieder</div>
-          <p className="text-gray-500">Organisieren Sie Vereinsmitglieder effizient</p>
+        
+        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-emerald-500">
+          <div className="flex items-center gap-3">
+            <Calendar className="text-emerald-600" size={32} />
+            <div>
+              <div className="text-2xl font-bold text-gray-900">Events</div>
+              <div className="text-gray-500">Planen</div>
+            </div>
+          </div>
         </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-amber-500">
+          <div className="flex items-center gap-3">
+            <Briefcase className="text-amber-600" size={32} />
+            <div>
+              <div className="text-2xl font-bold text-gray-900">Projekte</div>
+              <div className="text-gray-500">Organisieren</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Info-Bereich */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
-          <div className="text-3xl font-bold text-primary-600 mb-2">Projekte</div>
-          <p className="text-gray-500">Behalten Sie Ihre Projekte im Überblick</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Tipps zur Nutzung</h2>
+          <ul className="space-y-3 text-gray-600">
+            <li className="flex items-start gap-2">
+              <span className="text-primary-600 font-bold">1.</span>
+              Legen Sie neue Kunden über "Kunden" im Menü an
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary-600 font-bold">2.</span>
+              Der grüne Button "Neuer Kunde" erstellt einen neuen Eintrag
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary-600 font-bold">3.</span>
+              Bearbeiten oder löschen Sie Einträge direkt in der Liste
+            </li>
+          </ul>
+        </div>
+
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Aktuelle Funktionen</h2>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-gray-700">Kundenverwaltung</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-gray-700">Formular-Validierung</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+              <span className="text-gray-700">Weitere Features folgen...</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@ const API = axios.create({ baseURL: '/api' });
 export const customerApi = {
   getAll: async (): Promise<Customer[]> => {
     const response = await API.get('/customers');
-    return response.data.data || [];
+    return response.data;
   },
   
   create: async (data: CustomerFormData) => {
