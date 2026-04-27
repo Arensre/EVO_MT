@@ -18,6 +18,22 @@ const pool = new Pool({
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
+// Generate next customer number
+async function generateCustomerNumber() {
+  const result = await pool.query(
+    "SELECT customer_number FROM customers WHERE customer_number LIKE 'K%' ORDER BY customer_number DESC LIMIT 1"
+  );
+  
+  if (result.rows.length === 0 || !result.rows[0].customer_number) {
+    return 'K00001';
+  }
+  
+  const lastNumber = result.rows[0].customer_number;
+  const numericPart = parseInt(lastNumber.substring(1), 10);
+  const nextNumber = numericPart + 1;
+  return 'K' + String(nextNumber).padStart(5, '0');
+}
+
 // Health
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -26,7 +42,7 @@ app.get('/api/health', (req, res) => {
 // GET /api/customers
 app.get('/api/customers', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM customers ORDER BY name ASC');
+    const result = await pool.query('SELECT * FROM customers ORDER BY customer_number ASC');
     res.json(result.rows);
   } catch (error) {
     console.error('Error:', error);
@@ -45,14 +61,18 @@ app.get('/api/customers/:id', async (req, res) => {
   }
 });
 
-// POST /api/customers - MIT type-Spalte
+// POST /api/customers - MIT automatischer Kundennummer
 app.post('/api/customers', async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status } = req.body;
+    
+    // Generate new customer number
+    const customerNumber = await generateCustomerNumber();
+    
     const result = await pool.query(
-      `INSERT INTO customers (name, type, address, postal_code, city, country, email, phone, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [name, type || 'company', address, postal_code, city, country || 'Germany', email, phone, status || 'active']
+      `INSERT INTO customers (customer_number, name, type, address, postal_code, city, country, email, phone, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [customerNumber, name, type || 'company', address, postal_code, city, country || 'Germany', email, phone, status || 'active']
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -61,7 +81,7 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
-// PUT /api/customers/:id - MIT type-Spalte
+// PUT /api/customers/:id - OHNE customer_number (darf nicht geändert werden)
 app.put('/api/customers/:id', async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status } = req.body;

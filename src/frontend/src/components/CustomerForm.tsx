@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { CustomerFormData } from '../types';
+import type { Customer, CustomerFormData } from '../types';
 
 const schema = z.object({
   name: z.string().min(1, 'Name ist erforderlich'),
@@ -16,12 +16,12 @@ const schema = z.object({
 });
 
 interface CustomerFormProps {
-  initialData?: Partial<CustomerFormData>;
+  customer?: Customer | null;
   onSubmit: (data: CustomerFormData) => void;
   onCancel: () => void;
 }
 
-export function CustomerForm({ initialData, onSubmit, onCancel }: CustomerFormProps) {
+export function CustomerForm({ customer, onSubmit, onCancel }: CustomerFormProps) {
   const {
     register,
     handleSubmit,
@@ -29,20 +29,35 @@ export function CustomerForm({ initialData, onSubmit, onCancel }: CustomerFormPr
   } = useForm<CustomerFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: initialData?.name || '',
-      type: initialData?.type || 'company',
-      email: initialData?.email || '',
-      phone: initialData?.phone || '',
-      address: initialData?.address || '',
-      postal_code: initialData?.postal_code || '',
-      city: initialData?.city || '',
-      country: initialData?.country || 'Germany',
-      status: initialData?.status || 'active',
+      name: customer?.name || '',
+      type: customer?.type || 'company',
+      email: customer?.email || '',
+      phone: customer?.phone || '',
+      address: customer?.address || '',
+      postal_code: customer?.postal_code || '',
+      city: customer?.city || '',
+      country: customer?.country || 'Germany',
+      status: customer?.status || 'active',
     },
   });
 
+  const isEditing = !!customer;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Kundennummer - nur Anzeige, nicht editierbar */}
+      {isEditing && customer?.customer_number && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Kundennummer
+          </label>
+          <div className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 font-mono">
+            {customer.customer_number}
+          </div>
+          <p className="mt-1 text-xs text-gray-500">Die Kundennummer kann nicht geändert werden.</p>
+        </div>
+      )}
+
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Name *
@@ -137,7 +152,7 @@ export function CustomerForm({ initialData, onSubmit, onCancel }: CustomerFormPr
           disabled={isSubmitting}
           className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
         >
-          {isSubmitting ? 'Speichern...' : 'Speichern'}
+          {isSubmitting ? 'Speichern...' : (isEditing ? 'Aktualisieren' : 'Speichern')}
         </button>
         <button
           type="button"

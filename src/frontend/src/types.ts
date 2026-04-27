@@ -2,6 +2,7 @@ export type CustomerType = 'company' | 'club' | 'private';
 
 export interface Customer {
   id: number;
+  customer_number: string;
   name: string;
   type: CustomerType;
   email?: string;

@@ -34,7 +34,7 @@ export function CustomerModal({ isOpen, customer, onClose, onSubmit }: CustomerM
             </div>
 
             <CustomerForm
-              initialData={customer || undefined}
+              customer={customer}
               onSubmit={onSubmit}
               onCancel={onClose}
             />
