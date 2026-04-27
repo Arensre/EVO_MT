@@ -1,7 +1,8 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { Customer, CustomerFormData, Person, PersonFormData, PaginatedResponse, CustomerFilters } from '../types';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+// Use relative URL - Nginx will proxy to backend
+const API_BASE_URL = '/api';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

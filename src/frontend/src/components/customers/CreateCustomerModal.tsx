@@ -17,7 +17,8 @@ interface CustomerFormData {
   phone: string;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Use relative URL - Nginx will proxy to backend
+const API_URL = '/api';
 
 export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustomerModalProps) {
   const [formData, setFormData] = useState<CustomerFormData>({
@@ -37,7 +38,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
     setError(null);
 
     try {
-      await axios.post(`${API_URL}/api/customers`, formData);
+      await axios.post(`${API_URL}/customers`, formData);
       setFormData({
         company_name: '',
         street: '',
