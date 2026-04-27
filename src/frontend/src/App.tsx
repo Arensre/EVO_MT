@@ -5,6 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { CustomerList } from './components/CustomerList';
 import { CustomerDetail } from './components/CustomerDetail';
 import { CustomerModal } from './components/CustomerModal';
+import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { customerApi } from './api';
 import type { Customer, CustomerFormData } from './types';
 
@@ -13,13 +14,13 @@ type View = 'home' | 'customers' | 'settings';
 // Hook für Bildschirmgröße
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
-  
+
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   return isDesktop;
 }
 
@@ -41,7 +42,7 @@ function HomeView() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow border-l-4 border-emerald-500">
           <div className="flex items-center gap-3">
             <Calendar className="text-emerald-600" size={32} />
@@ -51,7 +52,7 @@ function HomeView() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow border-l-4 border-amber-500">
           <div className="flex items-center gap-3">
             <Briefcase className="text-amber-600" size={32} />
@@ -80,16 +81,27 @@ function SettingsView() {
 export default function App() {
   const [activeView, setActiveView] = useState<View>('home');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  const [customerFilters, setCustomerFilters] = useState<{ search?: string; personSearch?: string }>({});
   const isDesktop = useIsDesktop();
 
   const queryClient = useQueryClient();
 
+  // Kunden laden mit Filtern
   const { data: customers = [], isLoading } = useQuery({
-    queryKey: ['customers'],
-    queryFn: customerApi.getAll,
+    queryKey: ['customers', customerFilters],
+    queryFn: () => customerApi.getAll(customerFilters),
   });
+
+  // Filter zurücksetzen bei View-Wechsel
+  const handleViewChange = (view: View) => {
+    setActiveView(view);
+    if (view !== 'customers') {
+      setCustomerFilters({});
+      setSelectedCustomer(null);
+    }
+  };
 
   const createMutation = useMutation({
     mutationFn: customerApi.create,
@@ -104,9 +116,6 @@ export default function App() {
       customerApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      setIsModalOpen(false);
-      setEditingCustomer(null);
-      // Auch selectedCustomer aktualisieren falls geöffnet
       if (selectedCustomer) {
         queryClient.invalidateQueries({ queryKey: ['customer', selectedCustomer.id] });
       }
@@ -117,19 +126,14 @@ export default function App() {
     mutationFn: customerApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      if (selectedCustomer) {
+      if (selectedCustomer && customerToDelete?.id === selectedCustomer.id) {
         setSelectedCustomer(null);
       }
+      setCustomerToDelete(null);
     },
   });
 
   const handleAddNew = () => {
-    setEditingCustomer(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (customer: Customer) => {
-    setEditingCustomer(customer);
     setIsModalOpen(true);
   };
 
@@ -141,24 +145,41 @@ export default function App() {
     setSelectedCustomer(null);
   };
 
-  const handleDelete = (customer: Customer) => {
-    deleteMutation.mutate(customer.id);
+  const handleDeleteClick = (customer: Customer) => {
+    setCustomerToDelete(customer);
   };
 
-  const handleSubmit = (data: CustomerFormData) => {
-    if (editingCustomer) {
-      updateMutation.mutate({ id: editingCustomer.id, data });
-    } else {
-      createMutation.mutate(data);
+  const handleConfirmDelete = () => {
+    if (customerToDelete) {
+      deleteMutation.mutate(customerToDelete.id);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setCustomerToDelete(null);
+  };
+
+  const handleSave = (data: CustomerFormData) => {
+    if (selectedCustomer) {
+      updateMutation.mutate({ id: selectedCustomer.id, data });
+    }
+  };
+
+  const handleSubmitNew = (data: CustomerFormData) => {
+    createMutation.mutate(data);
+  };
+
+  const handleFilterChange = (filters: { search?: string; personSearch?: string }) => {
+    setCustomerFilters(filters);
+    setSelectedCustomer(null); // Auswahl zurücksetzen bei Filteränderung
   };
 
   // Desktop Split-View
   if (activeView === 'customers' && isDesktop) {
     return (
       <div className="flex h-screen">
-        <Sidebar activeView={activeView} onViewChange={setActiveView} />
-        
+        <Sidebar activeView={activeView} onViewChange={handleViewChange} />
+
         <div className="flex-1 flex overflow-hidden">
           {/* Linke Seite - Kundenliste */}
           <div className={`${selectedCustomer ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
@@ -170,19 +191,20 @@ export default function App() {
                 selectedId={selectedCustomer?.id}
                 onAddNew={handleAddNew}
                 onSelect={handleSelect}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={handleDeleteClick}
+                onFilterChange={handleFilterChange}
               />
             )}
           </div>
-          
+
           {/* Rechte Seite - Details (nur wenn Kunde ausgewählt) */}
           {selectedCustomer && (
             <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
               <CustomerDetail
                 customer={selectedCustomer}
                 onClose={handleBackToList}
-                onEdit={() => handleEdit(selectedCustomer)}
+                onSave={handleSave}
+                onDelete={() => handleDeleteClick(selectedCustomer)}
               />
             </div>
           )}
@@ -190,12 +212,16 @@ export default function App() {
 
         <CustomerModal
           isOpen={isModalOpen}
-          customer={editingCustomer}
-          onClose={() => {
-            setIsModalOpen(false);
-            setEditingCustomer(null);
-          }}
-          onSubmit={handleSubmit}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmitNew}
+        />
+
+        <DeleteConfirmModal
+          isOpen={!!customerToDelete}
+          customerName={customerToDelete?.name || ''}
+          customerNumber={customerToDelete?.customer_number || ''}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
         />
       </div>
     );
@@ -217,7 +243,8 @@ export default function App() {
             <CustomerDetail
               customer={selectedCustomer}
               onBack={handleBackToList}
-              onEdit={() => handleEdit(selectedCustomer)}
+              onSave={handleSave}
+              onDelete={() => handleDeleteClick(selectedCustomer)}
               isMobile
             />
           );
@@ -227,8 +254,8 @@ export default function App() {
             customers={customers}
             onAddNew={handleAddNew}
             onSelect={handleSelect}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            onDelete={handleDeleteClick}
+            onFilterChange={handleFilterChange}
           />
         );
       case 'settings':
@@ -240,20 +267,24 @@ export default function App() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar activeView={activeView} onViewChange={setActiveView} />
-      
+      <Sidebar activeView={activeView} onViewChange={handleViewChange} />
+
       <div className="flex-1 overflow-auto p-6">
         {renderContent()}
       </div>
 
       <CustomerModal
         isOpen={isModalOpen}
-        customer={editingCustomer}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingCustomer(null);
-        }}
-        onSubmit={handleSubmit}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmitNew}
+      />
+
+      <DeleteConfirmModal
+        isOpen={!!customerToDelete}
+        customerName={customerToDelete?.name || ''}
+        customerNumber={customerToDelete?.customer_number || ''}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

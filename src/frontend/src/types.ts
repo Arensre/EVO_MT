@@ -28,4 +28,34 @@ export interface CustomerFormData {
   city?: string;
   country?: string;
   status?: string;
+  notes?: string;
+}
+
+export interface Person {
+  id: number;
+  customer_id: number;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  position?: string;
+  department?: string;
+  is_primary?: boolean;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PersonFormData {
+  customer_id: number;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  position?: string;
+  department?: string;
+  is_primary?: boolean;
+  notes?: string;
 }

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { Customer, CustomerFormData } from '../types';
+import type { CustomerFormData } from '../types';
 
 const schema = z.object({
   name: z.string().min(1, 'Name ist erforderlich'),
@@ -13,15 +13,15 @@ const schema = z.object({
   city: z.string().optional(),
   country: z.string().optional(),
   status: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 interface CustomerFormProps {
-  customer?: Customer | null;
   onSubmit: (data: CustomerFormData) => void;
   onCancel: () => void;
 }
 
-export function CustomerForm({ customer, onSubmit, onCancel }: CustomerFormProps) {
+export function CustomerForm({ onSubmit, onCancel }: CustomerFormProps) {
   const {
     register,
     handleSubmit,
@@ -29,35 +29,21 @@ export function CustomerForm({ customer, onSubmit, onCancel }: CustomerFormProps
   } = useForm<CustomerFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: customer?.name || '',
-      type: customer?.type || 'company',
-      email: customer?.email || '',
-      phone: customer?.phone || '',
-      address: customer?.address || '',
-      postal_code: customer?.postal_code || '',
-      city: customer?.city || '',
-      country: customer?.country || 'Germany',
-      status: customer?.status || 'active',
+      name: '',
+      type: 'company',
+      email: '',
+      phone: '',
+      address: '',
+      postal_code: '',
+      city: '',
+      country: 'Germany',
+      status: 'active',
+      notes: '',
     },
   });
 
-  const isEditing = !!customer;
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* Kundennummer - nur Anzeige, nicht editierbar */}
-      {isEditing && customer?.customer_number && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Kundennummer
-          </label>
-          <div className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 font-mono">
-            {customer.customer_number}
-          </div>
-          <p className="mt-1 text-xs text-gray-500">Die Kundennummer kann nicht geändert werden.</p>
-        </div>
-      )}
-
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Name *
@@ -146,19 +132,29 @@ export function CustomerForm({ customer, onSubmit, onCancel }: CustomerFormProps
         />
       </div>
 
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Notizen</label>
+        <textarea
+          {...register('notes')}
+          rows={3}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+          placeholder="Notizen (Markdown unterstützt)..."
+        />
+      </div>
+
       <div className="flex gap-3 pt-4 border-t border-gray-200">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {isSubmitting ? 'Speichern...' : (isEditing ? 'Aktualisieren' : 'Speichern')}
+          {isSubmitting ? 'Speichern...' : 'Speichern'}
         </button>
         <button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 transition-colors font-medium"
+          className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 transition-colors"
         >
           Abbrechen
         </button>
