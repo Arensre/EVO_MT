@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Customer, CustomerFormData, Person, PersonFormData } from './types';
+import type { Customer, CustomerFormData, Supplier, SupplierFormData, Person, PersonFormData } from './types';
 
 const API = axios.create({ baseURL: '/api' });
 
@@ -33,9 +33,44 @@ export const customerApi = {
   },
 };
 
+export const supplierApi = {
+  getAll: async (filters?: { search?: string; personSearch?: string }): Promise<Supplier[]> => {
+    const params = new URLSearchParams();
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.personSearch) params.append('personSearch', filters.personSearch);
+    
+    const response = await API.get(`/suppliers?${params.toString()}`);
+    return response.data;
+  },
+  
+  getById: async (id: number): Promise<Supplier> => {
+    const response = await API.get(`/suppliers/${id}`);
+    return response.data;
+  },
+  
+  create: async (data: SupplierFormData) => {
+    const response = await API.post('/suppliers', data);
+    return response.data;
+  },
+  
+  update: async (id: number, data: SupplierFormData) => {
+    const response = await API.put(`/suppliers/${id}`, data);
+    return response.data;
+  },
+  
+  delete: async (id: number) => {
+    await API.delete(`/suppliers/${id}`);
+  },
+};
+
 export const personApi = {
   getByCustomer: async (customerId: number): Promise<Person[]> => {
     const response = await API.get(`/customers/${customerId}/persons`);
+    return response.data;
+  },
+  
+  getBySupplier: async (supplierId: number): Promise<Person[]> => {
+    const response = await API.get(`/suppliers/${supplierId}/persons`);
     return response.data;
   },
   

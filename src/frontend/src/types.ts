@@ -1,4 +1,5 @@
 export type CustomerType = 'company' | 'club' | 'private';
+export type SupplierType = 'company' | 'private';
 
 export interface Customer {
   id: number;
@@ -31,9 +32,41 @@ export interface CustomerFormData {
   notes?: string;
 }
 
+export interface Supplier {
+  id: number;
+  supplier_number: string;
+  name: string;
+  type: SupplierType;
+  email?: string;
+  phone?: string;
+  address?: string;
+  postal_code?: string;
+  city?: string;
+  country?: string;
+  tax_id?: string;
+  notes?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SupplierFormData {
+  name: string;
+  type: SupplierType;
+  email?: string;
+  phone?: string;
+  address?: string;
+  postal_code?: string;
+  city?: string;
+  country?: string;
+  status?: string;
+  notes?: string;
+}
+
 export interface Person {
   id: number;
-  customer_id: number;
+  customer_id?: number;
+  supplier_id?: number;
   first_name: string;
   last_name: string;
   email?: string;
@@ -48,7 +81,8 @@ export interface Person {
 }
 
 export interface PersonFormData {
-  customer_id: number;
+  customer_id?: number;
+  supplier_id?: number;
   first_name: string;
   last_name: string;
   email?: string;
