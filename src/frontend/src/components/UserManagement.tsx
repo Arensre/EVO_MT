@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { UserList } from './UserList';
 import { UserDetail } from './UserDetail';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
+import { Plus, X, Save } from 'lucide-react';
 import type { User, UserPermissions } from '../types';
 
 const defaultPermissions: UserPermissions = {
@@ -11,14 +12,37 @@ const defaultPermissions: UserPermissions = {
   materials: { read: false, write: false, delete: false }
 };
 
+interface UserFormData {
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+  role: string;
+  permissions: UserPermissions;
+}
+
+const emptyFormData: UserFormData = {
+  username: '',
+  email: '',
+  first_name: '',
+  last_name: '',
+  password: '',
+  role: 'user',
+  permissions: defaultPermissions
+};
+
 export function UserManagement() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [formData, setFormData] = useState<UserFormData>(emptyFormData);
   const [filters, setFilters] = useState<{ search?: string }>({});
   const [isMobile, setIsMobile] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -45,30 +69,38 @@ export function UserManagement() {
   };
 
   const handleAddNew = () => {
-    const username = prompt('Benutzername:');
-    if (!username) return;
+    setFormData(emptyFormData);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCreateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
     
-    const email = prompt('E-Mail:');
-    if (!email) return;
-    
-    const password = prompt('Passwort (mindestens 8 Zeichen):');
-    if (!password || password.length < 8) {
-      alert('Passwort muss mindestens 8 Zeichen lang sein');
-      return;
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        setIsCreateModalOpen(false);
+        setFormData(emptyFormData);
+        loadUsers();
+      } else {
+        const error = await response.json();
+        alert('Fehler: ' + (error.error || 'Benutzer konnte nicht erstellt werden'));
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      alert('Fehler beim Erstellen des Benutzers');
+    } finally {
+      setIsSaving(false);
     }
-    
-    const first_name = prompt('Vorname:') || '';
-    const last_name = prompt('Nachname:') || '';
-    
-    handleSave({
-      username,
-      email,
-      first_name,
-      last_name,
-      password,
-      role: 'user',
-      permissions: defaultPermissions
-    });
   };
 
   const handleSelectUser = (user: User) => {
@@ -80,8 +112,15 @@ export function UserManagement() {
   };
 
   const handleSave = async (data: Partial<User> & { password?: string }) => {
+    setIsSaving(true);
+    console.log('Saving user data:', data);
+    console.log('Selected user:', selectedUser);
+    
     try {
       if (selectedUser && selectedUser.id) {
+        console.log('Sending PUT to /api/users/' + selectedUser.id);
+        console.log('Permissions being sent:', data.permissions);
+        
         const response = await fetch(`/api/users/${selectedUser.id}`, {
           method: 'PUT',
           headers: {
@@ -91,32 +130,24 @@ export function UserManagement() {
           body: JSON.stringify(data)
         });
         
+        console.log('Response status:', response.status);
+        
         if (response.ok) {
-          loadUsers();
           const updatedUser = await response.json();
-          setSelectedUser(updatedUser);
-        }
-      } else {
-        const newUserData = {
-          ...data,
-          permissions: data.permissions || defaultPermissions
-        };
-        
-        const response = await fetch('/api/users', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify(newUserData)
-        });
-        
-        if (response.ok) {
+          console.log('Updated user from server:', updatedUser);
           loadUsers();
+          setSelectedUser(updatedUser);
+        } else {
+          const error = await response.json();
+          console.error('Error response:', error);
+          alert('Fehler: ' + (error.error || 'Änderungen konnten nicht gespeichert werden'));
         }
       }
     } catch (error) {
       console.error('Error saving user:', error);
+      alert('Fehler beim Speichern');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -155,6 +186,23 @@ export function UserManagement() {
     setSelectedUser(null);
   };
 
+  const updatePermission = (
+    module: keyof UserPermissions,
+    action: keyof typeof defaultPermissions.customers,
+    value: boolean
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: {
+        ...prev.permissions,
+        [module]: {
+          ...prev.permissions[module],
+          [action]: value
+        }
+      }
+    }));
+  };
+
   const filteredUsers = users.filter(user => {
     if (!filters.search) return true;
     const search = filters.search.toLowerCase();
@@ -176,9 +224,156 @@ export function UserManagement() {
 
   const currentUserId: number | undefined = currentUser?.id;
 
+  // Create User Modal
+  const CreateUserModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-900">Neuen Benutzer erstellen</h2>
+            <button
+              onClick={() => setIsCreateModalOpen(false)}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleCreateSubmit} className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Benutzername *</label>
+              <input
+                type="text"
+                required
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="z.B. max.mustermann"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-Mail *</label>
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="z.B. max@beispiel.de"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Vorname</label>
+              <input
+                type="text"
+                value={formData.first_name}
+                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Max"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nachname</label>
+              <input
+                type="text"
+                value={formData.last_name}
+                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Mustermann"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Passwort *</label>
+              <input
+                type="password"
+                required
+                minLength={8}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Mindestens 8 Zeichen"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rolle *</label>
+              <select
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="user">Benutzer</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Berechtigungen</label>
+            <div className="space-y-3">
+              {(Object.keys(formData.permissions) as Array<keyof UserPermissions>).map((module) => (
+                <div key={module} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                  <span className="font-medium capitalize w-32">{module}</span>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.permissions[module].read}
+                      onChange={(e) => updatePermission(module, 'read', e.target.checked)}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm">Lesen</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.permissions[module].write}
+                      onChange={(e) => updatePermission(module, 'write', e.target.checked)}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm">Bearbeiten</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.permissions[module].delete}
+                      onChange={(e) => updatePermission(module, 'delete', e.target.checked)}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm">Löschen</span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-gray-200">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+            >
+              <Save size={18} />
+              {isSaving ? 'Wird erstellt...' : 'Benutzer erstellen'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(false)}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Abbrechen
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   if (isMobile) {
     if (selectedUser) {
-      const canDelete = selectedUser.id !== currentUserId;
       return (
         <>
           <UserDetail
@@ -187,7 +382,7 @@ export function UserManagement() {
             isMobile={true}
             onBack={handleBackToList}
             onSave={handleSave}
-            onDelete={canDelete ? () => handleDeleteClick(selectedUser) : undefined}
+            onDelete={selectedUser.id !== currentUserId ? () => handleDeleteClick(selectedUser) : undefined}
           />
           <DeleteConfirmModal
             isOpen={isDeleteModalOpen}
@@ -196,6 +391,7 @@ export function UserManagement() {
             onClose={handleCancelDelete}
             onConfirm={handleConfirmDelete}
           />
+          {isCreateModalOpen && <CreateUserModal />}
         </>
       );
     }
@@ -205,7 +401,7 @@ export function UserManagement() {
         <div className="p-6">
           <UserList
             users={filteredUsers}
-            selectedId={undefined}
+            selectedId={(selectedUser as any)?.id}
             currentUserId={currentUserId}
             onAddNew={handleAddNew}
             onSelect={handleSelectUser}
@@ -221,18 +417,19 @@ export function UserManagement() {
           onClose={handleCancelDelete}
           onConfirm={handleConfirmDelete}
         />
+        {isCreateModalOpen && <CreateUserModal />}
       </>
     );
   }
 
-  const canDeleteDesktop = selectedUser && selectedUser.id !== currentUserId;
-
+  // Desktop Split-View
   return (
-    <>
+    <div className="flex h-full">
+      {/* Linke Seite - Benutzerliste */}
       <div className={`${selectedUser ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
         <UserList
           users={filteredUsers}
-          selectedId={undefined}
+          selectedId={(selectedUser as any)?.id}
           currentUserId={currentUserId}
           onAddNew={handleAddNew}
           onSelect={handleSelectUser}
@@ -241,14 +438,15 @@ export function UserManagement() {
         />
       </div>
 
+      {/* Rechte Seite - Detailansicht */}
       {selectedUser && (
         <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
           <UserDetail
             user={selectedUser}
             currentUserId={currentUserId}
-            onClose={handleBackToList}
+            onBack={handleBackToList}
             onSave={handleSave}
-            onDelete={canDeleteDesktop ? () => handleDeleteClick(selectedUser) : undefined}
+            onDelete={selectedUser.id !== currentUserId ? () => handleDeleteClick(selectedUser) : undefined}
           />
         </div>
       )}
@@ -260,6 +458,7 @@ export function UserManagement() {
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
       />
-    </>
+      {isCreateModalOpen && <CreateUserModal />}
+    </div>
   );
 }
