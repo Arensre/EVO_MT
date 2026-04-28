@@ -23,6 +23,8 @@ export function UserManagement() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<UserFormData>({
     username: '',
@@ -74,18 +76,30 @@ export function UserManagement() {
     }
   };
 
-  const handleDelete = async (userId: number) => {
-    if (!confirm('Möchten Sie diesen Benutzer wirklich löschen?')) return;
+  const handleDeleteClick = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
     
     try {
-      await fetch(`/api/users/${userId}`, { 
+      await fetch(`/api/users/${userToDelete.id}`, { 
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
+      setIsDeleteModalOpen(false);
+      setUserToDelete(null);
       loadUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setUserToDelete(null);
   };
 
   const openEditModal = (user: User) => {
@@ -141,7 +155,7 @@ export function UserManagement() {
         <h1 className="text-2xl font-bold text-gray-900">Benutzerverwaltung</h1>
         <button
           onClick={openNewModal}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
         >
           <Plus size={20} />
           Neuer Benutzer
@@ -188,7 +202,7 @@ export function UserManagement() {
                   </button>
                   {user.id !== currentUser.id && (
                     <button
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleDeleteClick(user)}
                       className="p-2 text-gray-500 hover:text-red-600"
                     >
                       <Trash2 size={18} />
@@ -339,6 +353,40 @@ export function UserManagement() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && userToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <Trash2 className="text-red-600" size={24} />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Benutzer löschen</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-4">
+              Möchten Sie den Benutzer <strong>{userToDelete.username}</strong> wirklich löschen?
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={handleConfirmDelete}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Löschen
+              </button>
+              <button
+                onClick={handleCancelDelete}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Abbrechen
+              </button>
+            </div>
           </div>
         </div>
       )}
