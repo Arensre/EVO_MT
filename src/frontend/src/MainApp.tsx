@@ -15,7 +15,6 @@ import { useAuth } from './contexts/AuthContext';
 import { customerApi, supplierApi } from './api';
 import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
 
-type View = 'home' | 'customers' | 'suppliers' | 'settings' | 'profile' | 'users';
 
 // Hook für Bildschirmgröße
 function useIsDesktop() {
@@ -116,7 +115,7 @@ function UsersView() {
 }
 
 // Customer View Component
-function CustomerView({ isDesktop }: { isDesktop: boolean }) {
+function CustomerView({ isDesktop: _isDesktop }: { isDesktop: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
@@ -245,7 +244,7 @@ function CustomerView({ isDesktop }: { isDesktop: boolean }) {
 }
 
 // Supplier View Component
-function SupplierView({ isDesktop }: { isDesktop: boolean }) {
+function SupplierView({ isDesktop: _isDesktop }: { isDesktop: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
@@ -369,7 +368,7 @@ function SupplierView({ isDesktop }: { isDesktop: boolean }) {
 export function MainApp() {
   const [activeView, setActiveView] = useState<View>('home');
   const isDesktop = useIsDesktop();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
 
   const handleViewChange = (view: View) => {
     setActiveView(view);
