@@ -21,6 +21,7 @@
     "react-dom": "^19.2.5",
     "react-hook-form": "^7.74.0",
     "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.14.2",
     "tailwindcss": "^4.2.4",
     "zod": "^4.3.6"
   },
