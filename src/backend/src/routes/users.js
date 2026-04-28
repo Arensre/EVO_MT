@@ -551,4 +551,99 @@ router.delete('/:id', requireAdmin, async (req, res) => {
   }
 });
 
+
+// PUT /api/users/:id - Update user (admin only)
+router.put('/:id', requireAdmin, async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { username, email, first_name, last_name, role, permissions } = req.body;
+    
+    // Check if user exists
+    const userResult = await pool.query(
+      'SELECT id, username, role FROM users WHERE id = $1',
+      [userId]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const targetUser = userResult.rows[0];
+    
+    // Cannot change own role through this endpoint
+    if (req.user.id === userId && role && role !== targetUser.role) {
+      return res.status(400).json({ error: 'Cannot change your own role' });
+    }
+    
+    // Build update query
+    const updates = [];
+    const values = [];
+    let paramCount = 1;
+    
+    if (username) {
+      updates.push(`username = $${paramCount}`);
+      values.push(username);
+      paramCount++;
+    }
+    
+    if (email) {
+      updates.push(`email = $${paramCount}`);
+      values.push(email);
+      paramCount++;
+    }
+    
+    if (first_name !== undefined) {
+      updates.push(`first_name = $${paramCount}`);
+      values.push(first_name);
+      paramCount++;
+    }
+    
+    if (last_name !== undefined) {
+      updates.push(`last_name = $${paramCount}`);
+      values.push(last_name);
+      paramCount++;
+    }
+    
+    if (role) {
+      updates.push(`role = $${paramCount}`);
+      values.push(role);
+      paramCount++;
+    }
+    
+    if (permissions) {
+      updates.push(`permissions = $${paramCount}`);
+      values.push(JSON.stringify(permissions));
+      paramCount++;
+    }
+    
+    updates.push(`updated_at = NOW()`);
+    
+    if (updates.length === 1) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+    
+    values.push(userId);
+    
+    const result = await pool.query(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+      values
+    );
+    
+    const updatedUser = result.rows[0];
+    res.json({
+      id: updatedUser.id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      firstName: updatedUser.first_name,
+      lastName: updatedUser.last_name,
+      isActive: updatedUser.is_active,
+      permissions: updatedUser.permissions
+    });
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
 module.exports = router;
