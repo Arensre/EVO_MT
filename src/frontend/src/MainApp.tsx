@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Calendar, Briefcase, User } from 'lucide-react';
+import { Users, Calendar, Briefcase } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { CustomerList } from './components/CustomerList';
 import { CustomerDetail } from './components/CustomerDetail';
