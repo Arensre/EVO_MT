@@ -5,6 +5,11 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Check JWT_SECRET
+if (!process.env.JWT_SECRET) {
+  console.warn('WARNING: JWT_SECRET not set! Using default key. Set JWT_SECRET in production!');
+}
+
 // Database
 const pool = new Pool({
   host: process.env.DB_HOST || 'postgres',
@@ -17,6 +22,14 @@ const pool = new Pool({
 // Middleware
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+
+// Import routes
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+
+// Use routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Generate next customer number
 async function generateCustomerNumber() {
@@ -69,22 +82,17 @@ app.get('/api/customers', async (req, res) => {
     // Allgemeine Suche (Name, Kundennummer)
     if (search) {
       whereConditions.push('(name ILIKE $1 OR customer_number ILIKE $1)');
-      params.push(`%${search}%`);
+      params.push('%' + search + '%');
     }
     
     // Ansprechpartner-Suche
     if (personSearch) {
-      const personQuery = `
-        SELECT DISTINCT customer_id FROM persons 
-        WHERE first_name ILIKE $${params.length + 1} 
-        OR last_name ILIKE $${params.length + 1}
-        OR email ILIKE $${params.length + 1}
-      `;
-      const personResult = await pool.query(personQuery, [`%${personSearch}%`]);
+      const personQuery = 'SELECT DISTINCT customer_id FROM persons WHERE first_name ILIKE $1 OR last_name ILIKE $1 OR email ILIKE $1';
+      const personResult = await pool.query(personQuery, ['%' + personSearch + '%']);
       const customerIds = personResult.rows.map(r => r.customer_id).filter(id => id !== null);
       
       if (customerIds.length > 0) {
-        whereConditions.push(`id IN (${customerIds.join(',')})`);
+        whereConditions.push('id IN (' + customerIds.join(',') + ')');
       } else {
         // Wenn keine Ansprechpartner gefunden, leeres Ergebnis
         return res.json([]);
@@ -124,8 +132,7 @@ app.post('/api/customers', async (req, res) => {
     const customerNumber = await generateCustomerNumber();
     
     const result = await pool.query(
-      `INSERT INTO customers (customer_number, name, type, address, postal_code, city, country, email, phone, status, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      'INSERT INTO customers (customer_number, name, type, address, postal_code, city, country, email, phone, status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
       [customerNumber, name, type || 'company', address, postal_code, city, country || 'Germany', email, phone, status || 'active', notes || '']
     );
     res.status(201).json(result.rows[0]);
@@ -140,8 +147,7 @@ app.put('/api/customers/:id', async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status, notes } = req.body;
     const result = await pool.query(
-      `UPDATE customers SET name=$1, type=$2, address=$3, postal_code=$4, city=$5, country=$6, email=$7, phone=$8, status=$9, notes=$10, updated_at=NOW()
-       WHERE id=$11 RETURNING *`,
+      'UPDATE customers SET name=$1, type=$2, address=$3, postal_code=$4, city=$5, country=$6, email=$7, phone=$8, status=$9, notes=$10, updated_at=NOW() WHERE id=$11 RETURNING *',
       [name, type, address, postal_code, city, country, email, phone, status, notes || '', req.params.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -190,23 +196,17 @@ app.get('/api/suppliers', async (req, res) => {
     // Allgemeine Suche (Name, Lieferantennummer)
     if (search) {
       whereConditions.push('(name ILIKE $1 OR supplier_number ILIKE $1)');
-      params.push(`%${search}%`);
+      params.push('%' + search + '%');
     }
     
     // Ansprechpartner-Suche
     if (personSearch) {
-      const personQuery = `
-        SELECT DISTINCT supplier_id FROM persons 
-        WHERE supplier_id IS NOT NULL
-        AND (first_name ILIKE $${params.length + 1} 
-        OR last_name ILIKE $${params.length + 1}
-        OR email ILIKE $${params.length + 1})
-      `;
-      const personResult = await pool.query(personQuery, [`%${personSearch}%`]);
+      const personQuery = 'SELECT DISTINCT supplier_id FROM persons WHERE supplier_id IS NOT NULL AND (first_name ILIKE $1 OR last_name ILIKE $1 OR email ILIKE $1)';
+      const personResult = await pool.query(personQuery, ['%' + personSearch + '%']);
       const supplierIds = personResult.rows.map(r => r.supplier_id).filter(id => id !== null);
       
       if (supplierIds.length > 0) {
-        whereConditions.push(`id IN (${supplierIds.join(',')})`);
+        whereConditions.push('id IN (' + supplierIds.join(',') + ')');
       } else {
         // Wenn keine Ansprechpartner gefunden, leeres Ergebnis
         return res.json([]);
@@ -246,8 +246,7 @@ app.post('/api/suppliers', async (req, res) => {
     const supplierNumber = await generateSupplierNumber();
     
     const result = await pool.query(
-      `INSERT INTO suppliers (supplier_number, name, type, address, postal_code, city, country, email, phone, status, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      'INSERT INTO suppliers (supplier_number, name, type, address, postal_code, city, country, email, phone, status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
       [supplierNumber, name, type || 'company', address, postal_code, city, country || 'Germany', email, phone, status || 'active', notes || '']
     );
     res.status(201).json(result.rows[0]);
@@ -262,8 +261,7 @@ app.put('/api/suppliers/:id', async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status, notes } = req.body;
     const result = await pool.query(
-      `UPDATE suppliers SET name=$1, type=$2, address=$3, postal_code=$4, city=$5, country=$6, email=$7, phone=$8, status=$9, notes=$10, updated_at=NOW()
-       WHERE id=$11 RETURNING *`,
+      'UPDATE suppliers SET name=$1, type=$2, address=$3, postal_code=$4, city=$5, country=$6, email=$7, phone=$8, status=$9, notes=$10, updated_at=NOW() WHERE id=$11 RETURNING *',
       [name, type, address, postal_code, city, country, email, phone, status, notes || '', req.params.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -328,8 +326,7 @@ app.post('/api/persons', async (req, res) => {
     }
     
     const result = await pool.query(
-      `INSERT INTO persons (customer_id, supplier_id, first_name, last_name, email, phone, mobile, position, department, is_primary, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      'INSERT INTO persons (customer_id, supplier_id, first_name, last_name, email, phone, mobile, position, department, is_primary, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
       [customer_id || null, supplier_id || null, first_name, last_name, email, phone, mobile, position, department, is_primary || false, notes]
     );
     res.status(201).json(result.rows[0]);
@@ -365,8 +362,7 @@ app.put('/api/persons/:id', async (req, res) => {
     }
     
     const result = await pool.query(
-      `UPDATE persons SET first_name=$1, last_name=$2, email=$3, phone=$4, mobile=$5, position=$6, department=$7, is_primary=$8, notes=$9, updated_at=NOW()
-       WHERE id=$10 RETURNING *`,
+      'UPDATE persons SET first_name=$1, last_name=$2, email=$3, phone=$4, mobile=$5, position=$6, department=$7, is_primary=$8, notes=$9, updated_at=NOW() WHERE id=$10 RETURNING *',
       [first_name, last_name, email, phone, mobile, position, department, is_primary, notes, req.params.id]
     );
     res.json(result.rows[0]);
@@ -388,5 +384,5 @@ app.delete('/api/persons/:id', async (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log('Server running on port ' + PORT);
 });

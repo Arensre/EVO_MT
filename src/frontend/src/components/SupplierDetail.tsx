@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { 
-  ArrowLeft, Building2, 
+  ArrowLeft, 
   Edit2, 
   Save, 
   X, 
   Plus,
-  
+  Building2, 
   Users, 
   User, 
   Mail, 
@@ -20,14 +20,14 @@ import {
   Eye,
   Trash2,
   Edit3,
-  Star,
-  Truck
+  Star
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Supplier, SupplierType, SupplierFormData, Person, PersonFormData } from '../types';
 import { PersonModal } from './PersonModal';
 import { PersonDeleteModal } from './PersonDeleteModal';
 import { personApi } from '../api';
+
 interface SupplierDetailProps {
   supplier: Supplier;
   onClose?: () => void;
@@ -37,14 +37,19 @@ interface SupplierDetailProps {
   isMobile?: boolean;
   onSupplierUpdate?: () => void;
 }
+
 const typeIcons: Record<SupplierType, typeof Building2> = {
   company: Building2,
+  
   private: User,
 };
+
 const typeLabels: Record<SupplierType, string> = {
   company: 'Firma',
+  
   private: 'Privat',
 };
+
 // Simple Markdown Toolbar
 function MarkdownToolbar({ onInsert }: { onInsert: (text: string) => void }) {
   const buttons = [
@@ -53,6 +58,7 @@ function MarkdownToolbar({ onInsert }: { onInsert: (text: string) => void }) {
     { icon: List, text: '\n- Listenpunkt', label: 'Liste' },
     { icon: LinkIcon, text: '[Link](url)', label: 'Link' },
   ];
+
   return (
     <div className="flex gap-1 p-2 bg-gray-100 rounded-t-lg border-b border-gray-200">
       {buttons.map(({ icon: Icon, text, label }) => (
@@ -68,6 +74,7 @@ function MarkdownToolbar({ onInsert }: { onInsert: (text: string) => void }) {
     </div>
   );
 }
+
 export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, isMobile, onSupplierUpdate }: SupplierDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<SupplierFormData>({
@@ -82,12 +89,14 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
     status: supplier.status || 'active',
     notes: supplier.notes || '',
   });
+
   // Persons state
   const [persons, setPersons] = useState<Person[]>([]);
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [isPersonDeleteModalOpen, setIsPersonDeleteModalOpen] = useState(false);
   const [personToDelete, setPersonToDelete] = useState<{ id: number; name: string } | null>(null);
+
   useEffect(() => {
     setFormData({
       name: supplier.name,
@@ -106,6 +115,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
       loadPersons();
     }
   }, [supplier]);
+
   const loadPersons = async () => {
     try {
       const data = await personApi.getBySupplier(supplier.id);
@@ -114,13 +124,16 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
       console.error('Error loading persons:', error);
     }
   };
-  
+
+  const Icon = typeIcons[supplier.type] || Building2;
   const showContactPersons = supplier.type !== 'private';
+
   const handleSave = () => {
     onSave(formData);
     setIsEditing(false);
     if (onSupplierUpdate) onSupplierUpdate();
   };
+
   const handleCancel = () => {
     setFormData({
       name: supplier.name,
@@ -136,22 +149,27 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
     });
     setIsEditing(false);
   };
+
   const insertMarkdown = (text: string) => {
     setFormData({ ...formData, notes: (formData.notes || '') + text });
   };
+
   // Person handlers
   const handleAddPerson = () => {
     setEditingPerson(null);
     setIsPersonModalOpen(true);
   };
+
   const handleEditPerson = (person: Person) => {
     setEditingPerson(person);
     setIsPersonModalOpen(true);
   };
+
   const handleDeletePersonClick = (person: Person) => {
     setPersonToDelete({ id: person.id, name: `${person.first_name} ${person.last_name}` });
     setIsPersonDeleteModalOpen(true);
   };
+
   const handleDeletePersonConfirm = async () => {
     if (!personToDelete) return;
     try {
@@ -164,6 +182,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
       console.error('Error deleting person:', error);
     }
   };
+
   const handlePersonSubmit = async (data: PersonFormData) => {
     try {
       if (editingPerson) {
@@ -179,6 +198,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
       console.error('Error saving person:', error);
     }
   };
+
   return (
     <div className="h-full flex flex-col">
       <div className="bg-white border-b border-gray-200 p-6">
@@ -192,13 +212,13 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                 <ArrowLeft size={20} />
               </button>
             )}
-            <div className="p-2 bg-amber-50 rounded-lg">
-              <Truck size={24} className="text-amber-600" />
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <Icon size={24} className="text-gray-600" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{supplier.name}</h2>
               <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">
+                <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">
                   {typeLabels[supplier.type] || 'Firma'}
                 </span>
                 <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
@@ -213,7 +233,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Edit2 size={18} />
                   Bearbeiten
@@ -232,7 +252,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
               <>
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Save size={18} />
                   Speichern
@@ -257,6 +277,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
           </div>
         </div>
       </div>
+
       <div className="flex-1 overflow-auto p-6 space-y-6">
         {/* Kontaktdaten */}
         <div className="bg-white rounded-lg shadow p-6">
@@ -273,7 +294,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -282,9 +303,10 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as SupplierType })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="company">Firma</option>
+                    <option value="club">Verein</option>
                     <option value="private">Privat</option>
                   </select>
                 </div>
@@ -293,7 +315,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="active">Aktiv</option>
                     <option value="inactive">Inaktiv</option>
@@ -307,7 +329,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -316,7 +338,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -326,7 +348,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div className="grid grid-cols-3 gap-4">
@@ -336,7 +358,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                     type="text"
                     value={formData.postal_code}
                     onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -345,7 +367,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                     type="text"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -354,7 +376,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                     type="text"
                     value={formData.country}
                     onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -400,6 +422,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
             </div>
           )}
         </div>
+
         {/* Notizen mit Markdown */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -419,7 +442,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                   <textarea
                     value={formData.notes || ''}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 font-mono text-sm"
+                    className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
                     placeholder="# Überschrift\n\n- Listenpunkt\n- **fett** oder *kursiv*\n\n[Link](https://...)"
                   />
                 </div>
@@ -450,7 +473,8 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
             </div>
           )}
         </div>
-        {/* Ansprechpartner - nur für Firmen */}
+
+        {/* Ansprechpartner - nur für Firmen und Vereine */}
         {showContactPersons && (
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
@@ -531,7 +555,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleEditPerson(person)}
-                          className="p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Bearbeiten"
                         >
                           <Edit3 size={18} />
@@ -551,6 +575,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
             )}
           </div>
         )}
+
         {/* Weitere Informationen */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Weitere Informationen</h3>
@@ -574,6 +599,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
           </div>
         </div>
       </div>
+
       {/* Person Modal */}
       <PersonModal
         isOpen={isPersonModalOpen}
@@ -585,6 +611,7 @@ export function SupplierDetail({ supplier, onClose, onBack, onSave, onDelete, is
         }}
         onSubmit={handlePersonSubmit}
       />
+
       {/* Person Delete Modal */}
       <PersonDeleteModal
         isOpen={isPersonDeleteModalOpen}
