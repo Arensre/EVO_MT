@@ -5,11 +5,14 @@ import { Sidebar } from './components/Sidebar';
 import { CustomerList } from './components/CustomerList';
 import { CustomerDetail } from './components/CustomerDetail';
 import { CustomerModal } from './components/CustomerModal';
+import { SupplierList } from './components/SupplierList';
+import { SupplierDetail } from './components/SupplierDetail';
+import { SupplierModal } from './components/SupplierModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
-import { customerApi } from './api';
-import type { Customer, CustomerFormData } from './types';
+import { customerApi, supplierApi } from './api';
+import type { Customer, CustomerFormData, Supplier, SupplierFormData } from './types';
 
-type View = 'home' | 'customers' | 'settings';
+type View = 'home' | 'customers' | 'suppliers' | 'settings';
 
 // Hook für Bildschirmgröße
 function useIsDesktop() {
@@ -78,30 +81,19 @@ function SettingsView() {
   );
 }
 
-export default function App() {
-  const [activeView, setActiveView] = useState<View>('home');
+// Customer View Component
+function CustomerView({ isDesktop }: { isDesktop: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [customerFilters, setCustomerFilters] = useState<{ search?: string; personSearch?: string }>({});
-  const isDesktop = useIsDesktop();
 
   const queryClient = useQueryClient();
 
-  // Kunden laden mit Filtern
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers', customerFilters],
     queryFn: () => customerApi.getAll(customerFilters),
   });
-
-  // Filter zurücksetzen bei View-Wechsel
-  const handleViewChange = (view: View) => {
-    setActiveView(view);
-    if (view !== 'customers') {
-      setCustomerFilters({});
-      setSelectedCustomer(null);
-    }
-  };
 
   const createMutation = useMutation({
     mutationFn: customerApi.create,
@@ -171,44 +163,38 @@ export default function App() {
 
   const handleFilterChange = (filters: { search?: string; personSearch?: string }) => {
     setCustomerFilters(filters);
-    setSelectedCustomer(null); // Auswahl zurücksetzen bei Filteränderung
+    setSelectedCustomer(null);
   };
 
   // Desktop Split-View
-  if (activeView === 'customers' && isDesktop) {
+  if (isDesktop) {
     return (
-      <div className="flex h-screen">
-        <Sidebar activeView={activeView} onViewChange={handleViewChange} />
-
-        <div className="flex-1 flex overflow-hidden">
-          {/* Linke Seite - Kundenliste */}
-          <div className={`${selectedCustomer ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
-            {isLoading ? (
-              <div className="text-center py-12">Laden...</div>
-            ) : (
-              <CustomerList
-                customers={customers}
-                selectedId={selectedCustomer?.id}
-                onAddNew={handleAddNew}
-                onSelect={handleSelect}
-                onDelete={handleDeleteClick}
-                onFilterChange={handleFilterChange}
-              />
-            )}
-          </div>
-
-          {/* Rechte Seite - Details (nur wenn Kunde ausgewählt) */}
-          {selectedCustomer && (
-            <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
-              <CustomerDetail
-                customer={selectedCustomer}
-                onClose={handleBackToList}
-                onSave={handleSave}
-                onDelete={() => handleDeleteClick(selectedCustomer)}
-              />
-            </div>
+      <>
+        <div className={`${selectedCustomer ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+          {isLoading ? (
+            <div className="text-center py-12">Laden...</div>
+          ) : (
+            <CustomerList
+              customers={customers}
+              selectedId={selectedCustomer?.id}
+              onAddNew={handleAddNew}
+              onSelect={handleSelect}
+              onDelete={handleDeleteClick}
+              onFilterChange={handleFilterChange}
+            />
           )}
         </div>
+
+        {selectedCustomer && (
+          <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
+            <CustomerDetail
+              customer={selectedCustomer}
+              onClose={handleBackToList}
+              onSave={handleSave}
+              onDelete={() => handleDeleteClick(selectedCustomer)}
+            />
+          </div>
+        )}
 
         <CustomerModal
           isOpen={isModalOpen}
@@ -223,55 +209,41 @@ export default function App() {
           onClose={handleCancelDelete}
           onConfirm={handleConfirmDelete}
         />
-      </div>
+      </>
     );
   }
 
-  // Mobile Single-View oder andere Views
-  const renderContent = () => {
-    if (isLoading) {
-      return <div className="text-center py-12">Laden...</div>;
-    }
-
-    switch (activeView) {
-      case 'home':
-        return <HomeView />;
-      case 'customers':
-        // Mobile: Entweder Liste oder Detail
-        if (selectedCustomer) {
-          return (
-            <CustomerDetail
-              customer={selectedCustomer}
-              onBack={handleBackToList}
-              onSave={handleSave}
-              onDelete={() => handleDeleteClick(selectedCustomer)}
-              isMobile
-            />
-          );
-        }
-        return (
-          <CustomerList
-            customers={customers}
-            onAddNew={handleAddNew}
-            onSelect={handleSelect}
-            onDelete={handleDeleteClick}
-            onFilterChange={handleFilterChange}
-          />
-        );
-      case 'settings':
-        return <SettingsView />;
-      default:
-        return <HomeView />;
-    }
-  };
+  // Mobile Single-View
+  if (selectedCustomer) {
+    return (
+      <>
+        <CustomerDetail
+          customer={selectedCustomer}
+          onBack={handleBackToList}
+          onSave={handleSave}
+          onDelete={() => handleDeleteClick(selectedCustomer)}
+          isMobile
+        />
+        <DeleteConfirmModal
+          isOpen={!!customerToDelete}
+          customerName={customerToDelete?.name || ''}
+          customerNumber={customerToDelete?.customer_number || ''}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
+        />
+      </>
+    );
+  }
 
   return (
-    <div className="flex h-screen">
-      <Sidebar activeView={activeView} onViewChange={handleViewChange} />
-
-      <div className="flex-1 overflow-auto p-6">
-        {renderContent()}
-      </div>
+    <>
+      <CustomerList
+        customers={customers}
+        onAddNew={handleAddNew}
+        onSelect={handleSelect}
+        onDelete={handleDeleteClick}
+        onFilterChange={handleFilterChange}
+      />
 
       <CustomerModal
         isOpen={isModalOpen}
@@ -286,6 +258,221 @@ export default function App() {
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
       />
+    </>
+  );
+}
+
+// Supplier View Component
+function SupplierView({ isDesktop }: { isDesktop: boolean }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
+  const [supplierFilters, setSupplierFilters] = useState<{ search?: string; personSearch?: string }>({});
+
+  const queryClient = useQueryClient();
+
+  const { data: suppliers = [], isLoading } = useQuery({
+    queryKey: ['suppliers', supplierFilters],
+    queryFn: () => supplierApi.getAll(supplierFilters),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: supplierApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      setIsModalOpen(false);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: SupplierFormData }) =>
+      supplierApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      if (selectedSupplier) {
+        queryClient.invalidateQueries({ queryKey: ['supplier', selectedSupplier.id] });
+      }
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: supplierApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      if (selectedSupplier && supplierToDelete?.id === selectedSupplier.id) {
+        setSelectedSupplier(null);
+      }
+      setSupplierToDelete(null);
+    },
+  });
+
+  const handleAddNew = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleSelect = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
+  };
+
+  const handleBackToList = () => {
+    setSelectedSupplier(null);
+  };
+
+  const handleDeleteClick = (supplier: Supplier) => {
+    setSupplierToDelete(supplier);
+  };
+
+  const handleConfirmDelete = () => {
+    if (supplierToDelete) {
+      deleteMutation.mutate(supplierToDelete.id);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setSupplierToDelete(null);
+  };
+
+  const handleSave = (data: SupplierFormData) => {
+    if (selectedSupplier) {
+      updateMutation.mutate({ id: selectedSupplier.id, data });
+    }
+  };
+
+  const handleSubmitNew = (data: SupplierFormData) => {
+    createMutation.mutate(data);
+  };
+
+  const handleFilterChange = (filters: { search?: string; personSearch?: string }) => {
+    setSupplierFilters(filters);
+    setSelectedSupplier(null);
+  };
+
+  // Desktop Split-View
+  if (isDesktop) {
+    return (
+      <>
+        <div className={`${selectedSupplier ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+          {isLoading ? (
+            <div className="text-center py-12">Laden...</div>
+          ) : (
+            <SupplierList
+              suppliers={suppliers}
+              selectedId={selectedSupplier?.id}
+              onAddNew={handleAddNew}
+              onSelect={handleSelect}
+              onDelete={handleDeleteClick}
+              onFilterChange={handleFilterChange}
+            />
+          )}
+        </div>
+
+        {selectedSupplier && (
+          <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
+            <SupplierDetail
+              supplier={selectedSupplier}
+              onClose={handleBackToList}
+              onSave={handleSave}
+              onDelete={() => handleDeleteClick(selectedSupplier)}
+            />
+          </div>
+        )}
+
+        <SupplierModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmitNew}
+        />
+
+        <DeleteConfirmModal
+          isOpen={!!supplierToDelete}
+          customerName={supplierToDelete?.name || ''}
+          customerNumber={supplierToDelete?.supplier_number || ''}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
+        />
+      </>
+    );
+  }
+
+  // Mobile Single-View
+  if (selectedSupplier) {
+    return (
+      <>
+        <SupplierDetail
+          supplier={selectedSupplier}
+          onBack={handleBackToList}
+          onSave={handleSave}
+          onDelete={() => handleDeleteClick(selectedSupplier)}
+          isMobile
+        />
+        <DeleteConfirmModal
+          isOpen={!!supplierToDelete}
+          customerName={supplierToDelete?.name || ''}
+          customerNumber={supplierToDelete?.supplier_number || ''}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <SupplierList
+        suppliers={suppliers}
+        onAddNew={handleAddNew}
+        onSelect={handleSelect}
+        onDelete={handleDeleteClick}
+        onFilterChange={handleFilterChange}
+      />
+
+      <SupplierModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmitNew}
+      />
+
+      <DeleteConfirmModal
+        isOpen={!!supplierToDelete}
+        customerName={supplierToDelete?.name || ''}
+        customerNumber={supplierToDelete?.supplier_number || ''}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
+    </>
+  );
+}
+
+export default function App() {
+  const [activeView, setActiveView] = useState<View>('home');
+  const isDesktop = useIsDesktop();
+
+  const handleViewChange = (view: View) => {
+    setActiveView(view);
+  };
+
+  const renderContent = () => {
+    switch (activeView) {
+      case 'home':
+        return <HomeView />;
+      case 'customers':
+        return <CustomerView isDesktop={isDesktop} />;
+      case 'suppliers':
+        return <SupplierView isDesktop={isDesktop} />;
+      case 'settings':
+        return <SettingsView />;
+      default:
+        return <HomeView />;
+    }
+  };
+
+  return (
+    <div className="flex h-screen">
+      <Sidebar activeView={activeView} onViewChange={handleViewChange} />
+
+      <div className="flex-1 flex overflow-hidden">
+        {renderContent()}
+      </div>
     </div>
   );
 }

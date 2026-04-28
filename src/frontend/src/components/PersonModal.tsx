@@ -4,15 +4,17 @@ import type { Person, PersonFormData } from '../types';
 
 interface PersonModalProps {
   isOpen: boolean;
-  customerId: number;
+  customerId?: number;
+  supplierId?: number;
   person?: Person | null;
   onClose: () => void;
   onSubmit: (data: PersonFormData) => void;
 }
 
-export function PersonModal({ isOpen, customerId, person, onClose, onSubmit }: PersonModalProps) {
+export function PersonModal({ isOpen, customerId, supplierId, person, onClose, onSubmit }: PersonModalProps) {
   const [formData, setFormData] = useState<PersonFormData>({
     customer_id: customerId,
+    supplier_id: supplierId,
     first_name: '',
     last_name: '',
     email: '',
@@ -27,7 +29,8 @@ export function PersonModal({ isOpen, customerId, person, onClose, onSubmit }: P
   useEffect(() => {
     if (person) {
       setFormData({
-        customer_id: customerId,
+        customer_id: person.customer_id,
+        supplier_id: person.supplier_id,
         first_name: person.first_name,
         last_name: person.last_name,
         email: person.email || '',
@@ -41,6 +44,7 @@ export function PersonModal({ isOpen, customerId, person, onClose, onSubmit }: P
     } else {
       setFormData({
         customer_id: customerId,
+        supplier_id: supplierId,
         first_name: '',
         last_name: '',
         email: '',
@@ -52,7 +56,7 @@ export function PersonModal({ isOpen, customerId, person, onClose, onSubmit }: P
         notes: '',
       });
     }
-  }, [person, customerId]);
+  }, [person, customerId, supplierId]);
 
   if (!isOpen) return null;
 

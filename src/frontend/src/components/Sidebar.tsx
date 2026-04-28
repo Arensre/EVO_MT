@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Home, Users, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, Users, Truck, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SidebarProps {
-  activeView: 'home' | 'customers' | 'settings';
-  onViewChange: (view: 'home' | 'customers' | 'settings') => void;
+  activeView: 'home' | 'customers' | 'suppliers' | 'settings';
+  onViewChange: (view: 'home' | 'customers' | 'suppliers' | 'settings') => void;
 }
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
@@ -12,6 +12,7 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'customers', label: 'Kunden', icon: Users },
+    { id: 'suppliers', label: 'Lieferanten', icon: Truck },
     { id: 'settings', label: 'Einstellungen', icon: Settings },
   ] as const;
 
