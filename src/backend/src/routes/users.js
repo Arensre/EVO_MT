@@ -15,11 +15,25 @@ const pool = new Pool({
 
 const SALT_ROUNDS = 10;
 
+// Default permissions for new users
+const DEFAULT_USER_PERMISSIONS = {
+  customers: { read: true, write: true, delete: false },
+  suppliers: { read: true, write: false, delete: false },
+  materials: { read: false, write: false, delete: false }
+};
+
+// Default permissions for new admin
+const DEFAULT_ADMIN_PERMISSIONS = {
+  customers: { read: true, write: true, delete: true },
+  suppliers: { read: true, write: true, delete: true },
+  materials: { read: true, write: true, delete: true }
+};
+
 // GET /api/users/me - Get own profile
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const userResult = await pool.query(
-      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at FROM users WHERE id = $1',
+      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions FROM users WHERE id = $1',
       [req.user.id]
     );
     
@@ -37,11 +51,44 @@ router.get('/me', requireAuth, async (req, res) => {
       lastName: user.last_name,
       isActive: user.is_active,
       lastLogin: user.last_login,
-      createdAt: user.created_at
+      createdAt: user.created_at,
+      permissions: user.permissions || DEFAULT_USER_PERMISSIONS
     });
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({ error: 'Failed to get profile' });
+  }
+});
+
+// GET /api/users/me/permissions - Get own permissions
+router.get('/me/permissions', requireAuth, async (req, res) => {
+  try {
+    const userResult = await pool.query(
+      'SELECT permissions, role FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const user = userResult.rows[0];
+    
+    // Admins have full permissions
+    if (user.role === 'admin') {
+      return res.json({
+        role: 'admin',
+        permissions: DEFAULT_ADMIN_PERMISSIONS
+      });
+    }
+    
+    res.json({
+      role: user.role,
+      permissions: user.permissions || DEFAULT_USER_PERMISSIONS
+    });
+  } catch (error) {
+    console.error('Get permissions error:', error);
+    res.status(500).json({ error: 'Failed to get permissions' });
   }
 });
 
@@ -123,7 +170,7 @@ router.put('/me/password', requireAuth, async (req, res) => {
 router.get('/', requireAdmin, async (req, res) => {
   try {
     const usersResult = await pool.query(
-      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at FROM users ORDER BY username ASC'
+      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions FROM users ORDER BY username ASC'
     );
     
     const users = usersResult.rows.map(user => ({
@@ -135,7 +182,8 @@ router.get('/', requireAdmin, async (req, res) => {
       lastName: user.last_name,
       isActive: user.is_active,
       lastLogin: user.last_login,
-      createdAt: user.created_at
+      createdAt: user.created_at,
+      permissions: user.permissions || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
     }));
     
     res.json(users);
@@ -156,7 +204,7 @@ router.get('/:id', requireAuth, async (req, res) => {
     }
     
     const userResult = await pool.query(
-      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at FROM users WHERE id = $1',
+      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions FROM users WHERE id = $1',
       [userId]
     );
     
@@ -174,7 +222,8 @@ router.get('/:id', requireAuth, async (req, res) => {
       lastName: user.last_name,
       isActive: user.is_active,
       lastLogin: user.last_login,
-      createdAt: user.created_at
+      createdAt: user.created_at,
+      permissions: user.permissions || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
     });
   } catch (error) {
     console.error('Get user error:', error);
@@ -182,10 +231,107 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/users/:id/permissions - Get user permissions (admin only)
+router.get('/:id/permissions', requireAdmin, async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    
+    const userResult = await pool.query(
+      'SELECT id, username, role, permissions FROM users WHERE id = $1',
+      [userId]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const user = userResult.rows[0];
+    
+    // Admins always have full permissions
+    if (user.role === 'admin') {
+      return res.json({
+        userId: user.id,
+        username: user.username,
+        role: 'admin',
+        permissions: DEFAULT_ADMIN_PERMISSIONS
+      });
+    }
+    
+    res.json({
+      userId: user.id,
+      username: user.username,
+      role: user.role,
+      permissions: user.permissions || DEFAULT_USER_PERMISSIONS
+    });
+  } catch (error) {
+    console.error('Get user permissions error:', error);
+    res.status(500).json({ error: 'Failed to get user permissions' });
+  }
+});
+
+// PUT /api/users/:id/permissions - Update user permissions (admin only)
+router.put('/:id/permissions', requireAdmin, async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { permissions } = req.body;
+    
+    if (!permissions || typeof permissions !== 'object') {
+      return res.status(400).json({ error: 'Permissions object is required' });
+    }
+    
+    // Get user to check role
+    const userResult = await pool.query(
+      'SELECT id, username, role FROM users WHERE id = $1',
+      [userId]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const user = userResult.rows[0];
+    
+    // Cannot change permissions of admins (they always have full permissions)
+    if (user.role === 'admin') {
+      return res.status(400).json({ error: 'Cannot modify admin permissions. Admins always have full access.' });
+    }
+    
+    // Validate permissions structure
+    const validModules = ['customers', 'suppliers', 'materials'];
+    const validActions = ['read', 'write', 'delete'];
+    
+    const validatedPermissions = {};
+    for (const module of validModules) {
+      validatedPermissions[module] = {};
+      for (const action of validActions) {
+        validatedPermissions[module][action] = permissions[module]?.[action] === true;
+      }
+    }
+    
+    // Update permissions
+    const updateResult = await pool.query(
+      'UPDATE users SET permissions = $1, updated_at = NOW() WHERE id = $2 RETURNING id, username, role, permissions',
+      [JSON.stringify(validatedPermissions), userId]
+    );
+    
+    const updatedUser = updateResult.rows[0];
+    
+    res.json({
+      userId: updatedUser.id,
+      username: updatedUser.username,
+      role: updatedUser.role,
+      permissions: updatedUser.permissions
+    });
+  } catch (error) {
+    console.error('Update permissions error:', error);
+    res.status(500).json({ error: 'Failed to update permissions' });
+  }
+});
+
 // POST /api/users - Create new user (admin only)
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const { username, email, password, firstName, lastName, role } = req.body;
+    const { username, email, password, firstName, lastName, role, permissions } = req.body;
     
     // Validate required fields
     if (!username || !email || !password) {
@@ -231,10 +377,16 @@ router.post('/', requireAdmin, async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     
+    // Determine user role and permissions
+    const userRole = role || 'user';
+    const userPermissions = userRole === 'admin' 
+      ? DEFAULT_ADMIN_PERMISSIONS 
+      : (permissions || DEFAULT_USER_PERMISSIONS);
+    
     // Create user
     const userResult = await pool.query(
-      'INSERT INTO users (username, email, password_hash, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [username, email, hashedPassword, firstName || null, lastName || null, role || 'user']
+      'INSERT INTO users (username, email, password_hash, first_name, last_name, role, permissions) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [username, email, hashedPassword, firstName || null, lastName || null, userRole, JSON.stringify(userPermissions)]
     );
     
     const user = userResult.rows[0];
@@ -245,7 +397,8 @@ router.post('/', requireAdmin, async (req, res) => {
       role: user.role,
       firstName: user.first_name,
       lastName: user.last_name,
-      isActive: user.is_active
+      isActive: user.is_active,
+      permissions: user.permissions
     });
   } catch (error) {
     console.error('Create user error:', error);
@@ -363,7 +516,8 @@ router.put('/:id', requireAuth, async (req, res) => {
       role: user.role,
       firstName: user.first_name,
       lastName: user.last_name,
-      isActive: user.is_active
+      isActive: user.is_active,
+      permissions: user.permissions
     });
   } catch (error) {
     console.error('Update user error:', error);

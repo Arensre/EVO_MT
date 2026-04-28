@@ -11,6 +11,39 @@ const pool = new Pool({
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
+/**
+ * Get user permissions from database
+ * @param {number} userId - User ID
+ * @returns {Promise<Object>} - Permissions object
+ */
+async function getUserPermissions(userId) {
+  try {
+    const result = await pool.query(
+      'SELECT permissions FROM users WHERE id = $1',
+      [userId]
+    );
+    
+    if (result.rows.length === 0) {
+      return null;
+    }
+    
+    const permissions = result.rows[0].permissions;
+    
+    // Ensure all modules exist with default values
+    const defaultPermissions = {
+      customers: { read: true, write: true, delete: false },
+      suppliers: { read: true, write: false, delete: false },
+      materials: { read: false, write: false, delete: false }
+    };
+    
+    // Merge with defaults to ensure all modules exist
+    return { ...defaultPermissions, ...permissions };
+  } catch (error) {
+    console.error('Error getting user permissions:', error);
+    return null;
+  }
+}
+
 // JWT verification middleware
 const verifyToken = async (req, res, next) => {
   try {
@@ -105,5 +138,6 @@ module.exports = {
   requireAuth,
   requireAdmin,
   optionalAuth,
+  getUserPermissions,
   JWT_SECRET
 };

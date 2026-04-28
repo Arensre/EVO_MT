@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
+const { requireAuth } = require('./middleware/auth');
+const { requirePermission } = require('./middleware/permissions');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -68,10 +70,21 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// GET /api/modules - Liste aller Module mit verfügbaren Actions
+app.get('/api/modules', requireAuth, (req, res) => {
+  res.json({
+    modules: [
+      { id: 'customers', name: 'Kunden', actions: ['read', 'write', 'delete'] },
+      { id: 'suppliers', name: 'Lieferanten', actions: ['read', 'write', 'delete'] },
+      { id: 'materials', name: 'Materialien', actions: ['read', 'write', 'delete'] }
+    ]
+  });
+});
+
 // === CUSTOMERS API ===
 
-// GET /api/customers - Mit optionaler Personen-Suche
-app.get('/api/customers', async (req, res) => {
+// GET /api/customers - Mit optionaler Personen-Suche (requires read permission)
+app.get('/api/customers', requireAuth, requirePermission('customers', 'read'), async (req, res) => {
   try {
     const { search, personSearch } = req.query;
     
@@ -113,8 +126,8 @@ app.get('/api/customers', async (req, res) => {
   }
 });
 
-// GET /api/customers/:id
-app.get('/api/customers/:id', async (req, res) => {
+// GET /api/customers/:id (requires read permission)
+app.get('/api/customers/:id', requireAuth, requirePermission('customers', 'read'), async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM customers WHERE id = $1', [req.params.id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -124,8 +137,8 @@ app.get('/api/customers/:id', async (req, res) => {
   }
 });
 
-// POST /api/customers
-app.post('/api/customers', async (req, res) => {
+// POST /api/customers (requires write permission)
+app.post('/api/customers', requireAuth, requirePermission('customers', 'write'), async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status, notes } = req.body;
     
@@ -142,8 +155,8 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
-// PUT /api/customers/:id
-app.put('/api/customers/:id', async (req, res) => {
+// PUT /api/customers/:id (requires write permission)
+app.put('/api/customers/:id', requireAuth, requirePermission('customers', 'write'), async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status, notes } = req.body;
     const result = await pool.query(
@@ -157,8 +170,8 @@ app.put('/api/customers/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/customers/:id
-app.delete('/api/customers/:id', async (req, res) => {
+// DELETE /api/customers/:id (requires delete permission)
+app.delete('/api/customers/:id', requireAuth, requirePermission('customers', 'delete'), async (req, res) => {
   try {
     const result = await pool.query('DELETE FROM customers WHERE id = $1 RETURNING *', [req.params.id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -168,8 +181,8 @@ app.delete('/api/customers/:id', async (req, res) => {
   }
 });
 
-// GET /api/customers/:id/persons
-app.get('/api/customers/:id/persons', async (req, res) => {
+// GET /api/customers/:id/persons (requires read permission)
+app.get('/api/customers/:id/persons', requireAuth, requirePermission('customers', 'read'), async (req, res) => {
   try {
     const result = await pool.query(
       'SELECT * FROM persons WHERE customer_id = $1 ORDER BY is_primary DESC, last_name ASC',
@@ -184,8 +197,8 @@ app.get('/api/customers/:id/persons', async (req, res) => {
 
 // === SUPPLIERS API ===
 
-// GET /api/suppliers - Mit optionaler Personen-Suche
-app.get('/api/suppliers', async (req, res) => {
+// GET /api/suppliers - Mit optionaler Personen-Suche (requires read permission)
+app.get('/api/suppliers', requireAuth, requirePermission('suppliers', 'read'), async (req, res) => {
   try {
     const { search, personSearch } = req.query;
     
@@ -227,8 +240,8 @@ app.get('/api/suppliers', async (req, res) => {
   }
 });
 
-// GET /api/suppliers/:id
-app.get('/api/suppliers/:id', async (req, res) => {
+// GET /api/suppliers/:id (requires read permission)
+app.get('/api/suppliers/:id', requireAuth, requirePermission('suppliers', 'read'), async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM suppliers WHERE id = $1', [req.params.id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -238,8 +251,8 @@ app.get('/api/suppliers/:id', async (req, res) => {
   }
 });
 
-// POST /api/suppliers
-app.post('/api/suppliers', async (req, res) => {
+// POST /api/suppliers (requires write permission)
+app.post('/api/suppliers', requireAuth, requirePermission('suppliers', 'write'), async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status, notes } = req.body;
     
@@ -256,8 +269,8 @@ app.post('/api/suppliers', async (req, res) => {
   }
 });
 
-// PUT /api/suppliers/:id
-app.put('/api/suppliers/:id', async (req, res) => {
+// PUT /api/suppliers/:id (requires write permission)
+app.put('/api/suppliers/:id', requireAuth, requirePermission('suppliers', 'write'), async (req, res) => {
   try {
     const { name, type, address, postal_code, city, country, email, phone, status, notes } = req.body;
     const result = await pool.query(
@@ -271,8 +284,8 @@ app.put('/api/suppliers/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/suppliers/:id
-app.delete('/api/suppliers/:id', async (req, res) => {
+// DELETE /api/suppliers/:id (requires delete permission)
+app.delete('/api/suppliers/:id', requireAuth, requirePermission('suppliers', 'delete'), async (req, res) => {
   try {
     const result = await pool.query('DELETE FROM suppliers WHERE id = $1 RETURNING *', [req.params.id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -282,8 +295,8 @@ app.delete('/api/suppliers/:id', async (req, res) => {
   }
 });
 
-// GET /api/suppliers/:id/persons
-app.get('/api/suppliers/:id/persons', async (req, res) => {
+// GET /api/suppliers/:id/persons (requires read permission)
+app.get('/api/suppliers/:id/persons', requireAuth, requirePermission('suppliers', 'read'), async (req, res) => {
   try {
     const result = await pool.query(
       'SELECT * FROM persons WHERE supplier_id = $1 ORDER BY is_primary DESC, last_name ASC',
@@ -299,7 +312,7 @@ app.get('/api/suppliers/:id/persons', async (req, res) => {
 // === PERSONS API (Extended for both customers and suppliers) ===
 
 // POST /api/persons
-app.post('/api/persons', async (req, res) => {
+app.post('/api/persons', requireAuth, async (req, res) => {
   try {
     const { customer_id, supplier_id, first_name, last_name, email, phone, mobile, position, department, is_primary, notes } = req.body;
     
@@ -309,6 +322,14 @@ app.post('/api/persons', async (req, res) => {
     }
     if (customer_id && supplier_id) {
       return res.status(400).json({ error: 'Person cannot belong to both customer and supplier' });
+    }
+    
+    // Check permissions based on parent type
+    const parentType = customer_id ? 'customers' : 'suppliers';
+    const hasPermission = req.userPermissions?.[parentType]?.write === true || req.user.role === 'admin';
+    
+    if (!hasPermission) {
+      return res.status(403).json({ error: `Permission denied: write access to ${parentType} required` });
     }
     
     if (is_primary) {
@@ -337,7 +358,7 @@ app.post('/api/persons', async (req, res) => {
 });
 
 // PUT /api/persons/:id
-app.put('/api/persons/:id', async (req, res) => {
+app.put('/api/persons/:id', requireAuth, async (req, res) => {
   try {
     const { first_name, last_name, email, phone, mobile, position, department, is_primary, notes } = req.body;
     
@@ -346,6 +367,14 @@ app.put('/api/persons/:id', async (req, res) => {
       return res.status(404).json({ error: 'Person not found' });
     }
     const { customer_id, supplier_id } = personResult.rows[0];
+    
+    // Check permissions based on parent type
+    const parentType = customer_id ? 'customers' : 'suppliers';
+    const hasPermission = req.userPermissions?.[parentType]?.write === true || req.user.role === 'admin';
+    
+    if (!hasPermission) {
+      return res.status(403).json({ error: `Permission denied: write access to ${parentType} required` });
+    }
     
     if (is_primary) {
       if (customer_id) {
@@ -373,10 +402,23 @@ app.put('/api/persons/:id', async (req, res) => {
 });
 
 // DELETE /api/persons/:id
-app.delete('/api/persons/:id', async (req, res) => {
+app.delete('/api/persons/:id', requireAuth, async (req, res) => {
   try {
+    const personResult = await pool.query('SELECT customer_id, supplier_id FROM persons WHERE id = $1', [req.params.id]);
+    if (personResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Person not found' });
+    }
+    const { customer_id, supplier_id } = personResult.rows[0];
+    
+    // Check permissions based on parent type
+    const parentType = customer_id ? 'customers' : 'suppliers';
+    const hasPermission = req.userPermissions?.[parentType]?.delete === true || req.user.role === 'admin';
+    
+    if (!hasPermission) {
+      return res.status(403).json({ error: `Permission denied: delete access to ${parentType} required` });
+    }
+    
     const result = await pool.query('DELETE FROM persons WHERE id = $1 RETURNING *', [req.params.id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Person deleted' });
   } catch (error) {
     res.status(500).json({ error: 'Database error' });

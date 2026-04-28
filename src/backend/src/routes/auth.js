@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, getUserPermissions } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -80,6 +80,9 @@ router.post('/login', async (req, res) => {
       [user.id, refreshToken, expiresAt]
     );
     
+    // Get user permissions
+    const permissions = await getUserPermissions(user.id);
+    
     res.json({
       token,
       refreshToken,
@@ -89,7 +92,8 @@ router.post('/login', async (req, res) => {
         email: user.email,
         role: user.role,
         firstName: user.first_name,
-        lastName: user.last_name
+        lastName: user.last_name,
+        permissions
       }
     });
   } catch (error) {
@@ -183,6 +187,9 @@ router.post('/refresh', async (req, res) => {
       [newRefreshToken, newExpiresAt, refreshToken]
     );
     
+    // Get user permissions
+    const permissions = await getUserPermissions(user.id);
+    
     res.json({
       token: newToken,
       refreshToken: newRefreshToken,
@@ -192,7 +199,8 @@ router.post('/refresh', async (req, res) => {
         email: user.email,
         role: user.role,
         firstName: user.first_name,
-        lastName: user.last_name
+        lastName: user.last_name,
+        permissions
       }
     });
   } catch (error) {
@@ -205,7 +213,7 @@ router.post('/refresh', async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const userResult = await pool.query(
-      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at FROM users WHERE id = $1',
+      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions FROM users WHERE id = $1',
       [req.user.id]
     );
     
@@ -223,11 +231,63 @@ router.get('/me', requireAuth, async (req, res) => {
       lastName: user.last_name,
       isActive: user.is_active,
       lastLogin: user.last_login,
-      createdAt: user.created_at
+      createdAt: user.created_at,
+      permissions: user.permissions || {
+        customers: { read: true, write: true, delete: false },
+        suppliers: { read: true, write: false, delete: false },
+        materials: { read: false, write: false, delete: false }
+      }
     });
   } catch (error) {
     console.error('Me error:', error);
     res.status(500).json({ error: 'Failed to get user info' });
+  }
+});
+
+// PUT /api/auth/password - Change password
+router.put('/password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+    
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+    
+    // Get user's current password hash
+    const userResult = await pool.query(
+      'SELECT password_hash FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Verify current password
+    const validPassword = await bcrypt.compare(currentPassword, userResult.rows[0].password_hash);
+    
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+    
+    // Hash new password
+    const saltRounds = 10;
+    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+    
+    // Update password
+    await pool.query(
+      'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+      [newPasswordHash, req.user.id]
+    );
+    
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Password change error:', error);
+    res.status(500).json({ error: 'Failed to change password' });
   }
 });
 
