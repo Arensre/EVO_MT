@@ -93,3 +93,15 @@ export interface PersonFormData {
   is_primary?: boolean;
   notes?: string;
 }
+export interface ModulePermissions {
+  read: boolean;
+  write: boolean;
+  delete: boolean;
+}
+
+export interface UserPermissions {
+  customers: ModulePermissions;
+  suppliers: ModulePermissions;
+  materials: ModulePermissions;
+}
+

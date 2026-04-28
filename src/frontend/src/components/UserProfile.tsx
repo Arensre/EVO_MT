@@ -1,9 +1,10 @@
+import type { ModulePermissions } from '../types';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
 export function UserProfile() {
-  const { user, permissions, canRead, canWrite, canDelete, logout } = useAuth();
+  const { user, permissions, canRead } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'permissions'>('profile');
   
   // Password change form state
