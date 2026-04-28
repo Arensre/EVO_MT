@@ -11,9 +11,8 @@ import { SupplierModal } from './components/SupplierModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { UserProfile } from './components/UserProfile';
 import { customerApi, supplierApi } from './api';
-import type { Customer, CustomerFormData, Supplier, SupplierFormData } from './types';
+import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
 
-// type View = 'home' | 'customers' | 'suppliers' | 'settings' | 'profile' | 'users';
 
 function HomeView() {
   return (
