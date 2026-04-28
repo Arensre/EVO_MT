@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, ChevronLeft, Shield, User as UserIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, ChevronLeft, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { User, UserPermissions } from '../types';
 
