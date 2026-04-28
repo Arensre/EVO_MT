@@ -273,7 +273,7 @@ function SupplierView({ isDesktop }: { isDesktop: boolean }) {
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ['suppliers', supplierFilters],
-    queryFn: () => supplierApi.getAll(supplierFilters),
+    queryFn: () => supplierApi.getAll(),
   });
 
   const createMutation = useMutation({
