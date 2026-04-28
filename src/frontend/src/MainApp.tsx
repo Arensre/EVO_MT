@@ -10,6 +10,7 @@ import { SupplierDetail } from './components/SupplierDetail';
 import { SupplierModal } from './components/SupplierModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { UserProfile } from './components/UserProfile';
+import { UserManagement } from './components/UserManagement';
 import { customerApi, supplierApi } from './api';
 import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
 
@@ -71,6 +72,11 @@ function SettingsView() {
 // Profile View Component
 function ProfileView() {
   return <UserProfile />;
+}
+
+// Users View Component
+function UsersView() {
+  return <UserManagement />;
 }
 
 // Customer View Component
@@ -450,6 +456,8 @@ export function MainApp() {
         return <SettingsView />;
       case 'profile':
         return <ProfileView />;
+      case 'users':
+        return <UsersView />;
       default:
         return <HomeView />;
     }
