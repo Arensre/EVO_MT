@@ -1,20 +1,25 @@
 import { useState } from 'react';
-import { Home, Users, Truck, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, Users, Truck, Settings, User, UsersRound, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import type { View } from '../types';
 
 interface SidebarProps {
-  activeView: 'home' | 'customers' | 'suppliers' | 'settings';
-  onViewChange: (view: 'home' | 'customers' | 'suppliers' | 'settings') => void;
+  activeView: View;
+  onViewChange: (view: View) => void;
 }
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const { user } = useAuth();
 
-  const menuItems = [
+  const menuItems: { id: View; label: string; icon: typeof Home; adminOnly?: boolean }[] = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'customers', label: 'Kunden', icon: Users },
     { id: 'suppliers', label: 'Lieferanten', icon: Truck },
+    { id: 'profile', label: 'Mein Profil', icon: User },
+    { id: 'users', label: 'Benutzerverwaltung', icon: UsersRound, adminOnly: true },
     { id: 'settings', label: 'Einstellungen', icon: Settings },
-  ] as const;
+  ];
 
   return (
     <div
@@ -34,6 +39,11 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
 
       <nav className="flex-1 py-4">
         {menuItems.map((item) => {
+          // Skip admin-only items for non-admin users
+          if (item.adminOnly && user?.role !== 'admin') {
+            return null;
+          }
+
           const Icon = item.icon;
           return (
             <button

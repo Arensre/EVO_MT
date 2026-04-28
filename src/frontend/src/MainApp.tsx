@@ -9,10 +9,10 @@ import { SupplierList } from './components/SupplierList';
 import { SupplierDetail } from './components/SupplierDetail';
 import { SupplierModal } from './components/SupplierModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
+import { UserProfile } from './components/UserProfile';
+import { UserManagement } from './components/UserManagement';
 import { customerApi, supplierApi } from './api';
-import type { Customer, CustomerFormData, Supplier, SupplierFormData } from './types';
-
-type View = 'home' | 'customers' | 'suppliers' | 'settings';
+import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
 
 // Hook für Bildschirmgröße
 function useIsDesktop() {
@@ -77,6 +77,22 @@ function SettingsView() {
       <div className="bg-white rounded-lg shadow p-6">
         <p className="text-gray-500">Einstellungen werden bald verfügbar sein...</p>
       </div>
+    </div>
+  );
+}
+
+function ProfileView() {
+  return (
+    <div className="max-w-2xl">
+      <UserProfile />
+    </div>
+  );
+}
+
+function UsersView() {
+  return (
+    <div className="max-w-6xl">
+      <UserManagement />
     </div>
   );
 }
@@ -461,6 +477,10 @@ export function MainApp() {
         return <SupplierView isDesktop={isDesktop} />;
       case 'settings':
         return <SettingsView />;
+      case 'profile':
+        return <ProfileView />;
+      case 'users':
+        return <UsersView />;
       default:
         return <HomeView />;
     }

@@ -1,5 +1,6 @@
 export type CustomerType = 'company' | 'club' | 'private';
 export type SupplierType = 'company' | 'private';
+export type View = 'home' | 'customers' | 'suppliers' | 'settings' | 'profile' | 'users';
 
 export interface Customer {
   id: number;
@@ -93,6 +94,7 @@ export interface PersonFormData {
   is_primary?: boolean;
   notes?: string;
 }
+
 export interface ModulePermissions {
   read: boolean;
   write: boolean;
@@ -105,3 +107,14 @@ export interface UserPermissions {
   materials: ModulePermissions;
 }
 
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  role: 'admin' | 'user';
+  permissions: UserPermissions;
+  created_at?: string;
+  updated_at?: string;
+}
