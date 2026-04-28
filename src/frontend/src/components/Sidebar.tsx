@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Users, Truck, Settings, User, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
@@ -114,7 +114,7 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
       {isOpen && user && (
         <div className="p-4 border-t border-gray-700">
           <div className="text-sm text-gray-400">
-            {user.first_name} {user.last_name}
+            {user.firstName} {user.lastName}
           </div>
           <div className="text-xs text-gray-500 capitalize">
             {user.role}
