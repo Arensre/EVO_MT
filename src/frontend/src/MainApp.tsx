@@ -68,19 +68,6 @@ function SettingsView() {
   );
 }
 
-// Profile Button Component
-function ProfileButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="fixed top-4 left-4 z-50 w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg transition-colors"
-      title="Profil"
-    >
-      <User size={20} />
-    </button>
-  );
-}
-
 // Profile View Component
 function ProfileView() {
   return <UserProfile />;
@@ -470,8 +457,6 @@ export function MainApp() {
 
   return (
     <div className="flex h-screen">
-      <ProfileButton onClick={() => setActiveView('profile')} />
-      
       <Sidebar activeView={activeView} onViewChange={setActiveView} />
 
       <div className="flex-1 flex overflow-hidden">
