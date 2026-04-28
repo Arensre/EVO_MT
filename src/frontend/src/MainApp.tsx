@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Calendar, Briefcase } from 'lucide-react';
+import { Users, Calendar, Briefcase, User } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { CustomerList } from './components/CustomerList';
 import { CustomerDetail } from './components/CustomerDetail';
@@ -8,11 +8,14 @@ import { CustomerModal } from './components/CustomerModal';
 import { SupplierList } from './components/SupplierList';
 import { SupplierDetail } from './components/SupplierDetail';
 import { SupplierModal } from './components/SupplierModal';
-import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
+import { DeleteConfirmModal } from './components/DeleteConfirmModal';
+import { useAuth } from './contexts/AuthContext';
 import { customerApi, supplierApi } from './api';
 import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
+
+type View = 'home' | 'customers' | 'suppliers' | 'settings' | 'profile' | 'users';
 
 // Hook für Bildschirmgröße
 function useIsDesktop() {
@@ -25,6 +28,19 @@ function useIsDesktop() {
   }, []);
 
   return isDesktop;
+}
+
+// Profil Button Komponente
+function ProfileButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="fixed top-4 left-4 z-50 p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+      title="Mein Profil"
+    >
+      <User size={24} />
+    </button>
+  );
 }
 
 function HomeView() {
@@ -84,6 +100,7 @@ function SettingsView() {
 function ProfileView() {
   return (
     <div className="max-w-2xl">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Mein Profil</h2>
       <UserProfile />
     </div>
   );
@@ -92,6 +109,7 @@ function ProfileView() {
 function UsersView() {
   return (
     <div className="max-w-6xl">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Benutzerverwaltung</h2>
       <UserManagement />
     </div>
   );
@@ -103,7 +121,6 @@ function CustomerView({ isDesktop }: { isDesktop: boolean }) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [customerFilters, setCustomerFilters] = useState<{ search?: string; personSearch?: string }>({});
-
   const queryClient = useQueryClient();
 
   const { data: customers = [], isLoading } = useQuery({
@@ -182,84 +199,33 @@ function CustomerView({ isDesktop }: { isDesktop: boolean }) {
     setSelectedCustomer(null);
   };
 
-  // Desktop Split-View
-  if (isDesktop) {
-    return (
-      <>
-        <div className={`${selectedCustomer ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
-          {isLoading ? (
-            <div className="text-center py-12">Laden...</div>
-          ) : (
-            <CustomerList
-              customers={customers}
-              selectedId={selectedCustomer?.id}
-              onAddNew={handleAddNew}
-              onSelect={handleSelect}
-              onDelete={handleDeleteClick}
-              onFilterChange={handleFilterChange}
-            />
-          )}
-        </div>
-
-        {selectedCustomer && (
-          <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
-            <CustomerDetail
-              customer={selectedCustomer}
-              onClose={handleBackToList}
-              onSave={handleSave}
-              onDelete={() => handleDeleteClick(selectedCustomer)}
-            />
-          </div>
-        )}
-
-        <CustomerModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleSubmitNew}
-        />
-
-        <DeleteConfirmModal
-          isOpen={!!customerToDelete}
-          customerName={customerToDelete?.name || ''}
-          customerNumber={customerToDelete?.customer_number || ''}
-          onClose={handleCancelDelete}
-          onConfirm={handleConfirmDelete}
-        />
-      </>
-    );
-  }
-
-  // Mobile Single-View
-  if (selectedCustomer) {
-    return (
-      <>
-        <CustomerDetail
-          customer={selectedCustomer}
-          onBack={handleBackToList}
-          onSave={handleSave}
-          onDelete={() => handleDeleteClick(selectedCustomer)}
-          isMobile
-        />
-        <DeleteConfirmModal
-          isOpen={!!customerToDelete}
-          customerName={customerToDelete?.name || ''}
-          customerNumber={customerToDelete?.customer_number || ''}
-          onClose={handleCancelDelete}
-          onConfirm={handleConfirmDelete}
-        />
-      </>
-    );
+  if (isLoading) {
+    return <div className="text-center py-12">Laden...</div>;
   }
 
   return (
-    <>
-      <CustomerList
-        customers={customers}
-        onAddNew={handleAddNew}
-        onSelect={handleSelect}
-        onDelete={handleDeleteClick}
-        onFilterChange={handleFilterChange}
-      />
+    <div className="flex h-full">
+      <div className={`${selectedCustomer ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+        <CustomerList
+          customers={customers}
+          selectedId={selectedCustomer?.id}
+          onAddNew={handleAddNew}
+          onSelect={handleSelect}
+          onDelete={handleDeleteClick}
+          onFilterChange={handleFilterChange}
+        />
+      </div>
+
+      {selectedCustomer && (
+        <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
+          <CustomerDetail
+            customer={selectedCustomer}
+            onClose={handleBackToList}
+            onSave={handleSave}
+            onDelete={() => handleDeleteClick(selectedCustomer)}
+          />
+        </div>
+      )}
 
       <CustomerModal
         isOpen={isModalOpen}
@@ -274,7 +240,7 @@ function CustomerView({ isDesktop }: { isDesktop: boolean }) {
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
       />
-    </>
+    </div>
   );
 }
 
@@ -283,12 +249,10 @@ function SupplierView({ isDesktop }: { isDesktop: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
-  const [supplierFilters, setSupplierFilters] = useState<{ search?: string; personSearch?: string }>({});
-
   const queryClient = useQueryClient();
 
   const { data: suppliers = [], isLoading } = useQuery({
-    queryKey: ['suppliers', supplierFilters],
+    queryKey: ['suppliers'],
     queryFn: () => supplierApi.getAll(),
   });
 
@@ -358,89 +322,32 @@ function SupplierView({ isDesktop }: { isDesktop: boolean }) {
     createMutation.mutate(data);
   };
 
-  const handleFilterChange = (filters: { search?: string; personSearch?: string }) => {
-    setSupplierFilters(filters);
-    setSelectedSupplier(null);
-  };
-
-  // Desktop Split-View
-  if (isDesktop) {
-    return (
-      <>
-        <div className={`${selectedSupplier ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
-          {isLoading ? (
-            <div className="text-center py-12">Laden...</div>
-          ) : (
-            <SupplierList
-              suppliers={suppliers}
-              selectedId={selectedSupplier?.id}
-              onAddNew={handleAddNew}
-              onSelect={handleSelect}
-              onDelete={handleDeleteClick}
-              onFilterChange={handleFilterChange}
-            />
-          )}
-        </div>
-
-        {selectedSupplier && (
-          <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
-            <SupplierDetail
-              supplier={selectedSupplier}
-              onClose={handleBackToList}
-              onSave={handleSave}
-              onDelete={() => handleDeleteClick(selectedSupplier)}
-            />
-          </div>
-        )}
-
-        <SupplierModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleSubmitNew}
-        />
-
-        <DeleteConfirmModal
-          isOpen={!!supplierToDelete}
-          customerName={supplierToDelete?.name || ''}
-          customerNumber={supplierToDelete?.supplier_number || ''}
-          onClose={handleCancelDelete}
-          onConfirm={handleConfirmDelete}
-        />
-      </>
-    );
-  }
-
-  // Mobile Single-View
-  if (selectedSupplier) {
-    return (
-      <>
-        <SupplierDetail
-          supplier={selectedSupplier}
-          onBack={handleBackToList}
-          onSave={handleSave}
-          onDelete={() => handleDeleteClick(selectedSupplier)}
-          isMobile
-        />
-        <DeleteConfirmModal
-          isOpen={!!supplierToDelete}
-          customerName={supplierToDelete?.name || ''}
-          customerNumber={supplierToDelete?.supplier_number || ''}
-          onClose={handleCancelDelete}
-          onConfirm={handleConfirmDelete}
-        />
-      </>
-    );
+  if (isLoading) {
+    return <div className="text-center py-12">Laden...</div>;
   }
 
   return (
-    <>
-      <SupplierList
-        suppliers={suppliers}
-        onAddNew={handleAddNew}
-        onSelect={handleSelect}
-        onDelete={handleDeleteClick}
-        onFilterChange={handleFilterChange}
-      />
+    <div className="flex h-full">
+      <div className={`${selectedSupplier ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+        <SupplierList
+          suppliers={suppliers}
+          selectedId={selectedSupplier?.id}
+          onAddNew={handleAddNew}
+          onSelect={handleSelect}
+          onDelete={handleDeleteClick}
+        />
+      </div>
+
+      {selectedSupplier && (
+        <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
+          <SupplierDetail
+            supplier={selectedSupplier}
+            onClose={handleBackToList}
+            onSave={handleSave}
+            onDelete={() => handleDeleteClick(selectedSupplier)}
+          />
+        </div>
+      )}
 
       <SupplierModal
         isOpen={isModalOpen}
@@ -455,13 +362,14 @@ function SupplierView({ isDesktop }: { isDesktop: boolean }) {
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
       />
-    </>
+    </div>
   );
 }
 
 export function MainApp() {
   const [activeView, setActiveView] = useState<View>('home');
   const isDesktop = useIsDesktop();
+  const { user } = useAuth();
 
   const handleViewChange = (view: View) => {
     setActiveView(view);
@@ -475,12 +383,12 @@ export function MainApp() {
         return <CustomerView isDesktop={isDesktop} />;
       case 'suppliers':
         return <SupplierView isDesktop={isDesktop} />;
-      case 'settings':
-        return <SettingsView />;
       case 'profile':
         return <ProfileView />;
       case 'users':
         return <UsersView />;
+      case 'settings':
+        return <SettingsView />;
       default:
         return <HomeView />;
     }
@@ -488,6 +396,9 @@ export function MainApp() {
 
   return (
     <div className="flex h-screen">
+      {/* Profil Button oben links */}
+      <ProfileButton onClick={() => setActiveView('profile')} />
+      
       <Sidebar activeView={activeView} onViewChange={handleViewChange} />
 
       <div className="flex-1 flex overflow-hidden">

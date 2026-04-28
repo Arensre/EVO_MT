@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Users, Truck, Settings, User, UsersRound, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
@@ -10,16 +10,16 @@ interface SidebarProps {
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const [settingsExpanded, setSettingsExpanded] = useState(false);
   const { user } = useAuth();
 
-  const menuItems: { id: View; label: string; icon: typeof Home; adminOnly?: boolean }[] = [
+  const mainMenuItems: { id: View; label: string; icon: typeof Home }[] = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'customers', label: 'Kunden', icon: Users },
     { id: 'suppliers', label: 'Lieferanten', icon: Truck },
-    { id: 'profile', label: 'Mein Profil', icon: User },
-    { id: 'users', label: 'Benutzerverwaltung', icon: UsersRound, adminOnly: true },
-    { id: 'settings', label: 'Einstellungen', icon: Settings },
   ];
+
+  const isSettingsActive = activeView === 'settings' || activeView === 'users';
 
   return (
     <div
@@ -38,29 +38,89 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
       </div>
 
       <nav className="flex-1 py-4">
-        {menuItems.map((item) => {
-          // Skip admin-only items for non-admin users
-          if (item.adminOnly && user?.role !== 'admin') {
-            return null;
-          }
-
+        {/* Hauptmenü */}
+        {mainMenuItems.map((item) => {
           const Icon = item.icon;
+          const isActive = activeView === item.id;
+          
           return (
             <button
               key={item.id}
               onClick={() => onViewChange(item.id)}
-              className={`w-full flex items-center px-4 py-3 transition-colors ${
-                activeView === item.id
-                  ? 'bg-primary-600 text-white'
+              className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                isActive
+                  ? 'bg-blue-600 text-white'
                   : 'text-gray-300 hover:bg-gray-700 hover:text-white'
               }`}
             >
               <Icon size={20} />
-              {isOpen && <span className="ml-3">{item.label}</span>}
+              {isOpen && <span>{item.label}</span>}
             </button>
           );
         })}
+
+        {/* Einstellungen (aufgklappbar) */}
+        <div className="mt-4">
+          <button
+            onClick={() => setSettingsExpanded(!settingsExpanded)}
+            className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+              isSettingsActive
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Settings size={20} />
+              {isOpen && <span>Einstellungen</span>}
+            </div>
+            {isOpen && (
+              settingsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+            )}
+          </button>
+
+          {/* Untermenü Einstellungen */}
+          {settingsExpanded && isOpen && (
+            <div className="bg-gray-900 py-2">
+              <button
+                onClick={() => onViewChange('settings')}
+                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                  activeView === 'settings'
+                    ? 'text-blue-400'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <span>Allgemein</span>
+              </button>
+              
+              {user?.role === 'admin' && (
+                <button
+                  onClick={() => onViewChange('users')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'users'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <UsersRound size={16} />
+                  <span>Benutzerverwaltung</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </nav>
+
+      {/* Footer mit User Info */}
+      {isOpen && user && (
+        <div className="p-4 border-t border-gray-700">
+          <div className="text-sm text-gray-400">
+            {user.firstName} {user.lastName}
+          </div>
+          <div className="text-xs text-gray-500 capitalize">
+            {user.role}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

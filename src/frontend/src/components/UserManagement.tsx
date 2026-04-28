@@ -39,9 +39,11 @@ export function UserManagement() {
 
   const loadUsers = async () => {
     try {
-      const response = await fetch('/api/users');
+      const response = await fetch('/api/users', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
       const data = await response.json();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading users:', error);
     }
@@ -55,7 +57,10 @@ export function UserManagement() {
       
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify(formData)
       });
       
@@ -73,7 +78,10 @@ export function UserManagement() {
     if (!confirm('Möchten Sie diesen Benutzer wirklich löschen?')) return;
     
     try {
-      await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+      await fetch(`/api/users/${userId}`, { 
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
       loadUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
