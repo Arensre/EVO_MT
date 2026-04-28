@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Calendar, Briefcase } from 'lucide-react';
+import { Users, Calendar, Briefcase, LogOut } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { CustomerList } from './components/CustomerList';
 import { CustomerDetail } from './components/CustomerDetail';
@@ -11,6 +11,7 @@ import { SupplierModal } from './components/SupplierModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
+import { useAuth } from './contexts/AuthContext';
 import { customerApi, supplierApi } from './api';
 import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
 
@@ -202,62 +203,14 @@ function CustomerView() {
 
         <DeleteConfirmModal
           isOpen={!!customerToDelete}
-          customerName={customerToDelete?.name || ''}
-          customerNumber={customerToDelete?.customer_number || ''}
+          title="Kunde löschen"
+          message={`Möchten Sie den Kunden "${customerToDelete?.name || ''}" wirklich löschen?`}
           onClose={handleCancelDelete}
           onConfirm={handleConfirmDelete}
         />
       </>
     );
   }
-
-  // Mobile Single-View
-  if (selectedCustomer) {
-    return (
-      <>
-        <CustomerDetail
-          customer={selectedCustomer!}
-          onBack={handleBackToList}
-          onSave={handleSave}
-          onDelete={() => handleDeleteClick(selectedCustomer!)}
-          isMobile
-        />
-        <DeleteConfirmModal
-          isOpen={!!customerToDelete}
-          customerName={customerToDelete?.name || ''}
-          customerNumber={customerToDelete?.customer_number || ''}
-          onClose={handleCancelDelete}
-          onConfirm={handleConfirmDelete}
-        />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <CustomerList
-        customers={customers}
-        onAddNew={handleAddNew}
-        onSelect={handleSelect}
-        onDelete={handleDeleteClick}
-        onFilterChange={handleFilterChange}
-      />
-
-      <CustomerModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmitNew}
-      />
-
-      <DeleteConfirmModal
-        isOpen={!!customerToDelete}
-        customerName={customerToDelete?.name || ''}
-        customerNumber={customerToDelete?.customer_number || ''}
-        onClose={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-      />
-    </>
-  );
 }
 
 // Supplier View Component
@@ -383,66 +336,77 @@ function SupplierView() {
 
         <DeleteConfirmModal
           isOpen={!!supplierToDelete}
-          customerName={supplierToDelete?.name || ''}
-          customerNumber={supplierToDelete?.supplier_number || ''}
+          title="Lieferant löschen"
+          message={`Möchten Sie den Lieferanten "${supplierToDelete?.name || ''}" wirklich löschen?`}
           onClose={handleCancelDelete}
           onConfirm={handleConfirmDelete}
         />
       </>
     );
   }
+}
 
-  // Mobile Single-View
-  if (selectedSupplier) {
-    return (
-      <>
-        <SupplierDetail
-          supplier={selectedSupplier!}
-          onBack={handleBackToList}
-          onSave={handleSave}
-          onDelete={() => handleDeleteClick(selectedSupplier!)}
-          isMobile
-        />
-        <DeleteConfirmModal
-          isOpen={!!supplierToDelete}
-          customerName={supplierToDelete?.name || ''}
-          customerNumber={supplierToDelete?.supplier_number || ''}
-          onClose={handleCancelDelete}
-          onConfirm={handleConfirmDelete}
-        />
-      </>
-    );
-  }
+// Logout Confirmation Modal Component
+interface LogoutConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+function LogoutConfirmModal({ isOpen, onClose, onConfirm }: LogoutConfirmModalProps) {
+  if (!isOpen) return null;
 
   return (
-    <>
-      <SupplierList
-        suppliers={suppliers}
-        onAddNew={handleAddNew}
-        onSelect={handleSelect}
-        onDelete={handleDeleteClick}
-        onFilterChange={handleFilterChange}
-      />
-
-      <SupplierModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmitNew}
-      />
-
-      <DeleteConfirmModal
-        isOpen={!!supplierToDelete}
-        customerName={supplierToDelete?.name || ''}
-        customerNumber={supplierToDelete?.supplier_number || ''}
-        onClose={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-      />
-    </>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+            <LogOut className="text-orange-600" size={24} />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">Abmelden</h3>
+        </div>
+        
+        <p className="text-gray-600 mb-6">
+          Möchten Sie sich wirklich abmelden?
+        </p>
+        
+        <div className="flex gap-3">
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Ja, abmelden
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Abbrechen
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
 export function MainApp() {
   const [activeView, setActiveView] = useState<View>('home');
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const { logout } = useAuth();
+
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const handleLogoutCancel = () => {
+    setIsLogoutModalOpen(false);
+  };
+
+  const handleLogoutConfirm = async () => {
+    await logout();
+    // Redirect to login page (App.tsx will handle this)
+    window.location.reload();
+  };
 
   const renderContent = () => {
     switch (activeView) {
@@ -465,11 +429,21 @@ export function MainApp() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar activeView={activeView} onViewChange={setActiveView} />
+      <Sidebar 
+        activeView={activeView} 
+        onViewChange={setActiveView}
+        onLogout={handleLogoutClick}
+      />
 
       <div className="flex-1 flex overflow-hidden">
         {renderContent()}
       </div>
+
+      <LogoutConfirmModal
+        isOpen={isLogoutModalOpen}
+        onClose={handleLogoutCancel}
+        onConfirm={handleLogoutConfirm}
+      />
     </div>
   );
 }

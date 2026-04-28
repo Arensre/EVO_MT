@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
-  customerName: string;
-  customerNumber: string;
+  customerName?: string;
+  customerNumber?: string;
+  title?: string;
+  message?: string;
+  requireConfirmation?: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }
@@ -13,6 +16,9 @@ export function DeleteConfirmModal({
   isOpen, 
   customerName, 
   customerNumber, 
+  title,
+  message,
+  requireConfirmation = true,
   onClose, 
   onConfirm 
 }: DeleteConfirmModalProps) {
@@ -22,12 +28,18 @@ export function DeleteConfirmModal({
   if (!isOpen) return null;
 
   const handleConfirm = () => {
-    if (inputNumber.trim() === customerNumber) {
-      setInputNumber('');
-      setError('');
-      onConfirm();
+    // For customers, require number confirmation
+    if (customerNumber && requireConfirmation) {
+      if (inputNumber.trim() === customerNumber) {
+        setInputNumber('');
+        setError('');
+        onConfirm();
+      } else {
+        setError('Kundennummer stimmt nicht überein. Bitte versuchen Sie es erneut.');
+      }
     } else {
-      setError('Kundennummer stimmt nicht überein. Bitte versuchen Sie es erneut.');
+      // Generic delete without confirmation
+      onConfirm();
     }
   };
 
@@ -36,6 +48,14 @@ export function DeleteConfirmModal({
     setError('');
     onClose();
   };
+
+  // Use provided title/message or fallback
+  const modalTitle = title || 'Löschen bestätigen';
+  const modalMessage = message || (
+    customerName 
+      ? `Möchten Sie "${customerName}" wirklich löschen?`
+      : 'Möchten Sie diesen Eintrag wirklich löschen?'
+  );
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" onClick={handleClose}>
@@ -48,50 +68,43 @@ export function DeleteConfirmModal({
         >
           <div className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-red-100 rounded-full">
-                <AlertTriangle size={24} className="text-red-600" />
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="text-red-600" size={24} />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Kunde löschen?</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{modalTitle}</h3>
             </div>
             
-            <p className="text-gray-600 mb-4">
-              Sie sind dabei, den Kunden <strong>"{customerName}"</strong> zu löschen. 
-              Diese Aktion kann nicht rückgängig gemacht werden!
-            </p>
+            <p className="text-gray-600 mb-4">{modalMessage}</p>
             
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
-              <p className="text-sm text-gray-600 mb-2">
-                Um das Löschen zu bestätigen, geben Sie bitte die Kundennummer ein:
-              </p>
-              <p className="text-lg font-mono font-bold text-gray-900 bg-white px-3 py-2 rounded border border-gray-200 inline-block">
-                {customerNumber}
-              </p>
-            </div>
+            {customerNumber && requireConfirmation && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Geben Sie zur Bestätigung die Kundennummer ein:
+                  <span className="font-mono bg-gray-100 px-2 py-0.5 rounded ml-1">{customerNumber}</span>
+                </label>
+                <input
+                  type="text"
+                  value={inputNumber}
+                  onChange={(e) => setInputNumber(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="Kundennummer eingeben..."
+                  autoFocus
+                />
+                {error && (
+                  <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                    <AlertTriangle size={14} />
+                    {error}
+                  </p>
+                )}
+              </div>
+            )}
             
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kundennummer bestätigen
-              </label>
-              <input
-                type="text"
-                value={inputNumber}
-                onChange={(e) => setInputNumber(e.target.value)}
-                placeholder="Kundennummer eingeben..."
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${
-                  error ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {error && (
-                <p className="mt-1 text-sm text-red-600">{error}</p>
-              )}
-            </div>
-            
-            <div className="flex gap-3">
+            <div className="flex gap-3 mt-6">
               <button
                 onClick={handleConfirm}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
               >
-                Endgültig löschen
+                Löschen
               </button>
               <button
                 onClick={handleClose}

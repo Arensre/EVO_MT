@@ -27,7 +27,7 @@ interface AuthContextType {
   user: User | null;
   permissions: UserPermissions | null;
   login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
   isAdmin: boolean;
   // Permission helpers
@@ -111,11 +111,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
-    setUser(null);
-    setPermissions(null);
+  const logout = async () => {
+    try {
+      // Optional: Server-side logout
+      await axios.post('/api/auth/logout').catch(() => {
+        // Ignore errors - client-side logout is what matters
+      });
+    } finally {
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+      setUser(null);
+      setPermissions(null);
+    }
   };
 
   // Permission helpers
