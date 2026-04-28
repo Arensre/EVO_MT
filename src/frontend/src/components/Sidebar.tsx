@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
@@ -110,6 +110,18 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
         </div>
       </nav>
 
+      {/* User Profile Button */}
+      <button
+        onClick={() => onViewChange("profile")}
+        className={`w-full flex items-center gap-3 px-4 py-3 transition-colors border-t border-gray-700 ${
+          activeView === "profile"
+            ? "bg-blue-600 text-white"
+            : "text-gray-300 hover:bg-gray-700 hover:text-white"
+        }`}
+      >
+        <User size={20} />
+        {isOpen && <span>Mein Profil</span>}
+      </button>
       {/* Footer mit User Info */}
       {isOpen && user && (
         <div className="p-4 border-t border-gray-700">
