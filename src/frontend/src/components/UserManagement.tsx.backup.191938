@@ -74,7 +74,6 @@ export function UserManagement() {
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
-    console.log('Creating user with data:', formData);
     e.preventDefault();
     setIsSaving(true);
     
@@ -185,6 +184,23 @@ export function UserManagement() {
   const handleFilterChange = (newFilters: { search?: string }) => {
     setFilters(newFilters);
     setSelectedUser(null);
+  };
+
+  const updatePermission = (
+    module: keyof UserPermissions,
+    action: keyof typeof defaultPermissions.customers,
+    value: boolean
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: {
+        ...prev.permissions,
+        [module]: {
+          ...prev.permissions[module],
+          [action]: value
+        }
+      }
+    }));
   };
 
   const filteredUsers = users.filter(user => {
@@ -311,6 +327,44 @@ export function UserManagement() {
                         <option value="user">Benutzer</option>
                         <option value="admin">Administrator</option>
                       </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Berechtigungen</label>
+                    <div className="space-y-3">
+                      {(Object.keys(formData.permissions) as Array<keyof UserPermissions>).map((module) => (
+                        <div key={module} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                          <span className="font-medium capitalize w-32">{module}</span>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={formData.permissions[module].read}
+                              onChange={(e) => updatePermission(module, 'read', e.target.checked)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm">Lesen</span>
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={formData.permissions[module].write}
+                              onChange={(e) => updatePermission(module, 'write', e.target.checked)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm">Bearbeiten</span>
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={formData.permissions[module].delete}
+                              onChange={(e) => updatePermission(module, 'delete', e.target.checked)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm">Löschen</span>
+                          </label>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -444,6 +498,44 @@ export function UserManagement() {
                       <option value="user">Benutzer</option>
                       <option value="admin">Administrator</option>
                     </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Berechtigungen</label>
+                  <div className="space-y-3">
+                    {(Object.keys(formData.permissions) as Array<keyof UserPermissions>).map((module) => (
+                      <div key={module} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <span className="font-medium capitalize w-32">{module}</span>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.permissions[module].read}
+                            onChange={(e) => updatePermission(module, 'read', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-sm">Lesen</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.permissions[module].write}
+                            onChange={(e) => updatePermission(module, 'write', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-sm">Bearbeiten</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.permissions[module].delete}
+                            onChange={(e) => updatePermission(module, 'delete', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-sm">Löschen</span>
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -592,6 +684,44 @@ export function UserManagement() {
                     <option value="user">Benutzer</option>
                     <option value="admin">Administrator</option>
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Berechtigungen</label>
+                <div className="space-y-3">
+                  {(Object.keys(formData.permissions) as Array<keyof UserPermissions>).map((module) => (
+                    <div key={module} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                      <span className="font-medium capitalize w-32">{module}</span>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.permissions[module].read}
+                          onChange={(e) => updatePermission(module, 'read', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm">Lesen</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.permissions[module].write}
+                          onChange={(e) => updatePermission(module, 'write', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm">Bearbeiten</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.permissions[module].delete}
+                          onChange={(e) => updatePermission(module, 'delete', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm">Löschen</span>
+                      </label>
+                    </div>
+                  ))}
                 </div>
               </div>
 

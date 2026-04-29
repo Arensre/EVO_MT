@@ -476,7 +476,7 @@ export function UserManagement() {
   return (
     <div className="flex h-full">
       {/* Linke Seite - Benutzerliste */}
-      <div className={`${selectedUser ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+      <div className={`${selectedUser ? 'flex-1' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
         <UserList
           users={filteredUsers}
           selectedId={(selectedUser as any)?.id}
@@ -490,7 +490,7 @@ export function UserManagement() {
 
       {/* Rechte Seite - Detailansicht */}
       {selectedUser && (
-        <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
+        <div className="flex-1 border-l border-gray-200 overflow-auto bg-gray-50">
           <UserDetail
             user={selectedUser}
             currentUserId={currentUserId}

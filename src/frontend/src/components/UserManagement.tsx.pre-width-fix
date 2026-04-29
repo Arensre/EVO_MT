@@ -476,7 +476,7 @@ export function UserManagement() {
   return (
     <div className="flex h-full">
       {/* Linke Seite - Benutzerliste */}
-      <div className={`${selectedUser ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+      <div className={`${selectedUser ? 'flex-1' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
         <UserList
           users={filteredUsers}
           selectedId={(selectedUser as any)?.id}

@@ -74,7 +74,6 @@ export function UserManagement() {
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
-    console.log('Creating user with data:', formData);
     e.preventDefault();
     setIsSaving(true);
     
@@ -185,6 +184,23 @@ export function UserManagement() {
   const handleFilterChange = (newFilters: { search?: string }) => {
     setFilters(newFilters);
     setSelectedUser(null);
+  };
+
+  const updatePermission = (
+    module: keyof UserPermissions,
+    action: keyof typeof defaultPermissions.customers,
+    value: boolean
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: {
+        ...prev.permissions,
+        [module]: {
+          ...prev.permissions[module],
+          [action]: value
+        }
+      }
+    }));
   };
 
   const filteredUsers = users.filter(user => {

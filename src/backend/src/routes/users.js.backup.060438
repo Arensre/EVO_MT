@@ -47,8 +47,8 @@ router.get('/me', requireAuth, async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      firstName: user.first_name,
+      lastName: user.last_name,
       isActive: user.is_active,
       lastLogin: user.last_login,
       createdAt: user.created_at,
@@ -112,8 +112,8 @@ router.put('/me', requireAuth, async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      firstName: user.first_name,
+      lastName: user.last_name,
       isActive: user.is_active
     });
   } catch (error) {
@@ -178,8 +178,8 @@ router.get('/', requireAdmin, async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      firstName: user.first_name,
+      lastName: user.last_name,
       isActive: user.is_active,
       lastLogin: user.last_login,
       createdAt: user.created_at,
@@ -218,8 +218,8 @@ router.get('/:id', requireAuth, async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      firstName: user.first_name,
+      lastName: user.last_name,
       isActive: user.is_active,
       lastLogin: user.last_login,
       createdAt: user.created_at,
@@ -395,8 +395,8 @@ router.post('/', requireAdmin, async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      firstName: user.first_name,
+      lastName: user.last_name,
       isActive: user.is_active,
       permissions: user.permissions
     });
@@ -411,7 +411,7 @@ router.put('/:id', requireAuth, async (req, res) => {
   try {
     console.log('PUT /api/users/:id - Request body:', req.body);
     const userId = parseInt(req.params.id);
-    const { username, email, firstName, lastName, first_name, last_name, role, isActive, password, permissions } = req.body;
+    const { username, email, firstName, lastName, role, isActive, password, permissions } = req.body;
     
     // Check if user is admin or updating own profile
     const isAdmin = req.user.role === 'admin';
@@ -464,14 +464,14 @@ router.put('/:id', requireAuth, async (req, res) => {
       params.push(email);
     }
     
-    if (firstName !== undefined || first_name !== undefined) {
+    if (firstName !== undefined) {
       updates.push('first_name = $' + paramIndex++);
-      params.push(firstName !== undefined ? firstName : first_name);
+      params.push(firstName);
     }
     
-    if (lastName !== undefined || last_name !== undefined) {
+    if (lastName !== undefined) {
       updates.push('last_name = $' + paramIndex++);
-      params.push(lastName !== undefined ? lastName : last_name);
+      params.push(lastName);
     }
     
     if (isAdmin && role !== undefined) {
@@ -520,8 +520,8 @@ router.put('/:id', requireAuth, async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      firstName: user.first_name,
+      lastName: user.last_name,
       isActive: user.is_active,
       permissions: user.permissions
     });
