@@ -20,6 +20,7 @@ export interface User {
   role: string;
   firstName: string;
   lastName: string;
+  avatarUrl?: string;
   permissions?: UserPermissions;
 }
 
