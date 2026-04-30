@@ -3,7 +3,7 @@ import { ArrowLeft, Edit, User, Award, Crown, Heart, Calendar, Mail, Phone, Smar
 import axios from 'axios';
 
 // API base URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
 
 interface Member {
   id: string;

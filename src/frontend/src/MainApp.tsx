@@ -21,7 +21,7 @@ import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } fro
 import axios from 'axios';
 
 // API base URL for members
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
 
 interface Member {
   id: string;

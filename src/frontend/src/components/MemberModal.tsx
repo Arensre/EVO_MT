@@ -3,7 +3,7 @@ import { X, Save, User, Award, Crown, Heart } from 'lucide-react';
 import axios from 'axios';
 
 // API base URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
 
 interface Member {
   id?: string;
