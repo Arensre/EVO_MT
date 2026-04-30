@@ -10,6 +10,7 @@ import { SupplierDetail } from './components/SupplierDetail';
 import { SupplierModal } from './components/SupplierModal';
 import { MemberList } from './components/MemberList';
 import { MemberDetail } from './components/MemberDetail';
+import { MemberModal } from './components/MemberModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
@@ -93,7 +94,7 @@ function UsersView() {
 // Members View Component
 function MembersView() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const queryClient = useQueryClient();
 
@@ -111,7 +112,7 @@ function MembersView() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
-      setIsCreating(false);
+      setIsModalOpen(false);
     }
   });
 
@@ -138,35 +139,36 @@ function MembersView() {
 
   // Desktop Split-View
   return (
-    <div className="flex h-full">
-      <div className={`${selectedMember || isCreating ? 'w-2/5' : 'w-full'} transition-all duration-300`}>
-        <MemberList
-          members={members}
-          selectedId={selectedMember?.id}
-          onSelect={setSelectedMember}
-          onAddNew={() => setIsCreating(true)}
-          onDelete={setMemberToDelete}
-        />
-      </div>
+    <>
+      <div className="flex h-full">
+        <div className={`${selectedMember ? 'w-2/5' : 'w-full'} transition-all duration-300`}>
+          <MemberList
+            members={members}
+            selectedId={selectedMember?.id}
+            onSelect={setSelectedMember}
+            onAddNew={() => setIsModalOpen(true)}
+            onDelete={setMemberToDelete}
+          />
+        </div>
 
-      {(selectedMember || isCreating) && (
-        <div className="w-3/5 border-l border-gray-200 bg-gray-50">
-          {isCreating ? (
-            <MemberDetail
-              member={{} as Member}
-              onBack={() => setIsCreating(false)}
-              onSave={createMutation.mutate}
-            />
-          ) : selectedMember ? (
+        {selectedMember && (
+          <div className="w-3/5 border-l border-gray-200 bg-gray-50">
             <MemberDetail
               member={selectedMember}
               onBack={() => setSelectedMember(null)}
               onSave={(data) => updateMutation.mutate({ id: selectedMember.id, data })}
               onDelete={() => setMemberToDelete(selectedMember)}
             />
-          ) : null}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
+
+      {/* Modal für Neuanlage */}
+      <MemberModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={createMutation.mutate}
+      />
 
       {memberToDelete && (
         <DeleteConfirmModal
@@ -177,7 +179,7 @@ function MembersView() {
           onClose={() => setMemberToDelete(null)}
         />
       )}
-    </div>
+    </>
   );
 }
 
