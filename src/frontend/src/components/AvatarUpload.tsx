@@ -1,20 +1,20 @@
 import { useState, useRef, useCallback } from 'react';
-import { Upload, X, Loader2, User } from 'lucide-react';
 import axios from 'axios';
+import { Upload, X, Loader2 } from 'lucide-react';
 
 interface AvatarUploadProps {
   userId: number;
   currentAvatarUrl?: string | null;
-  firstName?: string;
-  lastName?: string;
+  first_name?: string;
+  last_name?: string;
   onAvatarChange?: (newAvatarUrl: string | null) => void;
 }
 
 export function AvatarUpload({ 
   userId, 
   currentAvatarUrl, 
-  firstName = '', 
-  lastName = '',
+  first_name = '', 
+  last_name = '',
   onAvatarChange 
 }: AvatarUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -25,8 +25,8 @@ export function AvatarUpload({
 
   // Generate initials for placeholder
   const getInitials = () => {
-    const first = firstName?.charAt(0) || '';
-    const last = lastName?.charAt(0) || '';
+    const first = first_name?.charAt(0) || '';
+    const last = last_name?.charAt(0) || '';
     return (first + last).toUpperCase() || 'U';
   };
 
@@ -116,7 +116,7 @@ export function AvatarUpload({
       });
 
       setPreviewUrl(null);
-      onAvatarChange?.(response.data.avatarUrl);
+      onAvatarChange?.(response.data.avatar_url);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Fehler beim Hochladen');
     } finally {
@@ -175,7 +175,7 @@ export function AvatarUpload({
         >
           {displayUrl ? (
             <img 
-              src={displayUrl} 
+              src={displayUrl.startsWith('data:') ? displayUrl : displayUrl + '?t=' + Date.now()} 
               alt="Avatar" 
               className="w-full h-full object-cover"
             />

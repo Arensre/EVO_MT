@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, User, LogOut } from 'lucide-react';
+import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
@@ -27,8 +27,8 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
 
   // Generate initials for avatar placeholder
   const getInitials = () => {
-    const first = user?.firstName?.charAt(0) || user?.first_name?.charAt(0) || '';
-    const last = user?.lastName?.charAt(0) || user?.last_name?.charAt(0) || '';
+    const first = user?.first_name?.charAt(0) || user?.first_name?.charAt(0) || '';
+    const last = user?.last_name?.charAt(0) || user?.last_name?.charAt(0) || '';
     return (first + last).toUpperCase() || 'U';
   };
 
@@ -123,27 +123,6 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
 
       {/* User Profile & Logout */}
       <div className="border-t border-gray-700">
-        {/* User Profile Button */}
-        <button
-          onClick={() => onViewChange("profile")}
-          className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-            activeView === "profile"
-              ? "bg-blue-600 text-white"
-              : "text-gray-300 hover:bg-gray-700 hover:text-white"
-          }`}
-        >
-          {isOpen && user?.avatarUrl ? (
-            <img 
-              src={user.avatarUrl} 
-              alt="Avatar" 
-              className="w-5 h-5 rounded-full object-cover"
-            />
-          ) : (
-            <User size={20} />
-          )}
-          {isOpen && <span>Mein Profil</span>}
-        </button>
-
         {/* Logout Button */}
         <button
           onClick={onLogout}
@@ -153,15 +132,26 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
           {isOpen && <span>Abmelden</span>}
         </button>
 
-        {/* Footer mit User Info & Version */}
+        {/* Footer mit User Info & Version - Klickbarer Profil-Button */}
         {isOpen && user && (
-          <div className="p-4 border-t border-gray-700">
+          <button
+            onClick={() => onViewChange("profile")}
+            className={`w-full p-4 border-t border-gray-700 text-left transition-colors ${
+              activeView === "profile"
+                ? "bg-gray-700"
+                : "hover:bg-gray-700"
+            }`}
+          >
             <div className="flex items-center gap-3 mb-2">
               {/* Avatar in Sidebar */}
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                {user.avatarUrl ? (
+              <div className={`w-10 h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 ${
+                activeView === "profile"
+                  ? "bg-blue-600"
+                  : "bg-gradient-to-br from-blue-500 to-blue-600"
+              }`}>
+                {user.avatar_url ? (
                   <img 
-                    src={user.avatarUrl} 
+                    src={user.avatar_url + '?t=' + Date.now()} 
                     alt="Avatar" 
                     className="w-full h-full object-cover"
                   />
@@ -173,7 +163,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-gray-200 truncate">
-                  {(user as any).first_name || (user as any).firstName} {(user as any).last_name || (user as any).lastName}
+                  {user.first_name} {user.last_name}
                 </div>
                 <div className="text-xs text-gray-500 capitalize">
                   {user.role}
@@ -184,7 +174,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
             <div className="text-xs text-gray-600 mt-1 font-mono">
               v{APP_VERSION}
             </div>
-          </div>
+          </button>
         )}
       </div>
     </div>

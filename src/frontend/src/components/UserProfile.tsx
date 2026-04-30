@@ -5,9 +5,9 @@ import { AvatarUpload } from './AvatarUpload';
 import axios from 'axios';
 
 export function UserProfile() {
-  const { user, permissions, canRead } = useAuth();
+  const { user, permissions, canRead, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'permissions'>('profile');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatar_url, setAvatarUrl] = useState<string | null>(null);
   const [isLoadingAvatar, setIsLoadingAvatar] = useState(true);
   
   // Password change form state
@@ -26,7 +26,7 @@ export function UserProfile() {
       try {
         setIsLoadingAvatar(true);
         const response = await axios.get(`/api/users/${user.id}/avatar`);
-        setAvatarUrl(response.data.avatarUrl);
+        setAvatarUrl(response.data.avatar_url);
       } catch (error) {
         console.error('Failed to fetch avatar:', error);
       } finally {
@@ -37,8 +37,10 @@ export function UserProfile() {
     fetchAvatar();
   }, [user?.id]);
 
-  const handleAvatarChange = (newAvatarUrl: string | null) => {
+  const handleAvatarChange = async (newAvatarUrl: string | null) => {
     setAvatarUrl(newAvatarUrl);
+    // Refresh user in AuthContext to update avatar in Sidebar
+    await refreshUser();
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -136,9 +138,9 @@ export function UserProfile() {
                 ) : (
                   <AvatarUpload
                     userId={user.id}
-                    currentAvatarUrl={avatarUrl}
-                    firstName={user.firstName || user.first_name}
-                    lastName={user.lastName || user.last_name}
+                    currentAvatarUrl={avatar_url}
+                    first_name={user.first_name || user.first_name}
+                    last_name={user.last_name || user.last_name}
                     onAvatarChange={handleAvatarChange}
                   />
                 )}
@@ -167,7 +169,7 @@ export function UserProfile() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                     <div className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                      {user.firstName || user.first_name} {user.lastName || user.last_name}
+                      {user.first_name || user.first_name} {user.last_name || user.last_name}
                     </div>
                   </div>
                 </div>

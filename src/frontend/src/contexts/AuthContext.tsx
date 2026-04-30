@@ -18,9 +18,9 @@ export interface User {
   username: string;
   email: string;
   role: string;
-  firstName: string;
-  lastName: string;
-  avatarUrl?: string;
+  first_name: string;
+  last_name: string;
+  avatar_url?: string;
   permissions?: UserPermissions;
 }
 
@@ -29,6 +29,7 @@ interface AuthContextType {
   permissions: UserPermissions | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   isLoading: boolean;
   isAdmin: boolean;
   // Permission helpers
@@ -71,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await axios.get('/api/users/me');
       const userData = response.data;
-      setUser(userData);
+      setUser({ ...userData, avatar_url: userData.avatar_url });
       
       // Set permissions from user data or defaults
       if (userData.role === 'admin') {
@@ -97,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { token, user } = response.data;
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser(user);
+    setUser({ ...user, avatar_url: user.avatar_url });
     
     // Set permissions from login response
     if (user.role === 'admin') {
@@ -152,6 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       permissions, 
       login, 
       logout, 
+      refreshUser: fetchUser,
       isLoading, 
       isAdmin,
       hasPermission,

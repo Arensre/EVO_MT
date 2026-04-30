@@ -35,7 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
 app.use('/api/users', avatarRoutes);
-app.use('/uploads/avatars', express.static(path.join(__dirname, '../../uploads/avatars')));
+app.use('/uploads/avatars', express.static(path.join(__dirname, '../uploads/avatars')));
 // Generate next customer number
 async function generateCustomerNumber() {
   const result = await pool.query(

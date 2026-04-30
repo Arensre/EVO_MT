@@ -96,7 +96,7 @@ router.post('/:id/avatar', requireAuth, upload.single('avatar'), async (req, res
 
     res.json({
       success: true,
-      avatarUrl: avatarUrl,
+      avatar_url: avatarUrl,
       message: 'Avatar erfolgreich hochgeladen'
     });
 
@@ -125,7 +125,7 @@ router.get('/:id/avatar', requireAuth, async (req, res) => {
     }
     
     res.json({
-      avatarUrl: result.rows[0].avatar_url || null
+      avatar_url: result.rows[0].avatar_url || null
     });
   } catch (error) {
     console.error('Get avatar error:', error);

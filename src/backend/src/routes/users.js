@@ -50,12 +50,12 @@ router.get('/me', requireAuth, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
-      avatarUrl: user.avatar_url,
+      avatar_url: user.avatar_url,
       lastLogin: user.last_login,
       createdAt: user.created_at,
       permissions: user.permissions,
-        avatarUrl: user.avatar_url,
-      avatarUrl: user.avatar_url || DEFAULT_USER_PERMISSIONS
+        avatar_url: user.avatar_url,
+      avatar_url: user.avatar_url || DEFAULT_USER_PERMISSIONS
     });
   } catch (error) {
     console.error('Get profile error:', error);
@@ -88,8 +88,8 @@ router.get('/me/permissions', requireAuth, async (req, res) => {
     res.json({
       role: user.role,
       permissions: user.permissions,
-        avatarUrl: user.avatar_url,
-      avatarUrl: user.avatar_url || DEFAULT_USER_PERMISSIONS
+        avatar_url: user.avatar_url,
+      avatar_url: user.avatar_url || DEFAULT_USER_PERMISSIONS
     });
   } catch (error) {
     console.error('Get permissions error:', error);
@@ -120,8 +120,8 @@ router.put('/me', requireAuth, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
-      avatarUrl: user.avatar_url,
-      avatarUrl: user.avatar_url
+      avatar_url: user.avatar_url,
+      avatar_url: user.avatar_url
     });
   } catch (error) {
     console.error('Update profile error:', error);
@@ -188,12 +188,12 @@ router.get('/', requireAdmin, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
-      avatarUrl: user.avatar_url,
+      avatar_url: user.avatar_url,
       lastLogin: user.last_login,
       createdAt: user.created_at,
       permissions: user.permissions,
-        avatarUrl: user.avatar_url,
-      avatarUrl: user.avatar_url || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
+        avatar_url: user.avatar_url,
+      avatar_url: user.avatar_url || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
     }));
     
     res.json(users);
@@ -231,12 +231,12 @@ router.get('/:id', requireAuth, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
-      avatarUrl: user.avatar_url,
+      avatar_url: user.avatar_url,
       lastLogin: user.last_login,
       createdAt: user.created_at,
       permissions: user.permissions,
-        avatarUrl: user.avatar_url,
-      avatarUrl: user.avatar_url || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
+        avatar_url: user.avatar_url,
+      avatar_url: user.avatar_url || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
     });
   } catch (error) {
     console.error('Get user error:', error);
@@ -275,8 +275,8 @@ router.get('/:id/permissions', requireAdmin, async (req, res) => {
       username: user.username,
       role: user.role,
       permissions: user.permissions,
-        avatarUrl: user.avatar_url,
-      avatarUrl: user.avatar_url || DEFAULT_USER_PERMISSIONS
+        avatar_url: user.avatar_url,
+      avatar_url: user.avatar_url || DEFAULT_USER_PERMISSIONS
     });
   } catch (error) {
     console.error('Get user permissions error:', error);
@@ -413,10 +413,10 @@ router.post('/', requireAdmin, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
-      avatarUrl: user.avatar_url,
+      avatar_url: user.avatar_url,
       permissions: user.permissions,
-        avatarUrl: user.avatar_url,
-      avatarUrl: user.avatar_url
+        avatar_url: user.avatar_url,
+      avatar_url: user.avatar_url
     });
   } catch (error) {
     console.error('Create user error:', error);
@@ -541,10 +541,10 @@ router.put('/:id', requireAuth, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
-      avatarUrl: user.avatar_url,
+      avatar_url: user.avatar_url,
       permissions: user.permissions,
-        avatarUrl: user.avatar_url,
-      avatarUrl: user.avatar_url
+        avatar_url: user.avatar_url,
+      avatar_url: user.avatar_url
     });
   } catch (error) {
     console.error('Update user error:', error);
