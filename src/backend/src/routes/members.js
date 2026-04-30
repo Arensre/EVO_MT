@@ -75,7 +75,14 @@ router.get('/', requireAuth, async (req, res) => {
     query += ` ORDER BY m.last_name, m.first_name`;
     
     const result = await pool.query(query, params);
-    res.json(result.rows);
+    
+    // Transform is_active to status for frontend compatibility
+    const members = result.rows.map(m => ({
+      ...m,
+      status: m.is_active ? 'active' : 'inactive'
+    }));
+    
+    res.json(members);
   } catch (error) {
     console.error('Error fetching members:', error);
     res.status(500).json({ error: 'Fehler beim Laden der Mitglieder' });
@@ -117,6 +124,7 @@ router.get('/:id', requireAuth, async (req, res) => {
     
     res.json({
       ...member,
+      status: member.is_active ? 'active' : 'inactive',
       functions: functionsResult.rows,
       membership_duration: duration
     });
