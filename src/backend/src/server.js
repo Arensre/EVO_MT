@@ -31,6 +31,7 @@ const userRoutes = require('./routes/users');
 
 const avatarRoutes = require('./routes/avatar');
 const stammdatenRoutes = require('./routes/stammdaten');
+const memberRoutes = require(.x2froutesx2fmembers);
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

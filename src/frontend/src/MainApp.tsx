@@ -8,6 +8,9 @@ import { CustomerModal } from './components/CustomerModal';
 import { SupplierList } from './components/SupplierList';
 import { SupplierDetail } from './components/SupplierDetail';
 import { SupplierModal } from './components/SupplierModal';
+import { MemberList } from './components/MemberList';
+import { MemberDetail } from './components/MemberDetail';
+import { MemberModal } from './components/MemberModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
@@ -15,7 +18,28 @@ import { Stammdaten } from './components/Stammdaten';
 import { useAuth } from './contexts/AuthContext';
 import { customerApi, supplierApi } from './api';
 import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
+import axios from 'axios';
 
+// API base URL for members
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+interface Member {
+  id: string;
+  member_number: string;
+  first_name: string;
+  last_name: string;
+  membership_type: 'A' | 'B' | 'C' | 'D';
+  membership_status: 'aktiv' | 'inaktiv' | 'suspendiert';
+  email?: string;
+  phone?: string;
+  birthday?: string;
+  address_street?: string;
+  address_zip?: string;
+  address_city?: string;
+  entry_date?: string;
+  exit_date?: string | null;
+  notes?: string;
+}
 
 function HomeView() {
   return (
@@ -72,6 +96,85 @@ function ProfileView() {
 // Users View Component
 function UsersView() {
   return <UserManagement />;
+}
+
+// Members View Component
+function MembersView() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [memberToEdit, setMemberToEdit] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
+
+  const { isLoading } = useQuery({
+    queryKey: ['members'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/members`);
+      return response.data.data || response.data;
+    },
+    refetchOnWindowFocus: false,
+  });
+
+  const handleAddNew = () => {
+    setMemberToEdit(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSelectMember = (member: Member) => {
+    setSelectedMember(member);
+  };
+
+  const handleBackToList = () => {
+    setSelectedMember(null);
+  };
+
+  const handleEdit = () => {
+    if (selectedMember) {
+      setMemberToEdit(selectedMember.id);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleSave = () => {
+    queryClient.invalidateQueries({ queryKey: ['members'] });
+    if (selectedMember) {
+      queryClient.invalidateQueries({ queryKey: ['member', selectedMember.id] });
+    }
+    setIsModalOpen(false);
+  };
+
+  // Desktop Split-View
+  return (
+    <div className="flex h-full">
+      <div className={`${selectedMember ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+        {isLoading ? (
+          <div className="text-center py-12">Laden...</div>
+        ) : (
+          <MemberList
+            onSelectMember={handleSelectMember}
+            onCreateNew={handleAddNew}
+          />
+        )}
+      </div>
+
+      {selectedMember && (
+        <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
+          <MemberDetail
+            memberId={selectedMember.id}
+            onBack={handleBackToList}
+            onEdit={handleEdit}
+          />
+        </div>
+      )}
+
+      <MemberModal
+        open={isModalOpen}
+        memberId={memberToEdit}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
+      />
+    </div>
+  );
 }
 
 // Customer View Component
@@ -410,6 +513,8 @@ export function MainApp() {
         return <CustomerView  />;
       case 'suppliers':
         return <SupplierView  />;
+      case 'members':
+        return <MembersView />;
       case 'settings':
         return <SettingsView />;
       case 'profile':

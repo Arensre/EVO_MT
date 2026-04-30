@@ -33,7 +33,8 @@ async function getUserPermissions(userId) {
     const defaultPermissions = {
       customers: { read: true, write: true, delete: false },
       suppliers: { read: true, write: false, delete: false },
-      materials: { read: false, write: false, delete: false }
+      materials: { read: false, write: false, delete: false },
+      members: { read: true, write: false, delete: false }
     };
     
     // Merge with defaults to ensure all modules exist
