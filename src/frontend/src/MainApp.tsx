@@ -11,6 +11,7 @@ import { SupplierModal } from './components/SupplierModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
+import { Stammdaten } from './components/Stammdaten';
 import { useAuth } from './contexts/AuthContext';
 import { customerApi, supplierApi } from './api';
 import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
@@ -60,14 +61,7 @@ function HomeView() {
 }
 
 function SettingsView() {
-  return (
-    <div className="max-w-2xl">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Einstellungen</h2>
-      <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-gray-500">Einstellungen werden bald verfügbar sein...</p>
-      </div>
-    </div>
-  );
+  return <Stammdaten />;
 }
 
 // Profile View Component

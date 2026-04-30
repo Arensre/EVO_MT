@@ -30,9 +30,11 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 
 const avatarRoutes = require('./routes/avatar');
+const stammdatenRoutes = require('./routes/stammdaten');
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/stammdaten', stammdatenRoutes);
 
 app.use('/api/users', avatarRoutes);
 app.use('/uploads/avatars', express.static(path.join(__dirname, '../uploads/avatars')));
