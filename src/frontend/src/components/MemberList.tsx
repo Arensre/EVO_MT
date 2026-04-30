@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { Plus, Filter, Search, RotateCcw, User, X } from 'lucide-react';
-import type { Member, MemberType } from '../types';
+import type { Member } from '../types';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
 
 interface MemberListProps {
   members: Member[];
@@ -17,6 +21,15 @@ export function MemberList({ members, selectedId, onAddNew, onSelect, onDelete, 
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [activeFilters, setActiveFilters] = useState<{ search?: string; typeId?: number } | null>(null);
+
+  // Mitgliedsarten dynamisch aus Stammdaten laden
+  const { data: memberTypes = [] } = useQuery({
+    queryKey: ['member-types'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/stammdaten/member-types`);
+      return response.data;
+    }
+  });
 
   const hasActiveFilters = activeFilters?.search || activeFilters?.typeId;
   const shouldShowFilters = showFilters || hasActiveFilters;
@@ -40,9 +53,6 @@ export function MemberList({ members, selectedId, onAddNew, onSelect, onDelete, 
       onFilterChange({});
     }
   };
-
-  // Get unique member types from members data
-  const memberTypes = Array.from(new Set(members.map(m => m.member_type).filter(Boolean))) as MemberType[];
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -98,14 +108,14 @@ export function MemberList({ members, selectedId, onAddNew, onSelect, onDelete, 
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mitgliedertyp</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mitgliedsart</label>
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 >
                   <option value="">Alle Typen</option>
-                  {memberTypes.map((type) => (
+                  {memberTypes.map((type: any) => (
                     <option key={type.id} value={type.id}>{type.name}</option>
                   ))}
                 </select>
@@ -145,7 +155,7 @@ export function MemberList({ members, selectedId, onAddNew, onSelect, onDelete, 
                 )}
                 {activeFilters?.typeId && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                    Typ: {memberTypes.find(t => t.id === activeFilters.typeId)?.name}
+                    Typ: {memberTypes.find((t: any) => t.id === activeFilters.typeId)?.name}
                     <button 
                       onClick={() => { setTypeFilter(''); applyFilters(); }} 
                       className="hover:text-blue-600 p-0.5"
