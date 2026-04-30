@@ -10,7 +10,6 @@ import { SupplierDetail } from './components/SupplierDetail';
 import { SupplierModal } from './components/SupplierModal';
 import { MemberList } from './components/MemberList';
 import { MemberDetail } from './components/MemberDetail';
-import { MemberModal } from './components/MemberModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
@@ -24,21 +23,14 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
 
 interface Member {
-  id: string;
+  id: number;
   member_number: string;
   first_name: string;
   last_name: string;
-  membership_type: 'A' | 'B' | 'C' | 'D';
-  membership_status: 'aktiv' | 'inaktiv' | 'suspendiert';
   email?: string;
-  phone?: string;
-  birthday?: string;
-  address_street?: string;
-  address_zip?: string;
-  address_city?: string;
+  member_type_name?: string;
   entry_date?: string;
-  exit_date?: string | null;
-  notes?: string;
+  is_active: boolean;
 }
 
 function HomeView() {
@@ -105,14 +97,6 @@ function MembersView() {
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: members = [] } = useQuery({
-    queryKey: ['members'],
-    queryFn: async () => {
-      const response = await axios.get(`${API_URL}/members`);
-      return response.data;
-    }
-  });
-
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
       await axios.post(`${API_URL}/members`, data);
@@ -178,10 +162,11 @@ function MembersView() {
 
       {memberToDelete && (
         <DeleteConfirmModal
+          isOpen={!!memberToDelete}
           title="Mitglied löschen"
           message={`Möchten Sie ${memberToDelete.first_name} ${memberToDelete.last_name} wirklich löschen?`}
           onConfirm={() => deleteMutation.mutate(memberToDelete.id)}
-          onCancel={() => setMemberToDelete(null)}
+          onClose={() => setMemberToDelete(null)}
         />
       )}
     </div>
