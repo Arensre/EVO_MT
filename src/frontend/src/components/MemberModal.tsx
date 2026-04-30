@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { X, UserPlus, Loader2 } from 'lucide-react';
-import type { MemberFormData, MemberType } from '../types';
+import type { MemberFormData } from '../types';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
 
 interface MemberModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (data: MemberFormData) => void;
-  memberTypes?: MemberType[];
-  isLoadingTypes?: boolean;
 }
 
 const initialFormData: MemberFormData = {
@@ -19,10 +21,19 @@ const initialFormData: MemberFormData = {
   status: 'active',
 };
 
-export function MemberModal({ open, onClose, onSave, memberTypes = [], isLoadingTypes = false }: MemberModalProps) {
+export function MemberModal({ open, onClose, onSave }: MemberModalProps) {
   const [formData, setFormData] = useState<MemberFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Mitgliedsarten dynamisch aus Stammdaten laden
+  const { data: memberTypes = [], isLoading: isLoadingTypes } = useQuery({
+    queryKey: ['member-types'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/stammdaten/member-types`);
+      return response.data;
+    }
+  });
 
   useEffect(() => {
     if (open) {
@@ -44,7 +55,7 @@ export function MemberModal({ open, onClose, onSave, memberTypes = [], isLoading
       newErrors.last_name = 'Nachname ist erforderlich';
     }
     if (!formData.member_type_id) {
-      newErrors.member_type_id = 'Mitgliedertyp ist erforderlich';
+      newErrors.member_type_id = 'Mitgliedsart ist erforderlich';
     }
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Ungültige E-Mail-Adresse';
@@ -143,10 +154,10 @@ export function MemberModal({ open, onClose, onSave, memberTypes = [], isLoading
               </div>
             </div>
 
-            {/* Mitgliedertyp */}
+            {/* Mitgliedsart */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mitgliedertyp <span className="text-red-500">*</span>
+                Mitgliedsart <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.member_type_id || ''}
@@ -157,7 +168,7 @@ export function MemberModal({ open, onClose, onSave, memberTypes = [], isLoading
                 disabled={isSubmitting || isLoadingTypes}
               >
                 <option value="">{isLoadingTypes ? 'Laden...' : 'Bitte wählen'}</option>
-                {memberTypes.map((type) => (
+                {memberTypes.map((type: any) => (
                   <option key={type.id} value={type.id}>
                     {type.name}
                   </option>
