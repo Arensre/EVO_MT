@@ -25,7 +25,7 @@ interface MemberDetailProps {
 }
 
 export function MemberDetail({ member, onBack, onSave, onDelete, memberTypes = [], isMobile }: MemberDetailProps) {
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<MemberFormData>({
     first_name: member.first_name,
     last_name: member.last_name,
@@ -126,7 +126,7 @@ export function MemberDetail({ member, onBack, onSave, onDelete, memberTypes = [
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Bearbeiten
                 </button>
@@ -144,7 +144,7 @@ export function MemberDetail({ member, onBack, onSave, onDelete, memberTypes = [
               <>
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Save size={18} />
                   Speichern
