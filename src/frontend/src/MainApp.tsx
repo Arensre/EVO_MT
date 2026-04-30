@@ -97,6 +97,14 @@ function MembersView() {
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const queryClient = useQueryClient();
 
+  const { data: members = [] } = useQuery({
+    queryKey: ['members'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/members`);
+      return response.data;
+    }
+  });
+
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
       await axios.post(`${API_URL}/members`, data);
@@ -133,11 +141,11 @@ function MembersView() {
     <div className="flex h-full">
       <div className={`${selectedMember || isCreating ? 'w-2/5' : 'w-full'} transition-all duration-300`}>
         <MemberList
-          onSelectMember={setSelectedMember}
-          selectedMemberId={selectedMember?.id || null}
-          onCreateNew={() => setIsCreating(true)}
-          onEditMember={(m) => setSelectedMember(m)}
-          onDeleteMember={setMemberToDelete}
+          members={members}
+          selectedId={selectedMember?.id}
+          onSelect={setSelectedMember}
+          onAddNew={() => setIsCreating(true)}
+          onDelete={setMemberToDelete}
         />
       </div>
 
@@ -145,7 +153,7 @@ function MembersView() {
         <div className="w-3/5 border-l border-gray-200 bg-gray-50">
           {isCreating ? (
             <MemberDetail
-              member={null}
+              member={{} as Member}
               onBack={() => setIsCreating(false)}
               onSave={createMutation.mutate}
             />

@@ -122,3 +122,52 @@ export interface User {
   avatar_url?: string;
   updated_at?: string;
 }
+
+// Member types
+export interface MemberType {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface Member {
+  id: number;
+  member_number: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  postal_code?: string;
+  city?: string;
+  country?: string;
+  birth_date?: string;
+  member_type_id?: number;
+  member_type?: MemberType;
+  member_type_name?: string;
+  entry_date?: string;
+  join_date?: string;
+  notes?: string;
+  is_active: boolean;
+  status?: 'active' | 'inactive' | 'suspended';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MemberFormData {
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  postal_code?: string;
+  city?: string;
+  country?: string;
+  birth_date?: string;
+  member_type_id?: number;
+  entry_date?: string;
+  join_date?: string;
+  notes?: string;
+  is_active?: boolean;
+  status?: 'active' | 'inactive' | 'suspended';
+}
