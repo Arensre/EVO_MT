@@ -100,79 +100,90 @@ function UsersView() {
 
 // Members View Component
 function MembersView() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [memberToEdit, setMemberToEdit] = useState<string | null>(null);
-
+  const [isCreating, setIsCreating] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const queryClient = useQueryClient();
 
-  const { isLoading } = useQuery({
+  const { data: members = [] } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/members`);
-      return response.data.data || response.data;
-    },
-    refetchOnWindowFocus: false,
+      return response.data;
+    }
   });
 
-  const handleAddNew = () => {
-    setMemberToEdit(null);
-    setIsModalOpen(true);
-  };
-
-  const handleSelectMember = (member: Member) => {
-    setSelectedMember(member);
-  };
-
-  const handleBackToList = () => {
-    setSelectedMember(null);
-  };
-
-  const handleEdit = () => {
-    if (selectedMember) {
-      setMemberToEdit(selectedMember.id);
-      setIsModalOpen(true);
+  const createMutation = useMutation({
+    mutationFn: async (data: any) => {
+      await axios.post(`${API_URL}/members`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      setIsCreating(false);
     }
-  };
+  });
 
-  const handleSave = () => {
-    queryClient.invalidateQueries({ queryKey: ['members'] });
-    if (selectedMember) {
-      queryClient.invalidateQueries({ queryKey: ['member', selectedMember.id] });
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number, data: any }) => {
+      await axios.put(`${API_URL}/members/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      queryClient.invalidateQueries({ queryKey: ['member', selectedMember?.id] });
     }
-    setIsModalOpen(false);
-  };
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await axios.delete(`${API_URL}/members/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      setSelectedMember(null);
+      setMemberToDelete(null);
+    }
+  });
 
   // Desktop Split-View
   return (
     <div className="flex h-full">
-      <div className={`${selectedMember ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
-        {isLoading ? (
-          <div className="text-center py-12">Laden...</div>
-        ) : (
-          <MemberList
-            onSelectMember={handleSelectMember}
-            onCreateNew={handleAddNew}
-          />
-        )}
+      <div className={`${selectedMember || isCreating ? 'w-2/5' : 'w-full'} transition-all duration-300`}>
+        <MemberList
+          onSelectMember={setSelectedMember}
+          selectedMemberId={selectedMember?.id || null}
+          onCreateNew={() => setIsCreating(true)}
+          onEditMember={(m) => setSelectedMember(m)}
+          onDeleteMember={setMemberToDelete}
+        />
       </div>
 
-      {selectedMember && (
-        <div className="w-1/2 border-l border-gray-200 overflow-auto bg-gray-50">
-          <MemberDetail
-            memberId={selectedMember.id}
-            onBack={handleBackToList}
-            onEdit={handleEdit}
-          />
+      {(selectedMember || isCreating) && (
+        <div className="w-3/5 border-l border-gray-200 bg-gray-50">
+          {isCreating ? (
+            <MemberDetail
+              member={null}
+              onBack={() => setIsCreating(false)}
+              onSave={createMutation.mutate}
+            />
+          ) : selectedMember ? (
+            <MemberDetail
+              member={selectedMember}
+              onBack={() => setSelectedMember(null)}
+              onSave={(data) => updateMutation.mutate({ id: selectedMember.id, data })}
+              onDelete={() => setMemberToDelete(selectedMember)}
+            />
+          ) : null}
         </div>
       )}
 
-      <MemberModal
-        open={isModalOpen}
-        memberId={memberToEdit}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-      />
+      {memberToDelete && (
+        <DeleteConfirmModal
+          title="Mitglied löschen"
+          message={`Möchten Sie ${memberToDelete.first_name} ${memberToDelete.last_name} wirklich löschen?`}
+          onConfirm={() => deleteMutation.mutate(memberToDelete.id)}
+          onCancel={() => setMemberToDelete(null)}
+        />
+      )}
     </div>
   );
 }

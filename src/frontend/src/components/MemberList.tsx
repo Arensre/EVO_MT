@@ -1,189 +1,144 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Users, User, Award, Crown, Heart } from 'lucide-react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Plus, Search, Users, Edit2, Trash2 } from 'lucide-react';
 import axios from 'axios';
 
-// API base URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
+const API_URL = 'http://172.16.0.125:3001/api';
 
 interface Member {
-  id: string;
+  id: number;
   member_number: string;
   first_name: string;
   last_name: string;
-  membership_type: 'A' | 'B' | 'C' | 'D';
-  membership_status: 'aktiv' | 'inaktiv' | 'suspendiert';
-  email?: string;
-  phone?: string;
-  birthday?: string;
+  email: string;
+  member_type_name: string;
+  entry_date: string;
+  is_active: boolean;
 }
 
 interface MemberListProps {
-  onSelectMember?: (member: Member) => void;
-  onCreateNew?: () => void;
+  onSelectMember: (member: Member) => void;
+  selectedMemberId: number | null;
+  onCreateNew: () => void;
+  onEditMember?: (member: Member) => void;
+  onDeleteMember?: (member: Member) => void;
 }
 
-const membershipTypeIcons: Record<string, typeof User> = {
-  A: Crown,
-  B: User,
-  C: Heart,
-  D: Award,
-};
-
-const membershipTypeLabels: Record<string, string> = {
-  A: 'A - Vollmitglied',
-  B: 'B - Jugend',
-  C: 'C - Fördermitglied',
-  D: 'D - Ehrenmitglied',
-};
-
-const statusColors: Record<string, string> = {
-  aktiv: 'bg-emerald-100 text-emerald-700',
-  inaktiv: 'bg-gray-100 text-gray-600',
-  suspendiert: 'bg-red-100 text-red-700',
-};
-
-export function MemberList({ onSelectMember, onCreateNew }: MemberListProps) {
-  const [members, setMembers] = useState<Member[]>([]);
-  const [loading, setLoading] = useState(true);
+export function MemberList({ onSelectMember, selectedMemberId, onCreateNew, onEditMember, onDeleteMember }: MemberListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchMembers = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.get(`${API_URL}/members`);
-      setMembers(response.data.data || response.data);
-    } catch (err) {
-      console.error('Error fetching members:', err);
-      setError('Fehler beim Laden der Mitglieder');
-    } finally {
-      setLoading(false);
+  const { data: members = [], isLoading } = useQuery({
+    queryKey: ['members', searchTerm],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/members`, {
+        params: { search: searchTerm || undefined }
+      });
+      return response.data;
     }
-  }, []);
-
-  useEffect(() => {
-    fetchMembers();
-  }, [fetchMembers]);
-
-  const filteredMembers = members.filter((member) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      member.member_number.toLowerCase().includes(searchLower) ||
-      member.first_name.toLowerCase().includes(searchLower) ||
-      member.last_name.toLowerCase().includes(searchLower) ||
-      member.email?.toLowerCase().includes(searchLower)
-    );
   });
 
-  const handleRowClick = (member: Member) => {
-    if (onSelectMember) {
-      onSelectMember(member);
-    }
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Users size={28} />
-              Mitglieder
-            </h2>
-            <p className="text-gray-500 mt-1">
-              {members.length} Mitglieder
-            </p>
-          </div>
-
+    <div className="h-full flex flex-col bg-white border-r border-gray-200">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Users size={20} />
+            Mitglieder
+          </h2>
           <button
             onClick={onCreateNew}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
           >
-            <Plus size={20} />
+            <Plus size={16} />
             Neu
           </button>
         </div>
 
+        {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
-            placeholder="Suche nach Mitgliedsnummer, Name oder E-Mail..."
+            placeholder="Suchen..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
       </div>
 
-      {error && (
-        <div className="p-4 bg-red-50 text-red-700 border-b border-red-200">
-          {error}
-        </div>
-      )}
-
-      <div className="divide-y divide-gray-200">
-        {loading ? (
-          <div className="p-8 text-center text-gray-500">
-            Lade Mitglieder...
-          </div>
-        ) : filteredMembers.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            Keine Mitglieder gefunden
-          </div>
+      {/* List */}
+      <div className="flex-1 overflow-y-auto">
+        {isLoading ? (
+          <div className="p-4 text-center text-gray-500">Laden...</div>
+        ) : members.length === 0 ? (
+          <div className="p-4 text-center text-gray-500">Keine Mitglieder gefunden</div>
         ) : (
-          filteredMembers.map((member) => {
-            const Icon = membershipTypeIcons[member.membership_type] || User;
-            return (
+          <div className="divide-y divide-gray-100">
+            {members.map((member: Member) => (
               <div
                 key={member.id}
-                onClick={() => handleRowClick(member)}
-                className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                className={`p-4 hover:bg-gray-50 transition-colors ${
+                  selectedMemberId === member.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 bg-gray-100 rounded-lg">
-                      <Icon size={20} className="text-gray-600" />
+                <div className="flex items-start justify-between">
+                  <div 
+                    className="flex-1 cursor-pointer"
+                    onClick={() => onSelectMember(member)}
+                  >
+                    <div className="font-medium text-gray-900">
+                      {member.last_name}, {member.first_name}
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900">
-                          {member.last_name}, {member.first_name}
-                        </span>
-                        <span className="text-xs text-gray-400 font-mono bg-gray-100 px-2 py-0.5 rounded">
-                          {member.member_number}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-500 flex items-center gap-2">
-                        <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">
-                          {membershipTypeLabels[member.membership_type] || member.membership_type}
-                        </span>
-                        {member.email && (
-                          <>
-                            <span className="text-gray-400">•</span>
-                            <span>{member.email}</span>
-                          </>
-                        )}
-                      </div>
+                    <div className="text-sm text-gray-500">
+                      {member.member_number}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">{member.member_type_name}</div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        member.is_active
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {member.is_active ? 'Aktiv' : 'Inaktiv'}
+                      </span>
                     </div>
                   </div>
-
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[member.membership_status] || 'bg-gray-100 text-gray-600'}`}>
-                    {member.membership_status}
-                  </span>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-1 ml-2">
+                    {onEditMember && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditMember(member);
+                        }}
+                        className="p-1.5 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                        title="Bearbeiten"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                    )}
+                    {onDeleteMember && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteMember(member);
+                        }}
+                        className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
+                        title="Löschen"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            );
-          })
+            ))}
+          </div>
         )}
-      </div>
-
-      <div className="p-4 border-t border-gray-200 text-sm text-gray-500">
-        {filteredMembers.length} von {members.length} Mitgliedern angezeigt
       </div>
     </div>
   );
 }
-
-export default MemberList;
