@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const { Pool } = require('pg');
 const { requireAuth } = require('./middleware/auth');
@@ -24,15 +25,17 @@ const pool = new Pool({
 // Middleware
 app.use(cors({ origin: '*' }));
 app.use(express.json());
-
 // Import routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 
+const avatarRoutes = require('./routes/avatar');
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
+app.use('/api/users', avatarRoutes);
+app.use('/uploads/avatars', express.static(path.join(__dirname, '../../uploads/avatars')));
 // Generate next customer number
 async function generateCustomerNumber() {
   const result = await pool.query(

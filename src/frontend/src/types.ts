@@ -17,6 +17,7 @@ export interface Customer {
   notes?: string;
   status: string;
   created_at: string;
+  avatar_url?: string;
   updated_at: string;
 }
 
@@ -48,6 +49,7 @@ export interface Supplier {
   notes?: string;
   status: string;
   created_at: string;
+  avatar_url?: string;
   updated_at: string;
 }
 
@@ -78,6 +80,7 @@ export interface Person {
   is_primary?: boolean;
   notes?: string;
   created_at: string;
+  avatar_url?: string;
   updated_at: string;
 }
 
@@ -116,5 +119,6 @@ export interface User {
   role: 'admin' | 'user';
   permissions: UserPermissions;
   created_at?: string;
+  avatar_url?: string;
   updated_at?: string;
 }

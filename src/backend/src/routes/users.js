@@ -33,7 +33,7 @@ const DEFAULT_ADMIN_PERMISSIONS = {
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const userResult = await pool.query(
-      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions FROM users WHERE id = $1',
+      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions, avatar_url FROM users WHERE id = $1',
       [req.user.id]
     );
     
@@ -50,9 +50,12 @@ router.get('/me', requireAuth, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
+      avatarUrl: user.avatar_url,
       lastLogin: user.last_login,
       createdAt: user.created_at,
-      permissions: user.permissions || DEFAULT_USER_PERMISSIONS
+      permissions: user.permissions,
+        avatarUrl: user.avatar_url,
+      avatarUrl: user.avatar_url || DEFAULT_USER_PERMISSIONS
     });
   } catch (error) {
     console.error('Get profile error:', error);
@@ -84,7 +87,9 @@ router.get('/me/permissions', requireAuth, async (req, res) => {
     
     res.json({
       role: user.role,
-      permissions: user.permissions || DEFAULT_USER_PERMISSIONS
+      permissions: user.permissions,
+        avatarUrl: user.avatar_url,
+      avatarUrl: user.avatar_url || DEFAULT_USER_PERMISSIONS
     });
   } catch (error) {
     console.error('Get permissions error:', error);
@@ -114,7 +119,9 @@ router.put('/me', requireAuth, async (req, res) => {
       role: user.role,
       first_name: user.first_name,
       last_name: user.last_name,
-      isActive: user.is_active
+      isActive: user.is_active,
+      avatarUrl: user.avatar_url,
+      avatarUrl: user.avatar_url
     });
   } catch (error) {
     console.error('Update profile error:', error);
@@ -170,7 +177,7 @@ router.put('/me/password', requireAuth, async (req, res) => {
 router.get('/', requireAdmin, async (req, res) => {
   try {
     const usersResult = await pool.query(
-      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions FROM users ORDER BY username ASC'
+      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions, avatar_url FROM users ORDER BY username ASC'
     );
     
     const users = usersResult.rows.map(user => ({
@@ -181,9 +188,12 @@ router.get('/', requireAdmin, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
+      avatarUrl: user.avatar_url,
       lastLogin: user.last_login,
       createdAt: user.created_at,
-      permissions: user.permissions || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
+      permissions: user.permissions,
+        avatarUrl: user.avatar_url,
+      avatarUrl: user.avatar_url || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
     }));
     
     res.json(users);
@@ -204,7 +214,7 @@ router.get('/:id', requireAuth, async (req, res) => {
     }
     
     const userResult = await pool.query(
-      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions FROM users WHERE id = $1',
+      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions, avatar_url FROM users WHERE id = $1',
       [userId]
     );
     
@@ -221,9 +231,12 @@ router.get('/:id', requireAuth, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
+      avatarUrl: user.avatar_url,
       lastLogin: user.last_login,
       createdAt: user.created_at,
-      permissions: user.permissions || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
+      permissions: user.permissions,
+        avatarUrl: user.avatar_url,
+      avatarUrl: user.avatar_url || (user.role === 'admin' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_USER_PERMISSIONS)
     });
   } catch (error) {
     console.error('Get user error:', error);
@@ -261,7 +274,9 @@ router.get('/:id/permissions', requireAdmin, async (req, res) => {
       userId: user.id,
       username: user.username,
       role: user.role,
-      permissions: user.permissions || DEFAULT_USER_PERMISSIONS
+      permissions: user.permissions,
+        avatarUrl: user.avatar_url,
+      avatarUrl: user.avatar_url || DEFAULT_USER_PERMISSIONS
     });
   } catch (error) {
     console.error('Get user permissions error:', error);
@@ -398,7 +413,10 @@ router.post('/', requireAdmin, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
-      permissions: user.permissions
+      avatarUrl: user.avatar_url,
+      permissions: user.permissions,
+        avatarUrl: user.avatar_url,
+      avatarUrl: user.avatar_url
     });
   } catch (error) {
     console.error('Create user error:', error);
@@ -523,7 +541,10 @@ router.put('/:id', requireAuth, async (req, res) => {
       first_name: user.first_name,
       last_name: user.last_name,
       isActive: user.is_active,
-      permissions: user.permissions
+      avatarUrl: user.avatar_url,
+      permissions: user.permissions,
+        avatarUrl: user.avatar_url,
+      avatarUrl: user.avatar_url
     });
   } catch (error) {
     console.error('Update user error:', error);

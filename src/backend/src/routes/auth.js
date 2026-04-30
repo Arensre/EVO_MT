@@ -213,7 +213,7 @@ router.post('/refresh', async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const userResult = await pool.query(
-      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions FROM users WHERE id = $1',
+      'SELECT id, username, email, role, first_name, last_name, is_active, last_login, created_at, permissions, avatar_url FROM users WHERE id = $1',
       [req.user.id]
     );
     

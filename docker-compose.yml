@@ -32,8 +32,11 @@ services:
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASS:-postgres}
       - CORS_ORIGIN=http://localhost
+      - AVATAR_UPLOAD_DIR=/app/uploads/avatars
     ports:
       - "3001:3001"
+    volumes:
+      - avatar_uploads:/app/uploads/avatars
     networks:
       - evo_mt_network
     depends_on:
@@ -57,6 +60,7 @@ services:
 
 volumes:
   postgres_data:
+  avatar_uploads:
 
 networks:
   evo_mt_network:

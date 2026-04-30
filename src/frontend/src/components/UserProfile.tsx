@@ -1,11 +1,14 @@
 import type { ModulePermissions } from '../types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { AvatarUpload } from './AvatarUpload';
 import axios from 'axios';
 
 export function UserProfile() {
   const { user, permissions, canRead } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'permissions'>('profile');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isLoadingAvatar, setIsLoadingAvatar] = useState(true);
   
   // Password change form state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -14,6 +17,29 @@ export function UserProfile() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Fetch current avatar URL
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setIsLoadingAvatar(true);
+        const response = await axios.get(`/api/users/${user.id}/avatar`);
+        setAvatarUrl(response.data.avatarUrl);
+      } catch (error) {
+        console.error('Failed to fetch avatar:', error);
+      } finally {
+        setIsLoadingAvatar(false);
+      }
+    };
+
+    fetchAvatar();
+  }, [user?.id]);
+
+  const handleAvatarChange = (newAvatarUrl: string | null) => {
+    setAvatarUrl(newAvatarUrl);
+  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +123,29 @@ export function UserProfile() {
         <div className="p-6">
           {activeTab === 'profile' ? (
             <div className="space-y-8">
+              {/* Avatar Section */}
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Profilbild</h2>
+                {isLoadingAvatar ? (
+                  <div className="flex items-center gap-4">
+                    <div className="w-24 h-24 rounded-full bg-gray-200 animate-pulse" />
+                    <div className="space-y-2">
+                      <div className="w-32 h-8 bg-gray-200 animate-pulse rounded" />
+                    </div>
+                  </div>
+                ) : (
+                  <AvatarUpload
+                    userId={user.id}
+                    currentAvatarUrl={avatarUrl}
+                    firstName={user.firstName || user.first_name}
+                    lastName={user.lastName || user.last_name}
+                    onAvatarChange={handleAvatarChange}
+                  />
+                )}
+              </div>
+
+              <hr className="border-gray-200" />
+
               {/* Profile Info */}
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Profilinformationen</h2>
@@ -118,7 +167,7 @@ export function UserProfile() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                     <div className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                      {user.firstName} {user.lastName}
+                      {user.firstName || user.first_name} {user.lastName || user.last_name}
                     </div>
                   </div>
                 </div>
