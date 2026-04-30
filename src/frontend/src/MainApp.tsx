@@ -98,6 +98,14 @@ function MembersView() {
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const queryClient = useQueryClient();
 
+  const { data: memberTypes = [] } = useQuery({
+    queryKey: ['member-types'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/stammdaten/member-types`);
+      return response.data;
+    }
+  });
+
   const { data: members = [] } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
@@ -148,6 +156,7 @@ function MembersView() {
             onSelect={setSelectedMember}
             onAddNew={() => setIsModalOpen(true)}
             onDelete={setMemberToDelete}
+            memberTypes={memberTypes}
           />
         </div>
 
@@ -158,6 +167,7 @@ function MembersView() {
               onBack={() => setSelectedMember(null)}
               onSave={(data) => updateMutation.mutate({ id: selectedMember.id, data })}
               onDelete={() => setMemberToDelete(selectedMember)}
+              memberTypes={memberTypes}
             />
           </div>
         )}
@@ -165,9 +175,10 @@ function MembersView() {
 
       {/* Modal für Neuanlage */}
       <MemberModal
-        open={isModalOpen}
+        isOpen={isModalOpen}
+        memberTypes={memberTypes}
         onClose={() => setIsModalOpen(false)}
-        onSave={createMutation.mutate}
+        onSubmit={createMutation.mutate}
       />
 
       {memberToDelete && (
