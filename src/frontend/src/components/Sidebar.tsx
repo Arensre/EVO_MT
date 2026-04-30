@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
+import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
 // APP VERSION - Increment on every deployment
-const APP_VERSION = '1.0.5-2026-04-30-avatar';
+const APP_VERSION = '1.0.6-2026-04-30-menu';
 
 interface SidebarProps {
   activeView: View;
@@ -14,16 +14,14 @@ interface SidebarProps {
 
 export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const [settingsExpanded, setSettingsExpanded] = useState(false);
+  const [erpExpanded, setErpExpanded] = useState(false);
+  const [membersExpanded, setMembersExpanded] = useState(false);
+  const [adminExpanded, setAdminExpanded] = useState(false);
   const { user } = useAuth();
 
-  const mainMenuItems: { id: View; label: string; icon: typeof Home }[] = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'customers', label: 'Kunden', icon: Users },
-    { id: 'suppliers', label: 'Lieferanten', icon: Truck },
-  ];
-
-  const isSettingsActive = activeView === 'settings' || activeView === 'users';
+  const isErpActive = activeView === 'customers' || activeView === 'suppliers';
+  const isMembersActive = activeView === 'members';
+  const isAdminActive = activeView === 'settings' || activeView === 'users';
 
   // Generate initials for avatar placeholder
   const getInitials = () => {
@@ -49,48 +47,125 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
       </div>
 
       <nav className="flex-1 py-4">
-        {/* Hauptmenü */}
-        {mainMenuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeView === item.id;
-          
-          return (
-            <button
-              key={item.id}
-              onClick={() => onViewChange(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-              }`}
-            >
-              <Icon size={20} />
-              {isOpen && <span>{item.label}</span>}
-            </button>
-          );
-        })}
+        {/* Home */}
+        <button
+          onClick={() => onViewChange('home')}
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+            activeView === 'home'
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+          }`}
+        >
+          <Home size={20} />
+          {isOpen && <span>Home</span>}
+        </button>
 
-        {/* Einstellungen (aufgklappbar) */}
+        {/* ERP (aufgklappbar) */}
         <div className="mt-4">
           <button
-            onClick={() => setSettingsExpanded(!settingsExpanded)}
+            onClick={() => setErpExpanded(!erpExpanded)}
             className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
-              isSettingsActive
+              isErpActive
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Building2 size={20} />
+              {isOpen && <span>ERP</span>}
+            </div>
+            {isOpen && (
+              erpExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+            )}
+          </button>
+
+          {/* Untermenü ERP */}
+          {erpExpanded && isOpen && (
+            <div className="bg-gray-900 py-2">
+              <button
+                onClick={() => onViewChange('customers')}
+                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                  activeView === 'customers'
+                    ? 'text-blue-400'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Users size={16} />
+                <span>Kunden</span>
+              </button>
+              <button
+                onClick={() => onViewChange('suppliers')}
+                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                  activeView === 'suppliers'
+                    ? 'text-blue-400'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Truck size={16} />
+                <span>Lieferanten</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Mitgliederverwaltung (aufgklappbar) */}
+        <div className="mt-4">
+          <button
+            onClick={() => setMembersExpanded(!membersExpanded)}
+            className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+              isMembersActive
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <UserCircle size={20} />
+              {isOpen && <span>Mitgliederverwaltung</span>}
+            </div>
+            {isOpen && (
+              membersExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+            )}
+          </button>
+
+          {/* Untermenü Mitglieder */}
+          {membersExpanded && isOpen && (
+            <div className="bg-gray-900 py-2">
+              <button
+                onClick={() => onViewChange('members')}
+                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                  activeView === 'members'
+                    ? 'text-blue-400'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <UsersRound size={16} />
+                <span>Mitglieder</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Administration (aufgklappbar) */}
+        <div className="mt-4">
+          <button
+            onClick={() => setAdminExpanded(!adminExpanded)}
+            className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+              isAdminActive
                 ? 'bg-blue-600 text-white'
                 : 'text-gray-300 hover:bg-gray-700 hover:text-white'
             }`}
           >
             <div className="flex items-center gap-3">
               <Settings size={20} />
-              {isOpen && <span>Einstellungen</span>}
+              {isOpen && <span>Administration</span>}
             </div>
             {isOpen && (
-              settingsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+              adminExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
             )}
           </button>
 
-          {/* Untermenü Einstellungen */}
-          {settingsExpanded && isOpen && (
+          {/* Untermenü Administration */}
+          {adminExpanded && isOpen && (
             <div className="bg-gray-900 py-2">
               <button
                 onClick={() => onViewChange('settings')}
@@ -100,7 +175,8 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <span>Allgemein</span>
+                <Database size={16} />
+                <span>Stammdaten</span>
               </button>
               
               {user?.role === 'admin' && (
