@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
 // APP VERSION - Increment on every deployment
-const APP_VERSION = '1.2.1-2026-04-30';
+const APP_VERSION = '1.4.0-2026-05-02-1916';
 
 interface SidebarProps {
   activeView: View;

@@ -9,7 +9,7 @@ import type { User, UserPermissions } from '../types';
 const defaultPermissions: UserPermissions = {
   customers: { read: true, write: false, delete: false },
   suppliers: { read: true, write: false, delete: false },
-  materials: { read: false, write: false, delete: false }
+  members: { read: true, write: false, delete: false },
 };
 
 interface UserFormData {

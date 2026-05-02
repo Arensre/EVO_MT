@@ -35,21 +35,13 @@ function calculateDuration(entryDate) {
   return { years, months, days };
 }
 
-// Helper to convert empty strings to null for date fields
-function cleanDate(value) {
-  if (!value || value === '' || value === 'undefined' || value === undefined) {
-    return null;
-  }
-  return value;
-}
-
 // GET /api/members - List all members with optional filters
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { search, member_type_id, is_active } = req.query;
     
     let query = `
-      SELECT m.*, m.street as address, mt.name as member_type_name
+      SELECT m.*, mt.name as member_type_name
       FROM members m
       LEFT JOIN member_types mt ON m.member_type_id = mt.id
       WHERE 1=1
@@ -104,7 +96,7 @@ router.get('/:id', requireAuth, async (req, res) => {
     
     // Get member with type info
     const memberResult = await pool.query(
-      `SELECT m.*, m.street as address, mt.name as member_type_name
+      `SELECT m.*, mt.name as member_type_name
        FROM members m
        LEFT JOIN member_types mt ON m.member_type_id = mt.id
        WHERE m.id = $1`,
@@ -149,11 +141,10 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     await client.query('BEGIN');
     
-    // Destructure with address support
     const {
       salutation, title, first_name, last_name, birth_name,
       birth_date, birth_place, gender, marital_status, wedding_date,
-      street, address, postal_code, city, country,
+      street, postal_code, city, country,
       email, phone, mobile,
       member_type_id, entry_date,
       profession, occupation,
@@ -161,19 +152,20 @@ router.post('/', requireAuth, async (req, res) => {
       notes, is_active
     } = req.body;
     
-    // Support both street and address (frontend uses address)
-    const streetValue = address || street;
-    console.log('DEBUG - address:', address, 'street:', street, 'streetValue:', streetValue);
-    
     // Validate required fields
     if (!first_name || !last_name) {
+    \n    // Convert empty strings to null for date fields
+    const cleanBirthDate = birth_date u0026u0026 birth_date !== "" ? birth_date : null;
+    const cleanEntryDate = entry_date u0026u0026 entry_date !== "" ? entry_date : null;
+    const cleanExitDate = exit_date u0026u0026 exit_date !== "" ? exit_date : null;
+    const cleanWeddingDate = wedding_date u0026u0026 wedding_date !== "" ? wedding_date : null;
       return res.status(400).json({ error: 'Vorname und Nachname sind erforderlich' });
+    \n    // Convert empty strings to null for date fields
+    const cleanBirthDate = birth_date u0026u0026 birth_date !== "" ? birth_date : null;
+    const cleanEntryDate = entry_date u0026u0026 entry_date !== "" ? entry_date : null;
+    const cleanExitDate = exit_date u0026u0026 exit_date !== "" ? exit_date : null;
+    const cleanWeddingDate = wedding_date u0026u0026 wedding_date !== "" ? wedding_date : null;
     }
-    
-    // Clean date fields
-    const cleanBirthDate = cleanDate(birth_date);
-    const cleanEntryDate = cleanDate(entry_date);
-    const cleanWeddingDate = cleanDate(wedding_date);
     
     // Generate letter salutation if not provided
     let finalLetterSalutation = letter_salutation;
@@ -202,10 +194,10 @@ router.post('/', requireAuth, async (req, res) => {
       RETURNING *`,
       [
         salutation, title, first_name, last_name, birth_name,
-        cleanBirthDate, birth_place, gender, marital_status, cleanWeddingDate,
-        streetValue, postal_code, city, country || 'Deutschland',
+        birth_date, birth_place, gender, marital_status, wedding_date,
+        street, postal_code, city, country || 'Deutschland',
         email, phone, mobile,
-        member_type_id, cleanEntryDate,
+        member_type_id, entry_date,
         profession, occupation,
         distribution_scope || 'gesamter Verband', finalLetterSalutation,
         notes, is_active !== false
@@ -234,12 +226,10 @@ router.post('/', requireAuth, async (req, res) => {
 router.put('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // Destructure with address support
     const {
       salutation, title, first_name, last_name, birth_name,
       birth_date, birth_place, gender, marital_status, wedding_date,
-      street, address, postal_code, city, country,
+      street, postal_code, city, country,
       email, phone, mobile,
       member_type_id, entry_date, exit_date,
       profession, occupation,
@@ -247,18 +237,19 @@ router.put('/:id', requireAuth, async (req, res) => {
       notes, is_active, is_deceased
     } = req.body;
     
-    // Support both street and address (frontend uses address)
-    const streetValue = address || street;
-    
     if (!first_name || !last_name) {
+    \n    // Convert empty strings to null for date fields
+    const cleanBirthDate = birth_date u0026u0026 birth_date !== "" ? birth_date : null;
+    const cleanEntryDate = entry_date u0026u0026 entry_date !== "" ? entry_date : null;
+    const cleanExitDate = exit_date u0026u0026 exit_date !== "" ? exit_date : null;
+    const cleanWeddingDate = wedding_date u0026u0026 wedding_date !== "" ? wedding_date : null;
       return res.status(400).json({ error: 'Vorname und Nachname sind erforderlich' });
+    \n    // Convert empty strings to null for date fields
+    const cleanBirthDate = birth_date u0026u0026 birth_date !== "" ? birth_date : null;
+    const cleanEntryDate = entry_date u0026u0026 entry_date !== "" ? entry_date : null;
+    const cleanExitDate = exit_date u0026u0026 exit_date !== "" ? exit_date : null;
+    const cleanWeddingDate = wedding_date u0026u0026 wedding_date !== "" ? wedding_date : null;
     }
-    
-    // Clean date fields - convert empty strings to null
-    const cleanBirthDate = cleanDate(birth_date);
-    const cleanEntryDate = cleanDate(entry_date);
-    const cleanExitDate = cleanDate(exit_date);
-    const cleanWeddingDate = cleanDate(wedding_date);
     
     const result = await pool.query(
       `UPDATE members SET
@@ -274,10 +265,10 @@ router.put('/:id', requireAuth, async (req, res) => {
       RETURNING *`,
       [
         salutation, title, first_name, last_name, birth_name,
-        cleanBirthDate, birth_place, gender, marital_status, cleanWeddingDate,
-        streetValue, postal_code, city, country || 'Deutschland',
+        birth_date, birth_place, gender, marital_status, wedding_date,
+        street, postal_code, city, country || 'Deutschland',
         email, phone, mobile,
-        member_type_id, cleanEntryDate, cleanExitDate,
+        member_type_id, entry_date, exit_date,
         profession, occupation,
         distribution_scope || 'gesamter Verband', letter_salutation,
         notes, is_active !== false, is_deceased === true, id
@@ -351,7 +342,7 @@ router.post('/:id/functions', requireAuth, requireAdmin, async (req, res) => {
       `INSERT INTO member_function_mappings (member_id, function_id, start_date, end_date, is_current)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [id, function_id, cleanDate(start_date), cleanDate(end_date), !end_date]
+      [id, function_id, start_date, end_date, !end_date]
     );
     
     res.status(201).json(result.rows[0]);

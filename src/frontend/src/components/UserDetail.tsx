@@ -15,8 +15,24 @@ interface UserDetailProps {
 const defaultPermissions: UserPermissions = {
   customers: { read: true, write: false, delete: false },
   suppliers: { read: true, write: false, delete: false },
-  materials: { read: false, write: false, delete: false }
+  members: { read: true, write: false, delete: false },
 };
+
+// Module labels for display
+const moduleLabels: Record<keyof UserPermissions, string> = {
+  customers: 'Kunden',
+  suppliers: 'Lieferanten',
+  members: 'Mitglieder',
+};
+
+// Helper to ensure all permissions exist (backward compatibility)
+function normalizePermissions(perms: Partial<UserPermissions> | undefined): UserPermissions {
+  return {
+    customers: perms?.customers || { read: true, write: false, delete: false },
+    suppliers: perms?.suppliers || { read: true, write: false, delete: false },
+    members: perms?.members || { read: true, write: false, delete: false },
+  };
+}
 
 export function UserDetail({ user, currentUserId, isMobile, onClose, onBack, onSave, onDelete }: UserDetailProps) {
   const [activeTab, setActiveTab] = useState<'details' | 'permissions'>('details');
@@ -28,7 +44,7 @@ export function UserDetail({ user, currentUserId, isMobile, onClose, onBack, onS
     last_name: user.last_name || '',
     role: user.role,
     password: '',
-    permissions: user.permissions || defaultPermissions
+    permissions: normalizePermissions(user.permissions)
   });
 
   const isCurrentUser = currentUserId === user.id;
@@ -41,7 +57,7 @@ export function UserDetail({ user, currentUserId, isMobile, onClose, onBack, onS
       last_name: user.last_name || '',
       role: user.role,
       password: '',
-      permissions: user.permissions || defaultPermissions
+      permissions: normalizePermissions(user.permissions)
     });
     setIsEditing(false);
     setActiveTab('details');
@@ -71,7 +87,7 @@ export function UserDetail({ user, currentUserId, isMobile, onClose, onBack, onS
       last_name: user.last_name || '',
       role: user.role,
       password: '',
-      permissions: user.permissions || defaultPermissions
+      permissions: normalizePermissions(user.permissions)
     });
     setIsEditing(false);
   };
@@ -329,7 +345,7 @@ export function UserDetail({ user, currentUserId, isMobile, onClose, onBack, onS
               <div className="space-y-3">
                 {(Object.keys(formData.permissions) as Array<keyof UserPermissions>).map((module) => (
                   <div key={module} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                    <span className="font-medium capitalize w-32">{module}</span>
+                    <span className="font-medium w-32">{moduleLabels[module]}</span>
                     <div className="flex gap-4">
                       <label className="flex items-center gap-2">
                         <input
@@ -364,9 +380,9 @@ export function UserDetail({ user, currentUserId, isMobile, onClose, onBack, onS
               </div>
             ) : (
               <div className="space-y-3">
-                {(Object.entries(user.permissions || {}) as [keyof UserPermissions, { read: boolean; write: boolean; delete: boolean }][]).map(([module, perms]) => (
+                {(Object.entries(normalizePermissions(user.permissions)) as [keyof UserPermissions, { read: boolean; write: boolean; delete: boolean }][]).map(([module, perms]) => (
                   <div key={module} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <span className="font-medium capitalize">{module}</span>
+                    <span className="font-medium">{moduleLabels[module]}</span>
                     <div className="flex gap-3">
                       {perms.read && (
                         <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-sm rounded">

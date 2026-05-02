@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useMembersPermissions } from "../hooks/usePermissions";
 import {
   ArrowLeft,
   Edit2,
@@ -76,7 +75,6 @@ export function MemberDetail({
   onDelete,
   isMobile,
 }: MemberDetailProps) {
-  const { canWrite, canDelete } = useMembersPermissions();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<MemberFormData>({
     first_name: member.first_name,
@@ -188,16 +186,14 @@ export function MemberDetail({
           <div className="flex items-center gap-2">
             {!isEditing ? (
               <>
-                {canWrite && (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <Edit2 size={18} />
-                    Bearbeiten
-                  </button>
-                )}
-                {onDelete && canDelete && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Edit2 size={18} />
+                  Bearbeiten
+                </button>
+                {onDelete && (
                   <button
                     onClick={onDelete}
                     className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"

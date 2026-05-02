@@ -107,7 +107,7 @@ export interface ModulePermissions {
 export interface UserPermissions {
   customers: ModulePermissions;
   suppliers: ModulePermissions;
-  materials: ModulePermissions;
+  members: ModulePermissions;
 }
 
 export interface User {
