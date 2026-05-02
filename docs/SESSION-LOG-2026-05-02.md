@@ -160,3 +160,22 @@ git commit -m "Implement member permissions, fix filters, add two-tab member det
 - Docker-Cache war mehrfach ein Problem → `--no-cache` Build notwendig
 - TypeScript-Cache verursachte seltsame Fehler → `rm -rf node_modules/.cache`
 - Backup-Dateien vor größeren Änderungen erstellen!
+
+## 2026-05-02 21:25 - Tabs und Geburtstags-Kachel wiederhergestellt
+
+### Problem
+- MemberDetail Tabs waren nach Dashboard-Build verschwunden
+- Ursache: Änderungen wurden nicht committed
+
+### Lösung
+- MemberDetail.tsx mit zwei Tabs neu erstellt:
+  - Tab "Allgemein": Alle Stammdaten
+  - Tab "Funktionen": Mitgliedsfunktionen verwalten
+- Dashboard erweitert mit Geburtstags-Kachel:
+  - Zeigt Geburtstage des aktuellen Monats
+  - Sortiert nach Tag
+  - Zeigt Alter an
+
+### Git
+- Commit: 3ef2b7f
+- Status: Deployed ✅
