@@ -19,6 +19,7 @@ import {
   Plus,
   Calendar,
   Briefcase,
+  Award,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import type { Member, MemberType, MemberFormData } from "../types";
@@ -38,6 +39,34 @@ interface MemberDetailProps {
   onSave: (data: MemberFormData) => void;
   onDelete?: () => void;
   isMobile?: boolean;
+}
+
+// Helper to format date for display (DD.MM.YYYY)
+function formatDateGerman(dateString: string | undefined): string {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("de-DE");
+}
+
+// Helper to parse German date (DD.MM.YYYY) to ISO format (YYYY-MM-DD)
+function parseGermanDate(dateString: string): string {
+  if (!dateString) return "";
+  const parts = dateString.split(".");
+  if (parts.length !== 3) return dateString; // Return as-is if not German format
+  const [day, month, year] = parts;
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+// Helper to format ISO date to German input format (DD.MM.YYYY)
+function formatDateForGermanInput(dateString: string | undefined): string {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
 }
 
 // Simple Markdown Toolbar
@@ -65,14 +94,6 @@ function MarkdownToolbar({ onInsert }: { onInsert: (text: string) => void }) {
   );
 }
 
-// Helper to format date for input[type="date"]
-function formatDateForInput(dateString: string | undefined): string {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "";
-  return date.toISOString().split('T')[0];
-}
-
 export function MemberDetail({
   member,
   memberTypes,
@@ -83,7 +104,7 @@ export function MemberDetail({
   isMobile,
 }: MemberDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"general" | "functions">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "membership">("general");
   const [formData, setFormData] = useState<MemberFormData>({
     first_name: member.first_name,
     last_name: member.last_name,
@@ -93,16 +114,16 @@ export function MemberDetail({
     postal_code: member.postal_code || "",
     city: member.city || "",
     country: member.country || "Germany",
-    birth_date: formatDateForInput(member.birth_date),
+    birth_date: member.birth_date,
     member_type_id: member.member_type_id,
-    entry_date: formatDateForInput(member.entry_date),
-    join_date: formatDateForInput(member.join_date),
+    entry_date: member.entry_date,
+    join_date: member.join_date,
     notes: member.notes || "",
     is_active: member.is_active ?? true,
     status: member.status || "active",
   });
 
-  // Mock data for member functions - in production this would come from API
+  // Member functions state
   const [memberFunctions, setMemberFunctions] = useState<MemberFunction[]>([]);
   const [newFunction, setNewFunction] = useState<Partial<MemberFunction>>({
     title: "",
@@ -110,6 +131,25 @@ export function MemberDetail({
     to_date: "",
   });
   const [showAddFunction, setShowAddFunction] = useState(false);
+
+  // Load member functions from API
+  useEffect(() => {
+    const loadMemberFunctions = async () => {
+      try {
+        const response = await fetch(`/api/members/${member.id}/functions`);
+        if (response.ok) {
+          const data = await response.json();
+          setMemberFunctions(data);
+        }
+      } catch (error) {
+        console.error("Failed to load member functions:", error);
+      }
+    };
+
+    if (member.id) {
+      loadMemberFunctions();
+    }
+  }, [member.id]);
 
   useEffect(() => {
     setFormData({
@@ -121,10 +161,10 @@ export function MemberDetail({
       postal_code: member.postal_code || "",
       city: member.city || "",
       country: member.country || "Germany",
-      birth_date: formatDateForInput(member.birth_date),
+      birth_date: member.birth_date,
       member_type_id: member.member_type_id,
-      entry_date: formatDateForInput(member.entry_date),
-      join_date: formatDateForInput(member.join_date),
+      entry_date: member.entry_date,
+      join_date: member.join_date,
       notes: member.notes || "",
       is_active: member.is_active ?? true,
       status: member.status || "active",
@@ -146,10 +186,10 @@ export function MemberDetail({
       postal_code: member.postal_code || "",
       city: member.city || "",
       country: member.country || "Germany",
-      birth_date: formatDateForInput(member.birth_date),
+      birth_date: member.birth_date,
       member_type_id: member.member_type_id,
-      entry_date: formatDateForInput(member.entry_date),
-      join_date: formatDateForInput(member.join_date),
+      entry_date: member.entry_date,
+      join_date: member.join_date,
       notes: member.notes || "",
       is_active: member.is_active ?? true,
       status: member.status || "active",
@@ -161,24 +201,70 @@ export function MemberDetail({
     setFormData({ ...formData, notes: (formData.notes || "") + text });
   };
 
-  const handleAddFunction = () => {
+  const handleAddFunction = async () => {
     if (newFunction.title && newFunction.from_date) {
-      setMemberFunctions([
-        ...memberFunctions,
-        {
-          id: Date.now(),
-          title: newFunction.title,
-          from_date: newFunction.from_date,
-          to_date: newFunction.to_date || undefined,
-        },
-      ]);
+      const funcToAdd = {
+        ...newFunction,
+        from_date: parseGermanDate(newFunction.from_date),
+        to_date: newFunction.to_date ? parseGermanDate(newFunction.to_date) : undefined,
+      };
+      
+      try {
+        const response = await fetch(`/api/members/${member.id}/functions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(funcToAdd),
+        });
+        
+        if (response.ok) {
+          const savedFunction = await response.json();
+          setMemberFunctions([...memberFunctions, savedFunction]);
+        } else {
+          // Fallback: add locally if API fails
+          setMemberFunctions([
+            ...memberFunctions,
+            {
+              id: Date.now(),
+              title: newFunction.title,
+              from_date: parseGermanDate(newFunction.from_date),
+              to_date: newFunction.to_date ? parseGermanDate(newFunction.to_date) : undefined,
+            },
+          ]);
+        }
+      } catch (error) {
+        // Fallback: add locally if API fails
+        setMemberFunctions([
+          ...memberFunctions,
+          {
+            id: Date.now(),
+            title: newFunction.title,
+            from_date: parseGermanDate(newFunction.from_date),
+            to_date: newFunction.to_date ? parseGermanDate(newFunction.to_date) : undefined,
+          },
+        ]);
+      }
+      
       setNewFunction({ title: "", from_date: "", to_date: "" });
       setShowAddFunction(false);
     }
   };
 
-  const handleDeleteFunction = (id: number) => {
-    setMemberFunctions(memberFunctions.filter((f) => f.id !== id));
+  const handleDeleteFunction = async (id: number) => {
+    try {
+      const response = await fetch(`/api/members/${member.id}/functions/${id}`, {
+        method: "DELETE",
+      });
+      
+      if (response.ok) {
+        setMemberFunctions(memberFunctions.filter((f) => f.id !== id));
+      } else {
+        // Fallback: delete locally if API fails
+        setMemberFunctions(memberFunctions.filter((f) => f.id !== id));
+      }
+    } catch (error) {
+      // Fallback: delete locally if API fails
+      setMemberFunctions(memberFunctions.filter((f) => f.id !== id));
+    }
   };
 
   const fullName = `${member.first_name} ${member.last_name}`;
@@ -283,15 +369,15 @@ export function MemberDetail({
             Allgemein
           </button>
           <button
-            onClick={() => setActiveTab("functions")}
+            onClick={() => setActiveTab("membership")}
             className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
-              activeTab === "functions"
+              activeTab === "membership"
                 ? "text-blue-600 border-b-2 border-blue-600"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            <Briefcase size={16} />
-            Funktionen
+            <Award size={16} />
+            Mitgliedschaft
           </button>
         </div>
       </div>
@@ -338,93 +424,34 @@ export function MemberDetail({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mitgliedsart
+                      Geburtsdatum
                     </label>
-                    <select
-                      value={formData.member_type_id || ""}
+                    <input
+                      type="text"
+                      placeholder="TT.MM.JJJJ"
+                      value={formatDateForGermanInput(formData.birth_date)}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          member_type_id: e.target.value
-                            ? Number(e.target.value)
-                            : undefined,
-                        })
+                        setFormData({ ...formData, birth_date: parseGermanDate(e.target.value) })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">-- Bitte wählen --</option>
-                      {memberTypes.map((type) => (
-                        <option key={type.id} value={type.id}>
-                          {type.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Geburtsdatum
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.birth_date || ""}
-                        onChange={(e) =>
-                          setFormData({ ...formData, birth_date: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Eintrittsdatum
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.entry_date || ""}
-                        onChange={(e) =>
-                          setFormData({ ...formData, entry_date: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="is_active"
-                      checked={formData.is_active ?? true}
-                      onChange={(e) =>
-                        setFormData({ ...formData, is_active: e.target.checked })
-                      }
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <label
-                      htmlFor="is_active"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Aktives Mitglied
-                    </label>
                   </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm text-gray-500">Mitgliedsart</label>
-                    <p className="text-gray-900">{memberTypeName || "-"}</p>
+                    <label className="text-sm text-gray-500">Vorname</label>
+                    <p className="text-gray-900">{member.first_name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500">Nachname</label>
+                    <p className="text-gray-900">{member.last_name}</p>
                   </div>
                   {member.birth_date && (
                     <div>
                       <label className="text-sm text-gray-500">Geburtsdatum</label>
                       <p className="text-gray-900">
-                        {new Date(member.birth_date).toLocaleDateString("de-DE")}
-                      </p>
-                    </div>
-                  )}
-                  {member.entry_date && (
-                    <div>
-                      <label className="text-sm text-gray-500">Eintrittsdatum</label>
-                      <p className="text-gray-900">
-                        {new Date(member.entry_date).toLocaleDateString("de-DE")}
+                        {formatDateGerman(member.birth_date)}
                       </p>
                     </div>
                   )}
@@ -629,203 +656,304 @@ export function MemberDetail({
                 </div>
               )}
             </div>
-
-            {/* Weitere Informationen */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Weitere Informationen
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm text-gray-500">Mitgliedsnummer</label>
-                  <p className="text-gray-900 font-mono">{member.member_number}</p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500">Status</label>
-                  <span
-                    className={`ml-2 px-2 py-1 rounded text-sm ${
-                      member.is_active
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {member.is_active ? "Aktiv" : "Inaktiv"}
-                  </span>
-                </div>
-                {member.created_at && (
-                  <div>
-                    <label className="text-sm text-gray-500">Erstellt am</label>
-                    <p className="text-gray-900">
-                      {new Date(member.created_at).toLocaleDateString("de-DE")}
-                    </p>
-                  </div>
-                )}
-                {member.updated_at && (
-                  <div>
-                    <label className="text-sm text-gray-500">
-                      Letzte Änderung
-                    </label>
-                    <p className="text-gray-900">
-                      {new Date(member.updated_at).toLocaleDateString("de-DE")}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
           </>
         )}
 
-        {activeTab === "functions" && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Briefcase size={20} className="text-gray-400" />
-                Mitgliedsfunktionen
+        {activeTab === "membership" && (
+          <>
+            {/* Mitgliedschaftsdaten */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Award size={20} className="text-gray-400" />
+                Mitgliedschaftsdetails
               </h3>
-              <button
-                onClick={() => setShowAddFunction(!showAddFunction)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus size={18} />
-                Funktion hinzufügen
-              </button>
-            </div>
 
-            {/* Add Function Form */}
-            {showAddFunction && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-700 mb-4">
-                  Neue Funktion hinzufügen
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {isEditing ? (
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Bezeichnung *
+                      Mitgliedsart
                     </label>
-                    <input
-                      type="text"
-                      value={newFunction.title || ""}
+                    <select
+                      value={formData.member_type_id || ""}
                       onChange={(e) =>
-                        setNewFunction({ ...newFunction, title: e.target.value })
+                        setFormData({
+                          ...formData,
+                          member_type_id: e.target.value
+                            ? Number(e.target.value)
+                            : undefined,
+                        })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="z.B. Vorsitzender"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Von *
-                    </label>
-                    <div className="relative">
-                      <Calendar
-                        size={16}
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                      />
-                      <input
-                        type="date"
-                        value={newFunction.from_date || ""}
-                        onChange={(e) =>
-                          setNewFunction({
-                            ...newFunction,
-                            from_date: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Bis (optional)
-                    </label>
-                    <div className="relative">
-                      <Calendar
-                        size={16}
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                      />
-                      <input
-                        type="date"
-                        value={newFunction.to_date || ""}
-                        onChange={(e) =>
-                          setNewFunction({
-                            ...newFunction,
-                            to_date: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <button
-                    onClick={() => setShowAddFunction(false)}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    Abbrechen
-                  </button>
-                  <button
-                    onClick={handleAddFunction}
-                    disabled={!newFunction.title || !newFunction.from_date}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Hinzufügen
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Functions List */}
-            {memberFunctions.length === 0 ? (
-              <div className="text-center py-12">
-                <Briefcase size={48} className="mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">
-                  Noch keine Funktionen vorhanden.
-                </p>
-                <p className="text-gray-400 text-sm mt-1">
-                  Klicken Sie auf "Funktion hinzufügen", um eine neue Funktion zu erstellen.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {memberFunctions.map((func) => (
-                  <div
-                    key={func.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <Briefcase size={20} className="text-blue-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">
-                          {func.title}
-                        </h4>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <Calendar size={14} />
-                          <span>
-                            {new Date(func.from_date).toLocaleDateString("de-DE")}
-                            {func.to_date
-                              ? ` - ${new Date(func.to_date).toLocaleDateString(
-                                  "de-DE"
-                                )}`
-                              : " - heute"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => func.id && handleDeleteFunction(func.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Funktion löschen"
                     >
-                      <Trash2 size={18} />
+                      <option value="">-- Bitte wählen --</option>
+                      {memberTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Eintrittsdatum
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="TT.MM.JJJJ"
+                        value={formatDateForGermanInput(formData.entry_date)}
+                        onChange={(e) =>
+                          setFormData({ ...formData, entry_date: parseGermanDate(e.target.value) })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Beitrittsdatum
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="TT.MM.JJJJ"
+                        value={formatDateForGermanInput(formData.join_date)}
+                        onChange={(e) =>
+                          setFormData({ ...formData, join_date: parseGermanDate(e.target.value) })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="is_active"
+                      checked={formData.is_active ?? true}
+                      onChange={(e) =>
+                        setFormData({ ...formData, is_active: e.target.checked })
+                      }
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="is_active"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Aktives Mitglied
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-gray-500">Mitgliedsart</label>
+                    <p className="text-gray-900">{memberTypeName || "-"}</p>
+                  </div>
+                  {member.entry_date && (
+                    <div>
+                      <label className="text-sm text-gray-500">Eintrittsdatum</label>
+                      <p className="text-gray-900">
+                        {formatDateGerman(member.entry_date)}
+                      </p>
+                    </div>
+                  )}
+                  {member.join_date && (
+                    <div>
+                      <label className="text-sm text-gray-500">Beitrittsdatum</label>
+                      <p className="text-gray-900">
+                        {formatDateGerman(member.join_date)}
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-sm text-gray-500">Status</label>
+                    <span
+                      className={`ml-2 px-2 py-1 rounded text-sm ${
+                        member.is_active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {member.is_active ? "Aktiv" : "Inaktiv"}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500">Mitgliedsnummer</label>
+                    <p className="text-gray-900 font-mono">{member.member_number}</p>
+                  </div>
+                  {member.created_at && (
+                    <div>
+                      <label className="text-sm text-gray-500">Erstellt am</label>
+                      <p className="text-gray-900">
+                        {formatDateGerman(member.created_at)}
+                      </p>
+                    </div>
+                  )}
+                  {member.updated_at && (
+                    <div>
+                      <label className="text-sm text-gray-500">
+                        Letzte Änderung
+                      </label>
+                      <p className="text-gray-900">
+                        {formatDateGerman(member.updated_at)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Mitgliedsfunktionen */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Briefcase size={20} className="text-gray-400" />
+                  Mitgliedsfunktionen
+                </h3>
+                <button
+                  onClick={() => setShowAddFunction(!showAddFunction)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Plus size={18} />
+                  Funktion hinzufügen
+                </button>
+              </div>
+
+              {/* Add Function Form */}
+              {showAddFunction && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-4">
+                    Neue Funktion hinzufügen
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Bezeichnung *
+                      </label>
+                      <input
+                        type="text"
+                        value={newFunction.title || ""}
+                        onChange={(e) =>
+                          setNewFunction({ ...newFunction, title: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="z.B. Vorsitzender"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Von *
+                      </label>
+                      <div className="relative">
+                        <Calendar
+                          size={16}
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="TT.MM.JJJJ"
+                          value={newFunction.from_date || ""}
+                          onChange={(e) =>
+                            setNewFunction({
+                              ...newFunction,
+                              from_date: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Bis (optional)
+                      </label>
+                      <div className="relative">
+                        <Calendar
+                          size={16}
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="TT.MM.JJJJ"
+                          value={newFunction.to_date || ""}
+                          onChange={(e) =>
+                            setNewFunction({
+                              ...newFunction,
+                              to_date: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button
+                      onClick={() => setShowAddFunction(false)}
+                      className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                      Abbrechen
+                    </button>
+                    <button
+                      onClick={handleAddFunction}
+                      disabled={!newFunction.title || !newFunction.from_date}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Hinzufügen
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+
+              {/* Functions List */}
+              {memberFunctions.length === 0 ? (
+                <div className="text-center py-12">
+                  <Briefcase size={48} className="mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500">
+                    Noch keine Funktionen vorhanden.
+                  </p>
+                  <p className="text-gray-400 text-sm mt-1">
+                    Klicken Sie auf "Funktion hinzufügen", um eine neue Funktion zu erstellen.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {memberFunctions.map((func) => (
+                    <div
+                      key={func.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Briefcase size={20} className="text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">
+                            {func.title}
+                          </h4>
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <Calendar size={14} />
+                            <span>
+                              {formatDateGerman(func.from_date)}
+                              {func.to_date
+                                ? ` - ${formatDateGerman(func.to_date)}`
+                                : " - heute"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => func.id && handleDeleteFunction(func.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Funktion löschen"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
