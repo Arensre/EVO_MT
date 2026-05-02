@@ -12,6 +12,7 @@ import { MemberList } from './components/MemberList';
 import { MemberDetail } from './components/MemberDetail';
 import { MemberModal } from './components/MemberModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
+import { Dashboard } from "./components/Dashboard";
 import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
 import { Stammdaten } from './components/Stammdaten';
@@ -528,6 +529,7 @@ export function MainApp() {
   const renderContent = () => {
     switch (activeView) {
       case 'home':
+        return <Dashboard onNavigate={setActiveView} />;
         return <HomeView />;
       case 'customers':
         return <CustomerView  />;
