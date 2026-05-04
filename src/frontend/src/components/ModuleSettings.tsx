@@ -126,31 +126,6 @@ export function ModuleSettings() {
     });
   };
 
-  const handleToggleRequiredField = (moduleKey: string, field: string) => {
-    const currentSetting = localSettings[moduleKey];
-    if (!currentSetting) return;
-
-    const newRequiredFields = {
-      ...currentSetting.required_fields,
-      [field]: !currentSetting.required_fields[field],
-    };
-
-    setLocalSettings({
-      ...localSettings,
-      [moduleKey]: { ...currentSetting, required_fields: newRequiredFields },
-    });
-
-    updateMutation.mutate({
-      moduleName: moduleKey,
-      data: {
-        is_enabled: currentSetting.is_enabled,
-        required_fields: newRequiredFields,
-        allow_multiple_types: currentSetting.allow_multiple_types,
-        allow_multiple_functions: currentSetting.allow_multiple_functions,
-      },
-    });
-  };
-
   const handleToggleSetting = (settingName: 'allow_multiple_types' | 'allow_multiple_functions') => {
     const currentSetting = localSettings['members'];
     if (!currentSetting) return;
@@ -176,9 +151,10 @@ export function ModuleSettings() {
     const currentSetting = localSettings[moduleKey];
     if (!currentSetting) return;
 
+    // Feld wird als Pflichtfeld hinzugefügt (true)
     const newRequiredFields = {
       ...currentSetting.required_fields,
-      [fieldKey]: false, // Add as optional by default
+      [fieldKey]: true,
     };
 
     setLocalSettings({
@@ -419,48 +395,31 @@ export function ModuleSettings() {
                     </div>
                   )}
 
-                  {/* Active Fields (toggleable) */}
+                  {/* Active Fields - always required */}
                   {activeFields.length > 0 && (
                     <div>
                       <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                        Zusätzliche Felder
+                        Zusätzliche Pflichtfelder
                       </h4>
                       <div className="space-y-2">
                         {activeFields.map((field) => (
                           <div
                             key={field.key}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg group"
+                            className="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-lg group"
                           >
                             <div className="flex items-center gap-3">
                               <span className="font-medium text-gray-900">{field.label}</span>
-                              <span className="text-xs text-gray-500">({field.key})</span>
+                              <span className="text-xs text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                                Pflichtfeld
+                              </span>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <label className="flex items-center gap-3 cursor-pointer">
-                                <span className="text-sm text-gray-600">
-                                  {currentSetting.required_fields[field.key] ? 'Pflichtfeld' : 'Optional'}
-                                </span>
-                                <button
-                                  onClick={() => handleToggleRequiredField(activeTab, field.key)}
-                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                    currentSetting.required_fields[field.key] ? 'bg-emerald-600' : 'bg-gray-200'
-                                  }`}
-                                >
-                                  <span
-                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                      currentSetting.required_fields[field.key] ? 'translate-x-6' : 'translate-x-1'
-                                    }`}
-                                  />
-                                </button>
-                              </label>
-                              <button
-                                onClick={() => handleRemoveField(activeTab, field.key)}
-                                className="p-1 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                title="Feld entfernen"
-                              >
-                                <X size={18} />
-                              </button>
-                            </div>
+                            <button
+                              onClick={() => handleRemoveField(activeTab, field.key)}
+                              className="p-1 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                              title="Feld entfernen"
+                            >
+                              <X size={18} />
+                            </button>
                           </div>
                         ))}
                       </div>
