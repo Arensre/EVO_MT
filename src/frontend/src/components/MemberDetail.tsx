@@ -35,6 +35,15 @@ interface MemberFunctionHistory {
   to_date?: string;
 }
 
+interface MemberTypeHistory {
+  id?: number;
+  member_type_id: number;
+  type_name: string;
+  start_date: string;
+  end_date?: string;
+  notes?: string;
+}
+
 interface MemberDetailProps {
   member: Member;
   memberTypes: MemberType[];
@@ -171,6 +180,17 @@ export function MemberDetail({
   });
   const [showAddFunction, setShowAddFunction] = useState(false);
 
+  // Local state for member type history (historical types)
+  const [memberTypeHistory, setMemberTypeHistory] = useState<MemberTypeHistory[]>([]);
+  const [newType, setNewType] = useState<Partial<MemberTypeHistory>>({
+    member_type_id: undefined,
+    type_name: "",
+    start_date: "",
+    end_date: "",
+    notes: "",
+  });
+  const [showAddType, setShowAddType] = useState(false);
+
   // Load member functions from API
   useEffect(() => {
     const loadMemberFunctions = async () => {
@@ -185,8 +205,21 @@ export function MemberDetail({
       }
     };
 
+    const loadMemberTypeHistory = async () => {
+      try {
+        const response = await fetch(`/api/members/${member.id}/type-history`);
+        if (response.ok) {
+          const data = await response.json();
+          setMemberTypeHistory(data);
+        }
+      } catch (error) {
+        console.error("Failed to load member type history:", error);
+      }
+    };
+
     if (member.id) {
       loadMemberFunctions();
+      loadMemberTypeHistory();
     }
   }, [member.id]);
 
@@ -305,6 +338,57 @@ export function MemberDetail({
     } catch (error) {
       // Fallback: delete locally if API fails
       setMemberFunctionHistory(memberFunctionHistory.filter((f) => f.id !== id));
+    }
+  };
+
+  // Handler for member type history
+  const handleAddType = async () => {
+    if (newType.member_type_id && newType.start_date) {
+      const typeToAdd = {
+        member_type_id: Number(newType.member_type_id),
+        start_date: newType.start_date,
+        end_date: newType.end_date || undefined,
+        notes: newType.notes,
+      };
+      
+      try {
+        const response = await fetch(`/api/members/${member.id}/type-history`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(typeToAdd),
+        });
+        
+        if (response.ok) {
+          const savedType = await response.json();
+          setMemberTypeHistory([...memberTypeHistory, savedType]);
+        } else {
+          const errorData = await response.json();
+          alert(errorData.error || 'Fehler beim Hinzufügen');
+        }
+      } catch (error) {
+        console.error('Error adding type:', error);
+        alert('Fehler beim Hinzufügen der Mitgliedsart');
+      }
+      
+      setNewType({ member_type_id: undefined, type_name: "", start_date: "", end_date: "", notes: "" });
+      setShowAddType(false);
+    }
+  };
+
+  const handleDeleteType = async (id: number) => {
+    try {
+      const response = await fetch(`/api/members/${member.id}/type-history/${id}`, {
+        method: "DELETE",
+      });
+      
+      if (response.ok) {
+        setMemberTypeHistory(memberTypeHistory.filter((t) => t.id !== id));
+      } else {
+        alert('Fehler beim Löschen');
+      }
+    } catch (error) {
+      console.error('Error deleting type:', error);
+      alert('Fehler beim Löschen der Mitgliedsart');
     }
   };
 
@@ -874,6 +958,193 @@ export function MemberDetail({
                       </p>
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+
+            {/* Mitgliedsarten-Historie */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Award size={20} className="text-gray-400" />
+                  Mitgliedsarten-Historie
+                </h3>
+                <button
+                  onClick={() => setShowAddType(!showAddType)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Plus size={18} />
+                  Mitgliedsart hinzufügen
+                </button>
+              </div>
+
+              {/* Add Type Form */}
+              {showAddType && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-4">
+                    Neue Mitgliedsart hinzufügen
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mitgliedsart *
+                      </label>
+                      <select
+                        value={newType.member_type_id || ""}
+                        onChange={(e) =>
+                          setNewType({
+                            ...newType,
+                            member_type_id: e.target.value
+                              ? Number(e.target.value)
+                              : undefined,
+                            type_name: memberTypes?.find(
+                              (t) => t.id === Number(e.target.value)
+                            )?.name || "",
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">-- Bitte wählen --</option>
+                        {memberTypes.map((type) => (
+                          <option key={type.id} value={type.id}>
+                            {type.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Von *
+                      </label>
+                      <div className="relative">
+                        <Calendar
+                          size={16}
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="TT.MM.JJJJ"
+                          value={newType.start_date || ""}
+                          onChange={(e) =>
+                            setNewType({
+                              ...newType,
+                              start_date: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Bis (optional)
+                      </label>
+                      <div className="relative">
+                        <Calendar
+                          size={16}
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="TT.MM.JJJJ"
+                          value={newType.end_date || ""}
+                          onChange={(e) =>
+                            setNewType({
+                              ...newType,
+                              end_date: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Notizen
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Optional"
+                      value={newType.notes || ""}
+                      onChange={(e) =>
+                        setNewType({
+                          ...newType,
+                          notes: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button
+                      onClick={() => setShowAddType(false)}
+                      className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                      Abbrechen
+                    </button>
+                    <button
+                      onClick={handleAddType}
+                      disabled={!newType.member_type_id || !newType.start_date}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Hinzufügen
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Type History List */}
+              {memberTypeHistory.length === 0 ? (
+                <div className="text-center py-12">
+                  <Award size={48} className="mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500">
+                    Noch keine Mitgliedsarten vorhanden.
+                  </p>
+                  <p className="text-gray-400 text-sm mt-1">
+                    Klicken Sie auf "Mitgliedsart hinzufügen", um eine neue Mitgliedsart zu erstellen.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {memberTypeHistory.map((type) => (
+                    <div
+                      key={type.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Award size={20} className="text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">
+                            {type.type_name}
+                          </h4>
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <Calendar size={14} />
+                            <span>
+                              {formatDateGerman(type.start_date)}
+                              {type.end_date
+                                ? ` - ${formatDateGerman(type.end_date)}`
+                                : " - heute"}
+                            </span>
+                          </div>
+                          {type.notes && (
+                            <p className="text-sm text-gray-400 mt-1">
+                              {type.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => type.id && handleDeleteType(type.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Mitgliedsart löschen"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
