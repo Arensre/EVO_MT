@@ -70,40 +70,6 @@ cd src/frontend && npm install && npm run dev
 cd src/backend && npm install && npm run dev
 ```
 
-## Zugriff
-
-Nach dem Start:
-- **Frontend:** http://172.16.0.125:80
-- **Backend API:** http://172.16.0.125:3001/api
-
-Default Login:
-- Benutzername: `admin`
-- Passwort: `admin123` (bei erstem Login ändern!)
-
-## Projektstruktur
-
-```
-EVO_MT/
-├── docs/                    # Dokumentation & Session-Logs
-│   ├── DESIGN-GUIDE.md
-│   ├── SESSION-LOG-*.md
-│   └── ...
-├── src/
-│   ├── frontend/           # React + TypeScript
-│   │   ├── src/
-│   │   │   ├── components/   # UI-Komponenten
-│   │   │   ├── hooks/          # Custom Hooks (usePermissions, etc.)
-│   │   │   ├── contexts/       # React Contexts (Auth, etc.)
-│   │   │   └── types.ts        # TypeScript Interfaces
-│   │   └── ...
-│   └── backend/            # Node.js + Express
-│       └── src/
-│           ├── routes/        # API-Routen
-│           ├── middleware/      # Auth, etc.
-│           └── server.js
-├── docker-compose.yml      # Docker-Setup
-└── README.md
-```
 
 ## Versionshistorie
 
