@@ -467,7 +467,7 @@ export function MemberDetail({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Geburtsdatum
+                        <RequiredLabel label="Geburtsdatum" fieldKey="birth_date" />
                     </label>
                     <input
                       type="text"
@@ -514,7 +514,7 @@ export function MemberDetail({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        E-Mail
+                        <RequiredLabel label="E-Mail" fieldKey="email" />
                       </label>
                       <input
                         type="email"
@@ -527,7 +527,7 @@ export function MemberDetail({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Telefon
+                        <RequiredLabel label="Telefon" fieldKey="phone" />
                       </label>
                       <input
                         type="tel"
@@ -541,7 +541,7 @@ export function MemberDetail({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Adresse
+                      <RequiredLabel label="Adresse" fieldKey="address" />
                     </label>
                     <input
                       type="text"
@@ -555,7 +555,7 @@ export function MemberDetail({
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        PLZ
+                        <RequiredLabel label="PLZ" fieldKey="postal_code" />
                       </label>
                       <input
                         type="text"
@@ -568,7 +568,7 @@ export function MemberDetail({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Stadt
+                        <RequiredLabel label="Stadt" fieldKey="city" />
                       </label>
                       <input
                         type="text"
@@ -581,7 +581,7 @@ export function MemberDetail({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Land
+                        <RequiredLabel label="Land" fieldKey="country" />
                       </label>
                       <input
                         type="text"
@@ -715,7 +715,7 @@ export function MemberDetail({
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mitgliedsart
+                      <RequiredLabel label="Mitgliedsart" fieldKey="member_type_id" />
                     </label>
                     <select
                       value={formData.member_type_id || ""}
@@ -739,7 +739,7 @@ export function MemberDetail({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Funktion
+                      <RequiredLabel label="Funktion" fieldKey="member_function_id" />
                     </label>
                     <select
                       value={formData.member_function_id || ""}
@@ -767,7 +767,7 @@ export function MemberDetail({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Eintrittsdatum
+                        <RequiredLabel label="Eintrittsdatum" fieldKey="entry_date" />
                       </label>
                       <input
                         type="text"
@@ -781,7 +781,7 @@ export function MemberDetail({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Beitrittsdatum
+                        <RequiredLabel label="Beitrittsdatum" fieldKey="join_date" />
                       </label>
                       <input
                         type="text"
