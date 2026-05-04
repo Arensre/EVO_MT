@@ -43,6 +43,55 @@ function cleanDate(value) {
   return value;
 }
 
+// Helper to get module settings for validation
+async function getModuleSettings(moduleName) {
+  try {
+    const result = await pool.query(
+      'SELECT required_fields FROM module_settings WHERE module_name = $1',
+      [moduleName]
+    );
+    return result.rows[0]?.required_fields || {};
+  } catch (error) {
+    console.error('Error fetching module settings:', error);
+    return {};
+  }
+}
+
+// Helper to validate required fields based on module settings
+function validateRequiredFields(data, requiredFields, customRequired = []) {
+  const errors = [];
+  
+  // Always require first_name and last_name
+  if (!data.first_name || data.first_name.trim() === '') {
+    errors.push('Vorname ist erforderlich');
+  }
+  if (!data.last_name || data.last_name.trim() === '') {
+    errors.push('Nachname ist erforderlich');
+  }
+  
+  // Check module-specific required fields
+  for (const [field, isRequired] of Object.entries(requiredFields)) {
+    if (isRequired && (!data[field] || data[field].toString().trim() === '')) {
+      const fieldLabels = {
+        email: 'E-Mail',
+        phone: 'Telefon',
+        mobile: 'Mobil',
+        street: 'Straße',
+        postal_code: 'PLZ',
+        city: 'Ort',
+        birth_date: 'Geburtsdatum',
+        member_type_id: 'Mitgliedsart',
+        entry_date: 'Eintrittsdatum',
+        profession: 'Beruf',
+        notes: 'Notizen'
+      };
+      errors.push(`${fieldLabels[field] || field} ist erforderlich`);
+    }
+  }
+  
+  return errors;
+}
+
 // GET /api/members - List all members with optional filters
 router.get('/', requireAuth, async (req, res) => {
   try {
@@ -166,9 +215,15 @@ router.post('/', requireAuth, async (req, res) => {
     const streetValue = address || street;
     console.log('DEBUG - address:', address, 'street:', street, 'streetValue:', streetValue);
     
-    // Validate required fields
-    if (!first_name || !last_name) {
-      return res.status(400).json({ error: 'Vorname und Nachname sind erforderlich' });
+    // Validate required fields with module settings
+    const requiredFields = await getModuleSettings('members');
+    const validationErrors = validateRequiredFields(
+      { first_name, last_name, email, phone, mobile, street, postal_code, city, birth_date, member_type_id, entry_date, profession, notes },
+      requiredFields
+    );
+    
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ error: validationErrors.join(', ') });
     }
     
     // Clean date fields
@@ -251,8 +306,15 @@ router.put('/:id', requireAuth, async (req, res) => {
     // Support both street and address (frontend uses address)
     const streetValue = address || street;
     
-    if (!first_name || !last_name) {
-      return res.status(400).json({ error: 'Vorname und Nachname sind erforderlich' });
+    // Validate required fields with module settings
+    const requiredFields = await getModuleSettings('members');
+    const validationErrors = validateRequiredFields(
+      { first_name, last_name, email, phone, mobile, street, postal_code, city, birth_date, member_type_id, entry_date, profession, notes },
+      requiredFields
+    );
+    
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ error: validationErrors.join(', ') });
     }
     
     // Clean date fields - convert empty strings to null

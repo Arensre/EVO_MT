@@ -4,6 +4,20 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
+// GET /api/module-settings/enabled - Get enabled modules for sidebar
+router.get('/enabled', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT module_name, is_enabled FROM module_settings WHERE is_enabled = true'
+    );
+    const enabledModules = result.rows.map(row => row.module_name);
+    res.json(enabledModules);
+  } catch (error) {
+    console.error('Error fetching enabled modules:', error);
+    res.status(500).json({ error: 'Fehler beim Laden der Module' });
+  }
+});
+
 // GET /api/module-settings - Get all module settings
 router.get('/', requireAuth, async (req, res) => {
   try {
