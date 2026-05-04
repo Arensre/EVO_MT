@@ -32,11 +32,13 @@ const userRoutes = require('./routes/users');
 const avatarRoutes = require('./routes/avatar');
 const stammdatenRoutes = require('./routes/stammdaten');
 const memberRoutes = require('./routes/members');
+const moduleSettingsRoutes = require('./routes/module-settings');
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stammdaten', stammdatenRoutes);
 app.use('/api/members', memberRoutes);
+app.use('/api/module-settings', moduleSettingsRoutes);
 
 app.use('/api/users', avatarRoutes);
 app.use('/uploads/avatars', express.static(path.join(__dirname, '../uploads/avatars')));

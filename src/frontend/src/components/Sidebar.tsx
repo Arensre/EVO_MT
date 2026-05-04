@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
 // APP VERSION - Increment on every deployment
-const APP_VERSION = '1.5.0-2026-05-04-1012';
+const APP_VERSION = '1.6.0-2026-05-04-1100';
 
 interface SidebarProps {
   activeView: View;
@@ -180,17 +180,30 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
               </button>
               
               {user?.role === 'admin' && (
-                <button
-                  onClick={() => onViewChange('users')}
-                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                    activeView === 'users'
-                      ? 'text-blue-400'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <UsersRound size={16} />
-                  <span>Benutzerverwaltung</span>
-                </button>
+                <>
+                  <button
+                    onClick={() => onViewChange('modules')}
+                    className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                      activeView === 'modules'
+                        ? 'text-blue-400'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Settings size={16} />
+                    <span>Module</span>
+                  </button>
+                  <button
+                    onClick={() => onViewChange('users')}
+                    className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                      activeView === 'users'
+                        ? 'text-blue-400'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <UsersRound size={16} />
+                    <span>Benutzerverwaltung</span>
+                  </button>
+                </>
               )}
             </div>
           )}

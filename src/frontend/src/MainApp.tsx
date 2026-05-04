@@ -16,6 +16,7 @@ import { Dashboard } from "./components/Dashboard";
 import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
 import { Stammdaten } from './components/Stammdaten';
+import { ModuleSettings } from './components/ModuleSettings';
 import { useAuth } from './contexts/AuthContext';
 import { customerApi, supplierApi } from './api';
 import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
@@ -572,6 +573,8 @@ export function MainApp() {
         return <MembersView />;
       case 'settings':
         return <SettingsView />;
+      case 'modules':
+        return <ModuleSettings />;
       case 'profile':
         return <ProfileView />;
       case 'users':
