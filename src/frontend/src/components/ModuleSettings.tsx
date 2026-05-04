@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Users, Building2, Truck, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Settings, Users, Building2, Truck, ToggleLeft, ToggleRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
@@ -32,6 +32,7 @@ const updateModuleSetting = async ({ moduleName, data }: { moduleName: string; d
 export function ModuleSettings() {
   const [activeTab, setActiveTab] = useState('members');
   const [localSettings, setLocalSettings] = useState<Record<string, ModuleSetting>>({});
+  const [showRequiredFields, setShowRequiredFields] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: settings, isLoading } = useQuery({
@@ -184,47 +185,65 @@ export function ModuleSettings() {
             </div>
           </div>
 
-          {/* Required Fields */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Pflichtfelder</h3>
-            <p className="text-gray-600 mb-6">
-              Definieren Sie welche Felder beim Erstellen eines neuen Eintrags Pflichtfelder sind.
-            </p>
-
-            <div className="space-y-3">
-              {getFieldsForModule(activeTab).map((field) => (
-                <div
-                  key={field.key}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                >
-                  <div>
-                    <span className="font-medium text-gray-900">{field.label}</span>
-                    <span className="text-gray-500 text-sm ml-2">({field.key})</span>
-                  </div>
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <span className="text-sm text-gray-600">
-                      {currentSetting.required_fields[field.key] ? 'Pflichtfeld' : 'Optional'}
-                    </span>
-                    <button
-                      onClick={() => handleToggleRequiredField(activeTab, field.key)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        currentSetting.required_fields[field.key]
-                          ? 'bg-emerald-600'
-                          : 'bg-gray-200'
-                      }`}
+          {/* Required Fields - Collapsible */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <button
+              onClick={() => setShowRequiredFields(!showRequiredFields)}
+              className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
+            >
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Pflichtfelder</h3>
+                <p className="text-gray-600 mt-1">
+                  Definieren Sie welche Felder beim Erstellen eines neuen Eintrags Pflichtfelder sind.
+                </p>
+              </div>
+              <div className="text-emerald-600">
+                {showRequiredFields ? (
+                  <ChevronUp size={24} />
+                ) : (
+                  <ChevronDown size={24} />
+                )}
+              </div>
+            </button>
+            
+            {showRequiredFields && (
+              <div className="px-6 pb-6 border-t border-gray-100">
+                <div className="space-y-3 pt-6">
+                  {getFieldsForModule(activeTab).map((field) => (
+                    <div
+                      key={field.key}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          currentSetting.required_fields[field.key]
-                            ? 'translate-x-6'
-                            : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </label>
+                      <div>
+                        <span className="font-medium text-gray-900">{field.label}</span>
+                        <span className="text-gray-500 text-sm ml-2">({field.key})</span>
+                      </div>
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <span className="text-sm text-gray-600">
+                          {currentSetting.required_fields[field.key] ? 'Pflichtfeld' : 'Optional'}
+                        </span>
+                        <button
+                          onClick={() => handleToggleRequiredField(activeTab, field.key)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            currentSetting.required_fields[field.key]
+                              ? 'bg-emerald-600'
+                              : 'bg-gray-200'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              currentSetting.required_fields[field.key]
+                                ? 'translate-x-6'
+                                : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </label>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
