@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import {
   ArrowLeft,
   Edit2,
@@ -20,6 +22,7 @@ import {
   Calendar,
   Briefcase,
   Award,
+  Asterisk,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import type { Member, MemberType, MemberFormData, MemberFunction } from "../types";
@@ -42,6 +45,12 @@ interface MemberDetailProps {
   onDelete?: () => void;
   isMobile?: boolean;
 }
+
+// Fetch module settings for required fields
+const fetchModuleSettings = async () => {
+  const response = await axios.get("/api/module-settings/members");
+  return response.data;
+};
 
 // Helper to format date for display (DD.MM.YYYY)
 function formatDateGerman(dateString: string | undefined): string {
@@ -108,6 +117,32 @@ export function MemberDetail({
 }: MemberDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<"general" | "membership">("general");
+
+  // Fetch required fields from module settings
+  const { data: moduleSettings } = useQuery({
+    queryKey: ["module-settings-members-detail"],
+    queryFn: fetchModuleSettings,
+  });
+
+  // Get required fields from settings
+  const requiredFields = moduleSettings?.required_fields || {};
+
+  // Helper to check if a field is required
+  const isRequiredField = (fieldKey: string): boolean => {
+    if (fieldKey === "first_name" || fieldKey === "last_name") return true;
+    return requiredFields[fieldKey] === true;
+  };
+
+  // Helper to render label with required indicator
+  const RequiredLabel = ({ label, fieldKey }: { label: string; fieldKey: string }) => (
+    <span className="flex items-center gap-1">
+      {label}
+      {isRequiredField(fieldKey) && (
+        <Asterisk size={12} className="text-red-500 fill-red-500" />
+      )}
+    </span>
+  );
+
   const [formData, setFormData] = useState<MemberFormData>({
     first_name: member.first_name,
     last_name: member.last_name,
@@ -405,7 +440,7 @@ export function MemberDetail({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Vorname *
+                        <RequiredLabel label="Vorname" fieldKey="first_name" />
                       </label>
                       <input
                         type="text"
@@ -418,7 +453,7 @@ export function MemberDetail({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Nachname *
+                        <RequiredLabel label="Nachname" fieldKey="last_name" />
                       </label>
                       <input
                         type="text"
