@@ -179,7 +179,7 @@ function MembersView() {
   return (
     <>
       <div className="flex h-full">
-        <div className={`${selectedMember ? 'w-2/5' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+        <div className={`${selectedMember ? 'w-2/5' : 'w-full'} overflow-auto transition-all duration-300`}>
           {isLoading ? (
             <div className="text-center py-12">Laden...</div>
           ) : (

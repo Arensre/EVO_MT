@@ -42,7 +42,10 @@ router.post('/:id/type-history', requireAuth, async (req, res) => {
   
   try {
     const { id } = req.params;
-    const { member_type_id, start_date, end_date, notes } = req.body;
+    let { member_type_id, start_date, end_date, notes } = req.body;
+    
+    // Convert empty strings to null
+    if (end_date === '') end_date = null;
     
     // Validate required fields
     if (!member_type_id || !start_date) {
@@ -212,7 +215,10 @@ router.post('/:id/function-history', requireAuth, async (req, res) => {
   
   try {
     const { id } = req.params;
-    const { member_function_id, start_date, end_date, notes } = req.body;
+    let { member_function_id, start_date, end_date, notes } = req.body;
+    
+    // Convert empty strings to null
+    if (end_date === '') end_date = null;
     
     if (!member_function_id || !start_date) {
       return res.status(400).json({ error: 'Funktion und Startdatum sind erforderlich' });
