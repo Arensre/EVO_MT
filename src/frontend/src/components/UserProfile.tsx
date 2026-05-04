@@ -80,7 +80,7 @@ export function UserProfile() {
   const moduleLabels: Record<keyof typeof permissions, string> = {
     customers: 'Kunden',
     suppliers: 'Lieferanten',
-    materials: 'Materialien'
+    Members: 'Materialien'
   };
 
   const permissionLabels = {

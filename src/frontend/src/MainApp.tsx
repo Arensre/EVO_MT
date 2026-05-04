@@ -93,10 +93,17 @@ function UsersView() {
 }
 
 // Members View Component
+interface MemberFilters {
+  search?: string;
+  member_type_id?: number;
+  is_active?: boolean;
+}
+
 function MembersView() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+  const [memberFilters, setMemberFilters] = useState<MemberFilters>({});
   const queryClient = useQueryClient();
 
   const { data: memberTypes = [] } = useQuery({
@@ -107,10 +114,24 @@ function MembersView() {
     }
   });
 
-  const { data: members = [] } = useQuery({
-    queryKey: ['members'],
+  const { data: memberFunctions = [] } = useQuery({
+    queryKey: ['member-functions'],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/members`);
+      const response = await axios.get(`${API_URL}/stammdaten/member-functions`);
+      return response.data;
+    }
+  });
+
+  const { data: members = [], isLoading } = useQuery({
+    queryKey: ['members', memberFilters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (memberFilters.search) params.append('search', memberFilters.search);
+      if (memberFilters.member_type_id) params.append('member_type_id', memberFilters.member_type_id.toString());
+      if (memberFilters.is_active !== undefined) params.append('is_active', memberFilters.is_active.toString());
+      
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await axios.get(`${API_URL}/members${queryString}`);
       return response.data;
     }
   });
@@ -146,19 +167,30 @@ function MembersView() {
     }
   });
 
+  const handleFilterChange = (filters: MemberFilters) => {
+    setMemberFilters(filters);
+    setSelectedMember(null);
+  };
+
   // Desktop Split-View
   return (
     <>
       <div className="flex h-full">
         <div className={`${selectedMember ? 'w-2/5' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
-          <MemberList
-            members={members}
-            selectedId={selectedMember?.id}
-            onSelect={setSelectedMember}
-            onAddNew={() => setIsModalOpen(true)}
-            onDelete={setMemberToDelete}
-            memberTypes={memberTypes}
-          />
+          {isLoading ? (
+            <div className="text-center py-12">Laden...</div>
+          ) : (
+            <MemberList
+              members={members}
+              selectedId={selectedMember?.id}
+              onSelect={setSelectedMember}
+              onAddNew={() => setIsModalOpen(true)}
+              onDelete={setMemberToDelete}
+              memberTypes={memberTypes}
+              onFilterChange={handleFilterChange}
+              activeFilters={memberFilters}
+            />
+          )}
         </div>
 
         {selectedMember && (
@@ -172,6 +204,7 @@ function MembersView() {
             }}
               onDelete={() => setMemberToDelete(selectedMember)}
               memberTypes={memberTypes}
+              memberFunctions={memberFunctions}
             />
           </div>
         )}
@@ -181,6 +214,7 @@ function MembersView() {
       <MemberModal
         isOpen={isModalOpen}
         memberTypes={memberTypes}
+        memberFunctions={memberFunctions}
         onClose={() => setIsModalOpen(false)}
         onSubmit={createMutation.mutate}
       />
