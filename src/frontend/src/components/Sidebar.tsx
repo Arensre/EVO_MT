@@ -1,16 +1,24 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
 // APP VERSION - Increment on every deployment
-const APP_VERSION = '1.7.5-2026-05-04-1745';
+const APP_VERSION = '1.8.0-2026-05-04-1758';
 
 interface SidebarProps {
   activeView: View;
   onViewChange: (view: View) => void;
   onLogout: () => void;
 }
+
+// Fetch enabled modules
+const fetchEnabledModules = async (): Promise<string[]> => {
+  const response = await axios.get('/api/module-settings/enabled');
+  return response.data;
+};
 
 export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
@@ -19,9 +27,21 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
   const [adminExpanded, setAdminExpanded] = useState(false);
   const { user } = useAuth();
 
+  // Fetch enabled modules
+  const { data: enabledModules } = useQuery({
+    queryKey: ['enabled-modules'],
+    queryFn: fetchEnabledModules,
+  });
+
+  // Module visibility helpers
+  const isModuleEnabled = (moduleName: string): boolean => {
+    if (!enabledModules) return true; // Show all while loading
+    return enabledModules.includes(moduleName);
+  };
+
   const isErpActive = activeView === 'customers' || activeView === 'suppliers';
   const isMembersActive = activeView === 'members';
-  const isAdminActive = activeView === 'settings' || activeView === 'users';
+  const isAdminActive = activeView === 'settings' || activeView === 'users' || activeView === 'modules';
 
   // Generate initials for avatar placeholder
   const getInitials = () => {
@@ -60,55 +80,61 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
           {isOpen && <span>Home</span>}
         </button>
 
-        {/* ERP (aufgklappbar) */}
-        <div className="mt-4">
-          <button
-            onClick={() => setErpExpanded(!erpExpanded)}
-            className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
-              isErpActive
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Building2 size={20} />
-              {isOpen && <span>ERP</span>}
-            </div>
-            {isOpen && (
-              erpExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-            )}
-          </button>
+        {/* ERP (aufgklappbar) - nur anzeigen wenn Kunden oder Lieferanten aktiviert */}
+        {(isModuleEnabled('customers') || isModuleEnabled('suppliers')) && (
+          <div className="mt-4">
+            <button
+              onClick={() => setErpExpanded(!erpExpanded)}
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+                isErpActive
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Building2 size={20} />
+                {isOpen && <span>ERP</span>}
+              </div>
+              {isOpen && (
+                erpExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+              )}
+            </button>
 
           {/* Untermenü ERP */}
           {erpExpanded && isOpen && (
             <div className="bg-gray-900 py-2">
-              <button
-                onClick={() => onViewChange('customers')}
-                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                  activeView === 'customers'
-                    ? 'text-blue-400'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Users size={16} />
-                <span>Kunden</span>
-              </button>
-              <button
-                onClick={() => onViewChange('suppliers')}
-                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                  activeView === 'suppliers'
-                    ? 'text-blue-400'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Truck size={16} />
-                <span>Lieferanten</span>
-              </button>
+              {isModuleEnabled('customers') && (
+                <button
+                  onClick={() => onViewChange('customers')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'customers'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Users size={16} />
+                  <span>Kunden</span>
+                </button>
+              )}
+              {isModuleEnabled('suppliers') && (
+                <button
+                  onClick={() => onViewChange('suppliers')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'suppliers'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Truck size={16} />
+                  <span>Lieferanten</span>
+                </button>
+              )}
             </div>
           )}
-        </div>
+        </div>)}
 
-        {/* Mitgliederverwaltung (aufgklappbar) */}
+        {/* Mitgliederverwaltung (aufgklappbar) - nur anzeigen wenn aktiviert */}
+        {isModuleEnabled('members') && (
         <div className="mt-4">
           <button
             onClick={() => setMembersExpanded(!membersExpanded)}
@@ -143,9 +169,9 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
               </button>
             </div>
           )}
-        </div>
+        </div>)}
 
-        {/* Administration (aufgklappbar) */}
+        {/* Administration (aufgklappbar) - immer anzeigen */}
         <div className="mt-4">
           <button
             onClick={() => setAdminExpanded(!adminExpanded)}
