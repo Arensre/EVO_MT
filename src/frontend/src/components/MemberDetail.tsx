@@ -22,9 +22,9 @@ import {
   Award,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import type { Member, MemberType, MemberFormData } from "../types";
+import type { Member, MemberType, MemberFormData, MemberFunction } from "../types";
 
-interface MemberFunction {
+interface MemberFunctionHistory {
   id?: number;
   title: string;
   from_date: string;
@@ -34,6 +34,7 @@ interface MemberFunction {
 interface MemberDetailProps {
   member: Member;
   memberTypes: MemberType[];
+  memberFunctions?: MemberFunction[];
   onClose?: () => void;
   onBack?: () => void;
   onSave: (data: MemberFormData) => void;
@@ -124,8 +125,8 @@ export function MemberDetail({
   });
 
   // Member functions state
-  const [memberFunctions, setMemberFunctions] = useState<MemberFunction[]>([]);
-  const [newFunction, setNewFunction] = useState<Partial<MemberFunction>>({
+  const [memberFunctions, setMemberFunctions] = useState<MemberFunctionHistory[]>([]);
+  const [newFunction, setNewFunction] = useState<Partial<MemberFunctionHistory>>({
     title: "",
     from_date: "",
     to_date: "",

@@ -130,6 +130,14 @@ export interface MemberType {
   description?: string;
 }
 
+export interface MemberFunction {
+  id: number;
+  name: string;
+  description?: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 export interface Member {
   id: number;
   member_number: string;
@@ -165,6 +173,7 @@ export interface MemberFormData {
   country?: string;
   birth_date?: string;
   member_type_id?: number;
+  member_function_id?: number;
   entry_date?: string;
   join_date?: string;
   notes?: string;
