@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle } from 'lucide-react';
+import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle, Award } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
 // APP VERSION - Increment on every deployment
-const APP_VERSION = '1.9.1-2026-05-04-1821';
+const APP_VERSION = '1.10.0-2026-05-04-1834';
 
 interface SidebarProps {
   activeView: View;
@@ -166,6 +166,17 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
               >
                 <UsersRound size={16} />
                 <span>Mitglieder</span>
+              </button>
+              <button
+                onClick={() => onViewChange('membership')}
+                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                  activeView === 'membership'
+                    ? 'text-blue-400'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Award size={16} />
+                <span>Mitgliedschaft</span>
               </button>
             </div>
           )}

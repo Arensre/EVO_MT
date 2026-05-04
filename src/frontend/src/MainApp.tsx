@@ -11,6 +11,8 @@ import { SupplierModal } from './components/SupplierModal';
 import { MemberList } from './components/MemberList';
 import { MemberDetail } from './components/MemberDetail';
 import { MemberModal } from './components/MemberModal';
+import { MembershipManagement } from './components/MembershipManagement';
+import { MembershipDetail } from './components/MembershipDetail';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { Dashboard } from "./components/Dashboard";
 import { UserProfile } from './components/UserProfile';
@@ -228,6 +230,55 @@ function MembersView() {
           onClose={() => setMemberToDelete(null)}
         />
       )}
+    </>
+  );
+}
+
+
+
+// Membership View Component  
+function MembershipView() {
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+
+  const { data: memberTypes = [] } = useQuery({
+    queryKey: ['member-types'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/stammdaten/member-types`);
+      return response.data;
+    }
+  });
+
+  const { data: memberFunctions = [] } = useQuery({
+    queryKey: ['member-functions'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/stammdaten/member-functions`);
+      return response.data;
+    }
+  });
+
+  return (
+    <>
+      <div className="flex h-full">
+        <div className={`${selectedMember ? 'w-2/5' : 'w-full'} overflow-auto transition-all duration-300`}
+>
+          <MembershipManagement
+            onSelect={setSelectedMember}
+            selectedId={selectedMember?.id}
+          />
+        </div>
+
+        {selectedMember && (
+          <div className="w-3/5 border-l border-gray-200 bg-gray-50"
+>
+            <MembershipDetail
+              member={selectedMember}
+              memberTypes={memberTypes}
+              memberFunctions={memberFunctions}
+              onBack={() => setSelectedMember(null)}
+            />
+          </div>
+        )}
+      </div>
     </>
   );
 }
@@ -571,6 +622,8 @@ export function MainApp() {
         return <SupplierView  />;
       case 'members':
         return <MembersView />;
+      case 'membership':
+        return <MembershipView />;
       case 'settings':
         return <SettingsView />;
       case 'modules':
