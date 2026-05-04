@@ -77,13 +77,8 @@ export function MemberModal({
     return requiredFields[fieldKey] === true;
   };
 
-  // Get visible fields (predefined + configured required fields)
-  const visibleFields = fieldDefinitions.filter((field) => {
-    // Always show predefined fields
-    if (field.key === "first_name" || field.key === "last_name") return true;
-    // Show if it's a configured field
-    return requiredFields.hasOwnProperty(field.key);
-  });
+  // Show ALL fields, not just configured ones
+  const visibleFields = fieldDefinitions;
 
   useEffect(() => {
     if (!isOpen) {
@@ -166,14 +161,10 @@ export function MemberModal({
     const baseInputClass = `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
       hasError
         ? "border-red-300 focus:ring-red-500 bg-red-50"
-        : isRequired
-        ? "border-amber-300 focus:ring-amber-500 border-l-4 border-l-amber-500"
         : "border-gray-300 focus:ring-emerald-500"
     }`;
 
-    const labelClass = `block text-sm font-medium mb-1 flex items-center gap-1 ${
-      isRequired ? "text-gray-900" : "text-gray-700"
-    }`;
+    const labelClass = "block text-sm font-medium mb-1 flex items-center gap-1 text-gray-700";
 
     const labelContent = (
       <>
