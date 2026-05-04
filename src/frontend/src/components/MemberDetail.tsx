@@ -98,6 +98,7 @@ function MarkdownToolbar({ onInsert }: { onInsert: (text: string) => void }) {
 export function MemberDetail({
   member,
   memberTypes,
+  memberFunctions,
   onClose,
   onBack,
   onSave,
@@ -117,6 +118,7 @@ export function MemberDetail({
     country: member.country || "Germany",
     birth_date: member.birth_date,
     member_type_id: member.member_type_id,
+    member_function_id: member.member_function_id,
     entry_date: member.entry_date,
     join_date: member.join_date,
     notes: member.notes || "",
@@ -124,8 +126,8 @@ export function MemberDetail({
     status: member.status || "active",
   });
 
-  // Member functions state
-  const [memberFunctions, setMemberFunctions] = useState<MemberFunctionHistory[]>([]);
+  // Local state for member function history (historical functions)
+  const [memberFunctionHistory, setMemberFunctionHistory] = useState<MemberFunctionHistory[]>([]);
   const [newFunction, setNewFunction] = useState<Partial<MemberFunctionHistory>>({
     title: "",
     from_date: "",
@@ -140,7 +142,7 @@ export function MemberDetail({
         const response = await fetch(`/api/members/${member.id}/functions`);
         if (response.ok) {
           const data = await response.json();
-          setMemberFunctions(data);
+          setMemberFunctionHistory(data);
         }
       } catch (error) {
         console.error("Failed to load member functions:", error);
@@ -164,6 +166,7 @@ export function MemberDetail({
       country: member.country || "Germany",
       birth_date: member.birth_date,
       member_type_id: member.member_type_id,
+      member_function_id: member.member_function_id,
       entry_date: member.entry_date,
       join_date: member.join_date,
       notes: member.notes || "",
@@ -189,6 +192,7 @@ export function MemberDetail({
       country: member.country || "Germany",
       birth_date: member.birth_date,
       member_type_id: member.member_type_id,
+      member_function_id: member.member_function_id,
       entry_date: member.entry_date,
       join_date: member.join_date,
       notes: member.notes || "",
@@ -219,11 +223,11 @@ export function MemberDetail({
         
         if (response.ok) {
           const savedFunction = await response.json();
-          setMemberFunctions([...memberFunctions, savedFunction]);
+          setMemberFunctionHistory([...memberFunctionHistory, savedFunction]);
         } else {
           // Fallback: add locally if API fails
-          setMemberFunctions([
-            ...memberFunctions,
+          setMemberFunctionHistory([
+            ...memberFunctionHistory,
             {
               id: Date.now(),
               title: newFunction.title,
@@ -234,8 +238,8 @@ export function MemberDetail({
         }
       } catch (error) {
         // Fallback: add locally if API fails
-        setMemberFunctions([
-          ...memberFunctions,
+        setMemberFunctionHistory([
+          ...memberFunctionHistory,
           {
             id: Date.now(),
             title: newFunction.title,
@@ -257,20 +261,22 @@ export function MemberDetail({
       });
       
       if (response.ok) {
-        setMemberFunctions(memberFunctions.filter((f) => f.id !== id));
+        setMemberFunctionHistory(memberFunctionHistory.filter((f) => f.id !== id));
       } else {
         // Fallback: delete locally if API fails
-        setMemberFunctions(memberFunctions.filter((f) => f.id !== id));
+        setMemberFunctionHistory(memberFunctionHistory.filter((f) => f.id !== id));
       }
     } catch (error) {
       // Fallback: delete locally if API fails
-      setMemberFunctions(memberFunctions.filter((f) => f.id !== id));
+      setMemberFunctionHistory(memberFunctionHistory.filter((f) => f.id !== id));
     }
   };
 
   const fullName = `${member.first_name} ${member.last_name}`;
   const memberTypeName =
     memberTypes.find((t) => t.id === member.member_type_id)?.name || "";
+  const memberFunctionName =
+    memberFunctions?.find((f) => f.id === member.member_function_id)?.name || "";
 
   return (
     <div className="h-full flex flex-col">
@@ -749,6 +755,12 @@ export function MemberDetail({
                     <label className="text-sm text-gray-500">Mitgliedsart</label>
                     <p className="text-gray-900">{memberTypeName || "-"}</p>
                   </div>
+                  {member.member_function_id && (
+                    <div>
+                      <label className="text-sm text-gray-500">Funktion</label>
+                      <p className="text-gray-900">{memberFunctionName || "-"}</p>
+                    </div>
+                  )}
                   {member.entry_date && (
                     <div>
                       <label className="text-sm text-gray-500">Eintrittsdatum</label>
@@ -906,7 +918,7 @@ export function MemberDetail({
               )}
 
               {/* Functions List */}
-              {memberFunctions.length === 0 ? (
+              {memberFunctionHistory.length === 0 ? (
                 <div className="text-center py-12">
                   <Briefcase size={48} className="mx-auto text-gray-300 mb-4" />
                   <p className="text-gray-500">
@@ -915,10 +927,37 @@ export function MemberDetail({
                   <p className="text-gray-400 text-sm mt-1">
                     Klicken Sie auf "Funktion hinzufügen", um eine neue Funktion zu erstellen.
                   </p>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Funktion
+                    </label>
+                    <select
+                      value={formData.member_function_id || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          member_function_id: e.target.value
+                            ? Number(e.target.value)
+                            : undefined,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">-- Keine Funktion --</option>
+                      {memberFunctions
+                        ?.filter((f) => f.is_active)
+                        .sort((a, b) => a.sort_order - b.sort_order)
+                        .map((func) => (
+                          <option key={func.id} value={func.id}>
+                            {func.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {memberFunctions.map((func) => (
+                  {memberFunctionHistory.map((func) => (
                     <div
                       key={func.id}
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"

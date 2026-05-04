@@ -151,6 +151,7 @@ export interface Member {
   country?: string;
   birth_date?: string;
   member_type_id?: number;
+  member_function_id?: number;
   member_type?: MemberType;
   member_type_name?: string;
   entry_date?: string;
