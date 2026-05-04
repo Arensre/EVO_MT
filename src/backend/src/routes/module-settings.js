@@ -4,8 +4,8 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// GET /api/module-settings/enabled - Get enabled modules for sidebar
-router.get('/enabled', requireAuth, async (req, res) => {
+// GET /api/module-settings/enabled - Get enabled modules for sidebar (public)
+router.get('/enabled', async (req, res) => {
   try {
     const result = await pool.query(
       'SELECT module_name, is_enabled FROM module_settings WHERE is_enabled = true'
