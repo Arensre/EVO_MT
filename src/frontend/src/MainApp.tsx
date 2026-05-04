@@ -214,7 +214,6 @@ function MembersView() {
       <MemberModal
         isOpen={isModalOpen}
         memberTypes={memberTypes}
-        memberFunctions={memberFunctions}
         onClose={() => setIsModalOpen(false)}
         onSubmit={createMutation.mutate}
       />

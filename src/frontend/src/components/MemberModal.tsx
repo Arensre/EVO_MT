@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import type { MemberFormData, MemberType, MemberFunction } from "../types";
+import type { MemberFormData, MemberType } from "../types";
 
 interface MemberModalProps {
   isOpen: boolean;
   memberTypes: MemberType[];
-  memberFunctions: MemberFunction[];
   onClose: () => void;
   onSubmit: (data: MemberFormData) => void;
 }
@@ -13,7 +12,6 @@ interface MemberModalProps {
 export function MemberModal({
   isOpen,
   memberTypes,
-  memberFunctions,
   onClose,
   onSubmit,
 }: MemberModalProps) {
@@ -23,7 +21,6 @@ export function MemberModal({
     email: "",
     phone: "",
     member_type_id: undefined,
-    member_function_id: undefined,
     is_active: true,
   });
 
@@ -61,7 +58,6 @@ export function MemberModal({
         email: "",
         phone: "",
         member_type_id: undefined,
-        member_function_id: undefined,
         is_active: true,
       });
       setErrors({});
@@ -75,7 +71,6 @@ export function MemberModal({
       email: "",
       phone: "",
       member_type_id: undefined,
-      member_function_id: undefined,
       is_active: true,
     });
     setErrors({});
@@ -180,34 +175,6 @@ export function MemberModal({
                 {errors.member_type_id && (
                   <p className="mt-1 text-sm text-red-600">{errors.member_type_id}</p>
                 )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Funktion
-                </label>
-                <select
-                  value={formData.member_function_id || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      member_function_id: e.target.value
-                        ? Number(e.target.value)
-                        : undefined,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="">-- Keine Funktion --</option>
-                  {memberFunctions
-                    .filter((f) => f.is_active)
-                    .sort((a, b) => a.sort_order - b.sort_order)
-                    .map((func) => (
-                      <option key={func.id} value={func.id}>
-                        {func.name}
-                      </option>
-                    ))}
-                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

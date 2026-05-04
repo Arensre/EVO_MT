@@ -26,6 +26,7 @@ import type { Member, MemberType, MemberFormData, MemberFunction } from "../type
 
 interface MemberFunctionHistory {
   id?: number;
+  member_function_id?: number;
   title: string;
   from_date: string;
   to_date?: string;
@@ -867,17 +868,33 @@ export function MemberDetail({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Bezeichnung *
+                        Funktion *
                       </label>
-                      <input
-                        type="text"
-                        value={newFunction.title || ""}
+                      <select
+                        value={newFunction.member_function_id || ""}
                         onChange={(e) =>
-                          setNewFunction({ ...newFunction, title: e.target.value })
+                          setNewFunction({
+                            ...newFunction,
+                            member_function_id: e.target.value
+                              ? Number(e.target.value)
+                              : undefined,
+                            title: memberFunctions?.find(
+                              (f) => f.id === Number(e.target.value)
+                            )?.name || "",
+                          })
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        placeholder="z.B. Vorsitzender"
-                      />
+                      >
+                        <option value="">-- Bitte wählen --</option>
+                        {memberFunctions
+                          ?.filter((f) => f.is_active)
+                          .sort((a, b) => a.sort_order - b.sort_order)
+                          .map((func) => (
+                            <option key={func.id} value={func.id}>
+                              {func.name}
+                            </option>
+                          ))}
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
