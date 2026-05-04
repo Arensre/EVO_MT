@@ -423,7 +423,7 @@ export function ModuleSettings() {
                   {activeFields.length > 0 && (
                     <div>
                       <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                        Aktivierte Felder
+                        Zusätzliche Felder
                       </h4>
                       <div className="space-y-2">
                         {activeFields.map((field) => (
