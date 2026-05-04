@@ -104,9 +104,10 @@ router.get('/:id', requireAuth, async (req, res) => {
     
     // Get member with type info
     const memberResult = await pool.query(
-      `SELECT m.*, m.street as address, mt.name as member_type_name
+      `SELECT m.*, m.street as address, mt.name as member_type_name, mf.name as member_function_name
        FROM members m
        LEFT JOIN member_types mt ON m.member_type_id = mt.id
+       LEFT JOIN member_functions mf ON m.member_function_id = mf.id
        WHERE m.id = $1`,
       [id]
     );
@@ -155,7 +156,7 @@ router.post('/', requireAuth, async (req, res) => {
       birth_date, birth_place, gender, marital_status, wedding_date,
       street, address, postal_code, city, country,
       email, phone, mobile,
-      member_type_id, entry_date,
+      member_type_id, member_function_id, entry_date,
       profession, occupation,
       distribution_scope, letter_salutation,
       notes, is_active
@@ -194,18 +195,18 @@ router.post('/', requireAuth, async (req, res) => {
         birth_date, birth_place, gender, marital_status, wedding_date,
         street, postal_code, city, country,
         email, phone, mobile,
-        member_type_id, entry_date,
+        member_type_id, member_function_id, entry_date,
         profession, occupation,
         distribution_scope, letter_salutation,
         notes, is_active
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)
       RETURNING *`,
       [
         salutation, title, first_name, last_name, birth_name,
         cleanBirthDate, birth_place, gender, marital_status, cleanWeddingDate,
         streetValue, postal_code, city, country || 'Deutschland',
         email, phone, mobile,
-        member_type_id, cleanEntryDate,
+        member_type_id, member_function_id || null, cleanEntryDate,
         profession, occupation,
         distribution_scope || 'gesamter Verband', finalLetterSalutation,
         notes, is_active !== false
@@ -241,7 +242,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       birth_date, birth_place, gender, marital_status, wedding_date,
       street, address, postal_code, city, country,
       email, phone, mobile,
-      member_type_id, entry_date, exit_date,
+      member_type_id, member_function_id, entry_date, exit_date,
       profession, occupation,
       distribution_scope, letter_salutation,
       notes, is_active, is_deceased
@@ -266,18 +267,18 @@ router.put('/:id', requireAuth, async (req, res) => {
         birth_date = $6, birth_place = $7, gender = $8, marital_status = $9, wedding_date = $10,
         street = $11, postal_code = $12, city = $13, country = $14,
         email = $15, phone = $16, mobile = $17,
-        member_type_id = $18, entry_date = $19, exit_date = $20,
-        profession = $21, occupation = $22,
-        distribution_scope = $23, letter_salutation = $24,
-        notes = $25, is_active = $26, is_deceased = $27
-      WHERE id = $28
+        member_type_id = $18, member_function_id = $19, entry_date = $20, exit_date = $21,
+        profession = $22, occupation = $23,
+        distribution_scope = $24, letter_salutation = $25,
+        notes = $26, is_active = $27, is_deceased = $28
+      WHERE id = $29
       RETURNING *`,
       [
         salutation, title, first_name, last_name, birth_name,
         cleanBirthDate, birth_place, gender, marital_status, cleanWeddingDate,
         streetValue, postal_code, city, country || 'Deutschland',
         email, phone, mobile,
-        member_type_id, cleanEntryDate, cleanExitDate,
+        member_type_id, member_function_id || null, cleanEntryDate, cleanExitDate,
         profession, occupation,
         distribution_scope || 'gesamter Verband', letter_salutation,
         notes, is_active !== false, is_deceased === true, id
