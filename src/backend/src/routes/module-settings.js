@@ -41,14 +41,14 @@ router.get('/:moduleName', requireAuth, async (req, res) => {
 router.put('/:moduleName', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { moduleName } = req.params;
-    const { is_enabled, required_fields } = req.body;
+    const { is_enabled, required_fields, allow_multiple_types, allow_multiple_functions } = req.body;
     
     const result = await pool.query(
       `UPDATE module_settings 
-       SET is_enabled = $1, required_fields = $2
-       WHERE module_name = $3
+       SET is_enabled = $1, required_fields = $2, allow_multiple_types = $3, allow_multiple_functions = $4
+       WHERE module_name = $5
        RETURNING *`,
-      [is_enabled, JSON.stringify(required_fields), moduleName]
+      [is_enabled, JSON.stringify(required_fields), allow_multiple_types, allow_multiple_functions, moduleName]
     );
     
     if (result.rows.length === 0) {

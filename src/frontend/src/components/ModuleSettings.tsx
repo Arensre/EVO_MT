@@ -8,6 +8,8 @@ interface ModuleSetting {
   module_name: string;
   is_enabled: boolean;
   required_fields: Record<string, boolean>;
+  allow_multiple_types?: boolean;
+  allow_multiple_functions?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -89,7 +91,33 @@ export function ModuleSettings() {
 
     updateMutation.mutate({
       moduleName: moduleKey,
-      data: { is_enabled: currentSetting.is_enabled, required_fields: newRequiredFields },
+      data: { 
+        is_enabled: currentSetting.is_enabled, 
+        required_fields: newRequiredFields,
+        allow_multiple_types: currentSetting.allow_multiple_types,
+        allow_multiple_functions: currentSetting.allow_multiple_functions
+      },
+    });
+  };
+
+  const handleToggleSetting = (settingName: 'allow_multiple_types' | 'allow_multiple_functions') => {
+    const currentSetting = localSettings['members'];
+    if (!currentSetting) return;
+
+    const newValue = !currentSetting[settingName];
+    setLocalSettings({
+      ...localSettings,
+      members: { ...currentSetting, [settingName]: newValue },
+    });
+
+    updateMutation.mutate({
+      moduleName: 'members',
+      data: { 
+        is_enabled: currentSetting.is_enabled, 
+        required_fields: currentSetting.required_fields,
+        allow_multiple_types: settingName === 'allow_multiple_types' ? newValue : currentSetting.allow_multiple_types,
+        allow_multiple_functions: settingName === 'allow_multiple_functions' ? newValue : currentSetting.allow_multiple_functions
+      },
     });
   };
 
@@ -184,6 +212,61 @@ export function ModuleSettings() {
               </button>
             </div>
           </div>
+
+          {/* Mitglieder-spezifische Einstellungen */}
+          {activeTab === 'members' && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Mitglieder-Einstellungen</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <span className="font-medium text-gray-900">Mehrere Mitgliedsarten</span>
+                    <p className="text-sm text-gray-600">Erlaubt die Zuweisung mehrerer Mitgliedsarten gleichzeitig</p>
+                  </div>
+                  <button
+                    onClick={() => handleToggleSetting('allow_multiple_types')}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      currentSetting.allow_multiple_types
+                        ? 'bg-emerald-600'
+                        : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        currentSetting.allow_multiple_types
+                          ? 'translate-x-6'
+                          : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <span className="font-medium text-gray-900">Mehrere Funktionen</span>
+                    <p className="text-sm text-gray-600">Erlaubt die Zuweisung mehrerer Funktionen gleichzeitig</p>
+                  </div>
+                  <button
+                    onClick={() => handleToggleSetting('allow_multiple_functions')}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      currentSetting.allow_multiple_functions
+                        ? 'bg-emerald-600'
+                        : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        currentSetting.allow_multiple_functions
+                          ? 'translate-x-6'
+                          : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Required Fields - Collapsible */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
