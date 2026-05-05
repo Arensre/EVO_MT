@@ -362,7 +362,7 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
                                 className="flex-1 px-2 py-1 border border-gray-300 rounded"
                               />
                               <button
-                                onClick={() => setEditingType({ ...editingType!, end_date: new Date().toISOString().split('T')[0] })}
+                                onClick={() => setEditingType({ ...editingType!, end_date: undefined })}
                                 className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200"
                               >
                                 Heute
@@ -537,7 +537,7 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
                                 className="flex-1 px-2 py-1 border border-gray-300 rounded"
                               />
                               <button
-                                onClick={() => setEditingFunction({ ...editingFunction!, end_date: new Date().toISOString().split('T')[0] })}
+                                onClick={() => setEditingFunction({ ...editingFunction!, end_date: undefined })}
                                 className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200"
                               >
                                 Heute
