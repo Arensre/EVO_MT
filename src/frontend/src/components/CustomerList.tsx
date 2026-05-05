@@ -49,10 +49,10 @@ export function CustomerList({ customers, selectedId, onAddNew, onSelect, onDele
   return (
     <div className="h-full flex flex-col">
       {/* Header - Fixed */}
-      <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-white">
+      <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 bg-white">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Kunden</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Kunden</h2>
             <p className="text-sm text-gray-500">
               {customers.length} Kunden
               {hasActiveFilters && ' (gefiltert)'}

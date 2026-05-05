@@ -185,17 +185,17 @@ export function MemberDetail({
             <>
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
               >
-                <Edit2 size={18} />
+                <Edit2 size={16} />
                 Bearbeiten
               </button>
               {onDelete && (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={16} />
                   Löschen
                 </button>
               )}
