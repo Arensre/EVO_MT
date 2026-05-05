@@ -293,21 +293,85 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
                   </tr>
                 </thead>
                 <tbody>
-                  {typeHistory.map((entry: TypeHistoryEntry) => (
+                  {typeHistory.map((entry: TypeHistoryEntry) => {
+                    const isEditing = editingType?.id === entry.id;
+                    return (
                     <tr key={entry.id} className="border-t border-gray-100">
-                      <td className="py-3 px-6">{entry.type_name}</td>
-                      <td className="py-3 px-6">{formatDate(entry.start_date)}</td>
-                      <td className="py-3 px-6">{formatDate(entry.end_date)}</td>
+                      <td className="py-3 px-6">
+                        {isEditing ? (
+                          <select
+                            value={editingType?.member_type_id || entry.member_type_id}
+                            onChange={(e) => setEditingType({ ...editingType!, member_type_id: parseInt(e.target.value), type_name: memberTypes.find(t => t.id === parseInt(e.target.value))?.name || '' })}
+                            className="w-full px-2 py-1 border border-gray-300 rounded"
+                          >
+                            {memberTypes.map((t) => (
+                              <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                          </select>
+                        ) : entry.type_name}
+                      </td>
+                      <td className="py-3 px-6">
+                        {isEditing ? (
+                          <div>
+                            <input
+                              type="date"
+                              value={editingType?.start_date || entry.start_date}
+                              onChange={(e) => setEditingType({ ...editingType!, start_date: e.target.value })}
+                              className="w-full px-2 py-1 border border-gray-300 rounded"
+                            />
+                            <span className="text-xs text-gray-400 mt-1 block">Alt: {formatDate(entry.start_date)}</span>
+                          </div>
+                        ) : formatDate(entry.start_date)}
+                      </td>
+                      <td className="py-3 px-6">
+                        {isEditing ? (
+                          <div>
+                            <input
+                              type="date"
+                              value={editingType?.end_date || entry.end_date || ''}
+                              onChange={(e) => setEditingType({ ...editingType!, end_date: e.target.value || undefined })}
+                              className="w-full px-2 py-1 border border-gray-300 rounded"
+                            />
+                            <span className="text-xs text-gray-400 mt-1 block">Alt: {entry.end_date ? formatDate(entry.end_date) : 'heute'}</span>
+                          </div>
+                        ) : formatDate(entry.end_date)}
+                      </td>
                       <td className="py-3 px-6 text-right">
-                        <button
-                          onClick={() => deleteTypeMutation.mutate(entry.id)}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {isEditing ? (
+                          <div className="flex items-center gap-2 justify-end">
+                            <button
+                              onClick={() => updateTypeMutation.mutate(editingType!)}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => setEditingType(null)}
+                              className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 justify-end">
+                            <button
+                              onClick={() => setEditingType(entry)}
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteTypeMutation.mutate(entry.id)}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -396,21 +460,85 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
                   </tr>
                 </thead>
                 <tbody>
-                  {functionHistory.map((entry: FunctionHistoryEntry) => (
+                  {functionHistory.map((entry: FunctionHistoryEntry) => {
+                    const isEditing = editingFunction?.id === entry.id;
+                    return (
                     <tr key={entry.id} className="border-t border-gray-100">
-                      <td className="py-3 px-6">{entry.function_name}</td>
-                      <td className="py-3 px-6">{formatDate(entry.start_date)}</td>
-                      <td className="py-3 px-6">{formatDate(entry.end_date)}</td>
+                      <td className="py-3 px-6">
+                        {isEditing ? (
+                          <select
+                            value={editingFunction?.member_function_id || entry.member_function_id}
+                            onChange={(e) => setEditingFunction({ ...editingFunction!, member_function_id: parseInt(e.target.value), function_name: memberFunctions.find(f => f.id === parseInt(e.target.value))?.name || '' })}
+                            className="w-full px-2 py-1 border border-gray-300 rounded"
+                          >
+                            {memberFunctions.map((f) => (
+                              <option key={f.id} value={f.id}>{f.name}</option>
+                            ))}
+                          </select>
+                        ) : entry.function_name}
+                      </td>
+                      <td className="py-3 px-6">
+                        {isEditing ? (
+                          <div>
+                            <input
+                              type="date"
+                              value={editingFunction?.start_date || entry.start_date}
+                              onChange={(e) => setEditingFunction({ ...editingFunction!, start_date: e.target.value })}
+                              className="w-full px-2 py-1 border border-gray-300 rounded"
+                            />
+                            <span className="text-xs text-gray-400 mt-1 block">Alt: {formatDate(entry.start_date)}</span>
+                          </div>
+                        ) : formatDate(entry.start_date)}
+                      </td>
+                      <td className="py-3 px-6">
+                        {isEditing ? (
+                          <div>
+                            <input
+                              type="date"
+                              value={editingFunction?.end_date || entry.end_date || ''}
+                              onChange={(e) => setEditingFunction({ ...editingFunction!, end_date: e.target.value || undefined })}
+                              className="w-full px-2 py-1 border border-gray-300 rounded"
+                            />
+                            <span className="text-xs text-gray-400 mt-1 block">Alt: {entry.end_date ? formatDate(entry.end_date) : 'heute'}</span>
+                          </div>
+                        ) : formatDate(entry.end_date)}
+                      </td>
                       <td className="py-3 px-6 text-right">
-                        <button
-                          onClick={() => deleteFunctionMutation.mutate(entry.id)}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {isEditing ? (
+                          <div className="flex items-center gap-2 justify-end">
+                            <button
+                              onClick={() => updateFunctionMutation.mutate(editingFunction!)}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => setEditingFunction(null)}
+                              className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 justify-end">
+                            <button
+                              onClick={() => setEditingFunction(entry)}
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteFunctionMutation.mutate(entry.id)}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             )}
