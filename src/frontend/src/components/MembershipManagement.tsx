@@ -199,7 +199,7 @@ export function MembershipManagement({ onSelect, selectedId }: MembershipManagem
                     key={member.id}
                     onClick={() => onSelect(member)}
                     className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-between ${
-                      isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                      isSelected ? 'bg-emerald-100 border-l-4 border-emerald-500' : ''
                     }`}
                   >
                     <div className="flex items-center gap-4">

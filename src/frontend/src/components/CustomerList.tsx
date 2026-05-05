@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Filter, Search, RotateCcw, Building2, Users, User, X, Pencil } from 'lucide-react';
+import { Plus, Filter, Search, RotateCcw, X, Pencil } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { Customer, CustomerType } from '../types';
 
@@ -11,12 +11,6 @@ interface CustomerListProps {
   onDelete: (customer: Customer) => void;
   onFilterChange?: (filters: { search?: string; type?: string }) => void;
 }
-
-const typeIcons: Record<CustomerType, typeof Building2> = {
-  company: Building2,
-  club: Users,
-  private: User,
-};
 
 const typeLabels: Record<CustomerType, string> = {
   company: 'Firma',
@@ -53,9 +47,9 @@ export function CustomerList({ customers, selectedId, onAddNew, onSelect, onDele
   };
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-lg shadow">
+    <div className="h-full flex flex-col">
       {/* Header - Fixed */}
-      <div className="flex-shrink-0 p-4 border-b border-gray-200">
+      <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-white">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Kunden</h2>
@@ -156,76 +150,81 @@ export function CustomerList({ customers, selectedId, onAddNew, onSelect, onDele
         )}
       </div>
 
-      {/* List */}
-      <div className="flex-1 overflow-auto">
+      {/* List - wie MemberList */}
+      <div className="flex-1 overflow-auto p-6">
         {customers.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             {hasActiveFilters ? 'Keine Kunden gefunden.' : 'Keine Kunden vorhanden.'}
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
-            {customers.map((customer) => {
-              const Icon = typeIcons[customer.type] || Building2;
-              const isSelected = selectedId === customer.id;
-              return (
-                <div
-                  key={customer.id}
-                  onClick={() => onSelect(customer)}
-                  className={"p-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 " + (isSelected ? 'bg-blue-100' : '')}
-                >
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <Icon size={20} className="text-blue-600" />
+          <div className="bg-white rounded-lg shadow">
+            <div className="divide-y divide-gray-200">
+              {customers.map((customer) => {
+                const isSelected = selectedId === customer.id;
+                return (
+                  <div
+                    key={customer.id}
+                    onClick={() => onSelect(customer)}
+                    className={"p-4 hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-between " + (isSelected ? 'bg-blue-100 border-l-4 border-blue-500' : '')}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900">{customer.name}</span>
+                          {customer.customer_number && (
+                            <span className="text-xs text-gray-400 font-mono bg-gray-100 px-2 py-0.5 rounded">
+                              {customer.customer_number}
+                            </span>
+                          )}
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                            {typeLabels[customer.type] || 'Firma'}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-500 flex items-center gap-2">
+                          {customer.city && <span>{customer.city}</span>}
+                          {customer.email && (
+                            <>
+                              <span className="text-gray-400">•</span>
+                              <span>{customer.email}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900 truncate">{customer.name}</span>
-                      {customer.customer_number && (
-                        <span className="text-xs text-gray-500 font-mono bg-gray-100 px-1.5 py-0.5 rounded">
-                          {customer.customer_number}
-                        </span>
+
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      {canWrite('customers') && (
+                        <button
+                          onClick={() => onSelect(customer)}
+                          className="p-2 rounded transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                          title="Bearbeiten"
+                        >
+                          <Pencil size={18} />
+                        </button>
+                      )}
+                      {canDelete('customers') && (
+                        <button
+                          onClick={() => {
+                            if (deleteConfirm === customer.id) {
+                              onDelete(customer);
+                              setDeleteConfirm(null);
+                            } else {
+                              setDeleteConfirm(customer.id);
+                            }
+                          }}
+                          className={"p-2 rounded transition-colors " + (deleteConfirm === customer.id
+                            ? 'text-red-600 bg-red-50 hover:bg-red-100'
+                            : 'text-gray-500 hover:text-red-600 hover:bg-red-50')}
+                          title={deleteConfirm === customer.id ? 'Klicken zum Löschen' : 'Löschen'}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
                       )}
                     </div>
-                    <div className="text-sm text-gray-500">
-                      <span className="text-gray-600">{typeLabels[customer.type] || 'Firma'}</span>
-                      {customer.city && <span className="ml-2">• {customer.city}</span>}
-                    </div>
                   </div>
-
-                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    {canWrite('customers') && (
-                      <button
-                        onClick={() => onSelect(customer)}
-                        className="p-1.5 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                        title="Bearbeiten"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                    )}
-                    {canDelete('customers') && (
-                      <button
-                        onClick={() => {
-                          if (deleteConfirm === customer.id) {
-                            onDelete(customer);
-                            setDeleteConfirm(null);
-                          } else {
-                            setDeleteConfirm(customer.id);
-                          }
-                        }}
-                        className={"p-1.5 rounded transition-colors " + (deleteConfirm === customer.id
-                          ? 'text-red-600 bg-red-50'
-                          : 'text-gray-400 hover:text-red-600 hover:bg-red-50')}
-                        title={deleteConfirm === customer.id ? 'Klicken zum Löschen' : 'Löschen'}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

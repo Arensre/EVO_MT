@@ -165,7 +165,7 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
             onClick={() => setActiveTab('types')}
             className={`flex items-center gap-2 py-4 border-b-2 transition-colors ${
               activeTab === 'types'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-emerald-600 text-emerald-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -180,7 +180,7 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
             onClick={() => setActiveTab('functions')}
             className={`flex items-center gap-2 py-4 border-b-2 transition-colors ${
               activeTab === 'functions'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-emerald-600 text-emerald-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -195,7 +195,7 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
             onClick={() => setActiveTab('timeline')}
             className={`flex items-center gap-2 py-4 border-b-2 transition-colors ${
               activeTab === 'timeline'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-emerald-600 text-emerald-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
