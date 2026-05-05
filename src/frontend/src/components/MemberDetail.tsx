@@ -18,11 +18,11 @@ import {
   Trash2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import type { Member, MemberType, MemberFormData, MemberFunction } from "../types";
+import type { Member, MemberFunction, MemberFormData } from "../types";
 
 interface MemberDetailProps {
   member: Member;
-  memberTypes?: MemberType[];
+  
   memberFunctions?: MemberFunction[];
   onClose?: () => void;
   onBack?: () => void;
@@ -81,7 +81,7 @@ function MarkdownToolbar({ onInsert }: { onInsert: (text: string) => void }) {
 
 export function MemberDetail({
   member,
-  memberTypes,
+  
   onClose,
   onBack,
   onSave,

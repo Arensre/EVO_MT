@@ -185,11 +185,12 @@ function MembersView() {
           ) : (
             <MemberList
               members={members}
+              memberTypes={memberTypes}
               selectedId={selectedMember?.id}
               onSelect={setSelectedMember}
               onAddNew={() => setIsModalOpen(true)}
               onDelete={setMemberToDelete}
-              memberTypes={memberTypes}
+              
               onFilterChange={handleFilterChange}
               activeFilters={memberFilters}
             />
@@ -200,13 +201,14 @@ function MembersView() {
           <div className="w-3/5 border-l border-gray-200 bg-gray-50">
             <MemberDetail
               member={selectedMember}
+              
               onBack={() => setSelectedMember(null)}
               onSave={(data) => {
               console.log('DEBUG Frontend - onSave called with:', JSON.stringify(data, null, 2));
               updateMutation.mutate({ id: selectedMember.id, data });
             }}
               onDelete={() => setMemberToDelete(selectedMember)}
-              memberTypes={memberTypes}
+              
               memberFunctions={memberFunctions}
             />
           </div>
@@ -216,7 +218,7 @@ function MembersView() {
       {/* Modal für Neuanlage */}
       <MemberModal
         isOpen={isModalOpen}
-        memberTypes={memberTypes}
+        
         onClose={() => setIsModalOpen(false)}
         onSubmit={createMutation.mutate}
       />
@@ -273,6 +275,8 @@ function MembershipView() {
             <MembershipDetail
               member={selectedMember}
               memberTypes={memberTypes}
+              
+              
               memberFunctions={memberFunctions}
               onBack={() => setSelectedMember(null)}
             />
@@ -372,7 +376,7 @@ function CustomerView() {
   if (true) {
     return (
       <div className="flex h-full">
-        <div className={`${selectedCustomer ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+        <div className={`${selectedCustomer ? 'w-1/2' : 'w-full'} overflow-auto transition-all duration-300`}>
           {isLoading ? (
             <div className="text-center py-12">Laden...</div>
           ) : (
@@ -505,7 +509,7 @@ function SupplierView() {
   if (true) {
     return (
       <div className="flex h-full">
-        <div className={`${selectedSupplier ? 'w-1/2' : 'w-full'} overflow-auto p-6 transition-all duration-300`}>
+        <div className={`${selectedSupplier ? 'w-1/2' : 'w-full'} overflow-auto transition-all duration-300`}>
           {isLoading ? (
             <div className="text-center py-12">Laden...</div>
           ) : (

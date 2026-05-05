@@ -16,7 +16,6 @@ const allFieldDefinitions = [
   { key: "last_name", label: "Nachname", type: "text" },
   { key: "email", label: "E-Mail", type: "email" },
   { key: "phone", label: "Telefon", type: "tel" },
-  { key: "mobile", label: "Mobil", type: "tel" },
   { key: "address", label: "Straße", type: "text" },
   { key: "postal_code", label: "PLZ", type: "text" },
   { key: "city", label: "Ort", type: "text" },
@@ -39,7 +38,7 @@ export function MemberModal({
     last_name: "",
     email: "",
     phone: "",
-    mobile: "",
+    
     address: "",
     postal_code: "",
     city: "",
@@ -82,7 +81,7 @@ export function MemberModal({
         last_name: "",
         email: "",
         phone: "",
-        mobile: "",
+        
         address: "",
         postal_code: "",
         city: "",
@@ -127,7 +126,7 @@ export function MemberModal({
       last_name: "",
       email: "",
       phone: "",
-      mobile: "",
+      
       address: "",
       postal_code: "",
       city: "",
