@@ -354,12 +354,20 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
                       <td className="py-3 px-6">
                         {isEditing ? (
                           <div>
-                            <input
-                              type="date"
-                              value={editingType?.end_date || entry.end_date || ''}
-                              onChange={(e) => setEditingType({ ...editingType!, end_date: e.target.value || undefined })}
-                              className="w-full px-2 py-1 border border-gray-300 rounded"
-                            />
+                            <div className="flex gap-2">
+                              <input
+                                type="date"
+                                value={editingType?.end_date || entry.end_date || ''}
+                                onChange={(e) => setEditingType({ ...editingType!, end_date: e.target.value || undefined })}
+                                className="flex-1 px-2 py-1 border border-gray-300 rounded"
+                              />
+                              <button
+                                onClick={() => setEditingType({ ...editingType!, end_date: new Date().toISOString().split('T')[0] })}
+                                className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200"
+                              >
+                                Heute
+                              </button>
+                            </div>
                             <span className="text-xs text-gray-400 mt-1 block">Alt: {entry.end_date ? formatDate(entry.end_date) : 'heute'}</span>
                           </div>
                         ) : formatDate(entry.end_date)}
@@ -521,12 +529,20 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
                       <td className="py-3 px-6">
                         {isEditing ? (
                           <div>
-                            <input
-                              type="date"
-                              value={editingFunction?.end_date || entry.end_date || ''}
-                              onChange={(e) => setEditingFunction({ ...editingFunction!, end_date: e.target.value || undefined })}
-                              className="w-full px-2 py-1 border border-gray-300 rounded"
-                            />
+                            <div className="flex gap-2">
+                              <input
+                                type="date"
+                                value={editingFunction?.end_date || entry.end_date || ''}
+                                onChange={(e) => setEditingFunction({ ...editingFunction!, end_date: e.target.value || undefined })}
+                                className="flex-1 px-2 py-1 border border-gray-300 rounded"
+                              />
+                              <button
+                                onClick={() => setEditingFunction({ ...editingFunction!, end_date: new Date().toISOString().split('T')[0] })}
+                                className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200"
+                              >
+                                Heute
+                              </button>
+                            </div>
                             <span className="text-xs text-gray-400 mt-1 block">Alt: {entry.end_date ? formatDate(entry.end_date) : 'heute'}</span>
                           </div>
                         ) : formatDate(entry.end_date)}
