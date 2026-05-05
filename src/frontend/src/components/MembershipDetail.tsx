@@ -111,6 +111,34 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
     }
   });
 
+  const updateTypeMutation = useMutation({
+    mutationFn: async (data: TypeHistoryEntry) => {
+      await axios.put(`${API_URL}/members/${member.id}/type-history/${data.id}`, {
+        member_type_id: data.member_type_id,
+        start_date: data.start_date,
+        end_date: data.end_date
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['member-type-history', member.id] });
+      setEditingType(null);
+    }
+  });
+
+  const updateFunctionMutation = useMutation({
+    mutationFn: async (data: FunctionHistoryEntry) => {
+      await axios.put(`${API_URL}/members/${member.id}/function-history/${data.id}`, {
+        member_function_id: data.member_function_id,
+        start_date: data.start_date,
+        end_date: data.end_date
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['member-function-history', member.id] });
+      setEditingFunction(null);
+    }
+  });
+
   const deleteTypeMutation = useMutation({
     mutationFn: async (id: number) => {
       await axios.delete(`${API_URL}/members/${member.id}/type-history/${id}`);
