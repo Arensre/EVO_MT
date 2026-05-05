@@ -69,6 +69,10 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
     notes: ''
   });
 
+  // Inline editing states
+  const [editingType, setEditingType] = useState<TypeHistoryEntry | null>(null);
+  const [editingFunction, setEditingFunction] = useState<FunctionHistoryEntry | null>(null);
+
   const { data: typeHistory = [], isLoading: isLoadingTypes } = useQuery({
     queryKey: ['member-type-history', member.id],
     queryFn: async () => {
@@ -478,13 +482,18 @@ function TimelineView({ typeHistory, functionHistory, memberTypes, memberFunctio
     return { left: Math.max(0, left), width: Math.max(2, width) };
   };
 
-  // Generate year markers
+  // Generate year markers - dynamic step based on range
+  const yearsRange = rangeEnd.getFullYear() - rangeStart.getFullYear();
+  const yearStep = yearsRange >= 20 ? 5 : 1;
   const yearMarkers = [];
   const currentYear = new Date(rangeStart);
   currentYear.setMonth(0, 1);
+  // Round to nearest step
+  const startYear = Math.ceil(currentYear.getFullYear() / yearStep) * yearStep;
+  currentYear.setFullYear(startYear);
   while (currentYear <= rangeEnd) {
     yearMarkers.push(new Date(currentYear));
-    currentYear.setFullYear(currentYear.getFullYear() + 1);
+    currentYear.setFullYear(currentYear.getFullYear() + yearStep);
   }
 
   return (
@@ -510,7 +519,7 @@ function TimelineView({ typeHistory, functionHistory, memberTypes, memberFunctio
           {/* Timeline */}
           <div className="relative">
             {/* Year markers */}
-            <div className="relative h-8 border-b border-gray-200 mb-4">
+            <div className="relative h-8 border-b border-gray-200 mb-4 ml-32">
               {yearMarkers.map((year, idx) => {
                 const pos = ((year.getTime() - rangeStart.getTime()) / totalRange) * 100;
                 return (
