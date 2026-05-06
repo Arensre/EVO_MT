@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle, Award } from 'lucide-react';
+import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle, Award, Monitor } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
 // APP VERSION - Increment on every deployment
-const APP_VERSION = '1.17.3-2026-05-05-1806';
+const APP_VERSION = '1.18.1-2026-05-06-0956';
 
 interface SidebarProps {
   activeView: View;
@@ -35,18 +35,18 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
 
   // Module visibility helpers
   const isModuleEnabled = (moduleName: string): boolean => {
-    if (!enabledModules) return true; // Show all while loading
+    if (!enabledModules) return true;
     return enabledModules.includes(moduleName);
   };
 
   const isErpActive = activeView === 'customers' || activeView === 'suppliers';
   const isMembersActive = activeView === 'members';
-  const isAdminActive = activeView === 'settings' || activeView === 'users' || activeView === 'modules';
+  const isAdminActive = activeView === 'settings' || activeView === 'users' || activeView === 'modules' || activeView === 'general';
 
   // Generate initials for avatar placeholder
   const getInitials = () => {
-    const first = user?.first_name?.charAt(0) || user?.first_name?.charAt(0) || '';
-    const last = user?.last_name?.charAt(0) || user?.last_name?.charAt(0) || '';
+    const first = user?.first_name?.charAt(0) || '';
+    const last = user?.last_name?.charAt(0) || '';
     return (first + last).toUpperCase() || 'U';
   };
 
@@ -100,156 +100,164 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
               )}
             </button>
 
-          {/* Untermenü ERP */}
-          {erpExpanded && isOpen && (
-            <div className="bg-gray-900 py-2">
-              {isModuleEnabled('customers') && (
-                <button
-                  onClick={() => onViewChange('customers')}
-                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                    activeView === 'customers'
-                      ? 'text-blue-400'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Users size={16} />
-                  <span>Kunden</span>
-                </button>
-              )}
-              {isModuleEnabled('suppliers') && (
-                <button
-                  onClick={() => onViewChange('suppliers')}
-                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                    activeView === 'suppliers'
-                      ? 'text-blue-400'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Truck size={16} />
-                  <span>Lieferanten</span>
-                </button>
-              )}
-            </div>
-          )}
-        </div>)}
+            {erpExpanded && isOpen && (
+              <div className="bg-gray-900 py-2">
+                {isModuleEnabled('customers') && (
+                  <button
+                    onClick={() => onViewChange('customers')}
+                    className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                      activeView === 'customers'
+                        ? 'text-blue-400'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Users size={16} />
+                    <span>Kunden</span>
+                  </button>
+                )}
+                {isModuleEnabled('suppliers') && (
+                  <button
+                    onClick={() => onViewChange('suppliers')}
+                    className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                      activeView === 'suppliers'
+                        ? 'text-blue-400'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Truck size={16} />
+                    <span>Lieferanten</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Mitgliederverwaltung (aufgklappbar) - nur anzeigen wenn aktiviert */}
         {isModuleEnabled('members') && (
-        <div className="mt-4">
-          <button
-            onClick={() => setMembersExpanded(!membersExpanded)}
-            className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
-              isMembersActive
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <UserCircle size={20} />
-              {isOpen && <span>Mitgliederverwaltung</span>}
-            </div>
-            {isOpen && (
-              membersExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-            )}
-          </button>
-
-          {/* Untermenü Mitglieder */}
-          {membersExpanded && isOpen && (
-            <div className="bg-gray-900 py-2">
-              <button
-                onClick={() => onViewChange('members')}
-                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                  activeView === 'members'
-                    ? 'text-blue-400'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <UsersRound size={16} />
-                <span>Mitglieder</span>
-              </button>
-              <button
-                onClick={() => onViewChange('membership')}
-                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                  activeView === 'membership'
-                    ? 'text-blue-400'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Award size={16} />
-                <span>Mitgliedschaft</span>
-              </button>
-            </div>
-          )}
-        </div>)}
-
-        {/* Administration (aufgklappbar) - immer anzeigen */}
-        <div className="mt-4">
-          <button
-            onClick={() => setAdminExpanded(!adminExpanded)}
-            className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
-              isAdminActive
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Settings size={20} />
-              {isOpen && <span>Administration</span>}
-            </div>
-            {isOpen && (
-              adminExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-            )}
-          </button>
-
-          {/* Untermenü Administration */}
-          {adminExpanded && isOpen && (
-            <div className="bg-gray-900 py-2">
-              <button
-                onClick={() => onViewChange('settings')}
-                className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                  activeView === 'settings'
-                    ? 'text-blue-400'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Database size={16} />
-                <span>Stammdaten</span>
-              </button>
-              
-              {user?.role === 'admin' && (
-                <>
-                  <button
-                    onClick={() => onViewChange('modules')}
-                    className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                      activeView === 'modules'
-                        ? 'text-blue-400'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <Settings size={16} />
-                    <span>Module</span>
-                  </button>
-                  <button
-                    onClick={() => onViewChange('users')}
-                    className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                      activeView === 'users'
-                        ? 'text-blue-400'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <UsersRound size={16} />
-                    <span>Benutzerverwaltung</span>
-                  </button>
-                </>
+          <div className="mt-4">
+            <button
+              onClick={() => setMembersExpanded(!membersExpanded)}
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+                isMembersActive
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <UserCircle size={20} />
+                {isOpen && <span>Mitgliederverwaltung</span>}
+              </div>
+              {isOpen && (
+                membersExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
               )}
-            </div>
-          )}
-        </div>
+            </button>
+
+            {membersExpanded && isOpen && (
+              <div className="bg-gray-900 py-2">
+                <button
+                  onClick={() => onViewChange('members')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'members'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <UsersRound size={16} />
+                  <span>Mitglieder</span>
+                </button>
+                <button
+                  onClick={() => onViewChange('membership')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'membership'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Award size={16} />
+                  <span>Mitgliedschaft</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Administration (aufgklappbar) - nur für Administratoren */}
+        {user?.role === 'admin' && (
+          <div className="mt-4">
+            <button
+              onClick={() => setAdminExpanded(!adminExpanded)}
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+                isAdminActive
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Settings size={20} />
+                {isOpen && <span>Administration</span>}
+              </div>
+              {isOpen && (
+                adminExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+              )}
+            </button>
+
+            {adminExpanded && isOpen && (
+              <div className="bg-gray-900 py-2">
+                <button
+                  onClick={() => onViewChange('general')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'general'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Monitor size={16} />
+                  <span>Allgemein</span>
+                </button>
+
+                <button
+                  onClick={() => onViewChange('settings')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'settings'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Database size={16} />
+                  <span>Stammdaten</span>
+                </button>
+                
+                <button
+                  onClick={() => onViewChange('modules')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'modules'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Settings size={16} />
+                  <span>Module</span>
+                </button>
+                <button
+                  onClick={() => onViewChange('users')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'users'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <UsersRound size={16} />
+                  <span>Benutzerverwaltung</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* User Profile & Logout */}
       <div className="border-t border-gray-700">
-        {/* Logout Button */}
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-4 py-3 transition-colors text-orange-400 hover:bg-gray-700 hover:text-orange-300"
@@ -258,7 +266,6 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
           {isOpen && <span>Abmelden</span>}
         </button>
 
-        {/* Footer mit User Info & Version - Klickbarer Profil-Button */}
         {isOpen && user && (
           <button
             onClick={() => onViewChange("profile")}
@@ -269,7 +276,6 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
             }`}
           >
             <div className="flex items-center gap-3 mb-2">
-              {/* Avatar in Sidebar */}
               <div className={`w-10 h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 ${
                 activeView === "profile"
                   ? "bg-blue-600"
@@ -296,7 +302,6 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
                 </div>
               </div>
             </div>
-            {/* VERSION */}
             <div className="text-xs text-gray-600 mt-1 font-mono">
               v{APP_VERSION}
             </div>

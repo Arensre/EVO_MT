@@ -25,6 +25,9 @@ const pool = new Pool({
 // Middleware
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+const multer = require('multer');
+const fs = require('fs');
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -44,6 +47,38 @@ app.use('/api/members', memberHistoryRoutes);
 
 app.use('/api/users', avatarRoutes);
 app.use('/uploads/avatars', express.static(path.join(__dirname, '../uploads/avatars')));
+
+// Upload directory for login background
+const uploadsDir = path.join(__dirname, '../uploads');
+const backgroundsDir = path.join(uploadsDir, 'backgrounds');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+if (!fs.existsSync(backgroundsDir)) fs.mkdirSync(backgroundsDir);
+
+// Multer config for background uploads
+const backgroundStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, backgroundsDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, 'login-background' + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: backgroundStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Nur Bilder erlaubt'));
+    }
+  }
+});
+
+// Serve backgrounds statically
+app.use('/uploads/backgrounds', express.static(backgroundsDir));
+
 // Generate next customer number
 async function generateCustomerNumber() {
   const result = await pool.query(
@@ -79,6 +114,58 @@ async function generateSupplierNumber() {
 // Health
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// === LOGIN BACKGROUND SETTINGS ===
+
+// GET /api/settings/login-background - Get current login background
+app.get('/api/settings/login-background', async (req, res) => {
+  try {
+    // Check for background files
+    const files = fs.readdirSync(backgroundsDir);
+    const bgFile = files.find(f => f.startsWith('login-background'));
+    
+    if (bgFile) {
+      res.json({ url: `/uploads/backgrounds/${bgFile}` });
+    } else {
+      res.status(404).json({ error: 'No background set' });
+    }
+  } catch (error) {
+    console.error('Error reading background:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/settings/login-background - Upload new background
+app.post('/api/settings/login-background', requireAuth, upload.single('background'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Keine Datei hochgeladen' });
+    }
+    res.json({ 
+      url: `/uploads/backgrounds/${req.file.filename}`,
+      message: 'Hintergrund erfolgreich gespeichert' 
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Fehler beim Speichern' });
+  }
+});
+
+// DELETE /api/settings/login-background - Remove background
+app.delete('/api/settings/login-background', requireAuth, async (req, res) => {
+  try {
+    const files = fs.readdirSync(backgroundsDir);
+    const bgFile = files.find(f => f.startsWith('login-background'));
+    
+    if (bgFile) {
+      fs.unlinkSync(path.join(backgroundsDir, bgFile));
+    }
+    res.json({ message: 'Hintergrund entfernt' });
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({ error: 'Fehler beim Entfernen' });
+  }
 });
 
 // GET /api/modules - Liste aller Module mit verfügbaren Actions

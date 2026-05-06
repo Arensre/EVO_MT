@@ -19,13 +19,14 @@ import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
 import { Stammdaten } from './components/Stammdaten';
 import { ModuleSettings } from './components/ModuleSettings';
+import { GeneralSettings } from './components/GeneralSettings';
 import { useAuth } from './contexts/AuthContext';
 import { customerApi, supplierApi } from './api';
 import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
 import axios from 'axios';
 
 // API base URL for members
-const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 interface Member {
   id: number;
@@ -83,6 +84,11 @@ function HomeView() {
 
 function SettingsView() {
   return <Stammdaten />;
+}
+
+// General Settings View Component
+function GeneralSettingsView() {
+  return <GeneralSettings />;
 }
 
 // Profile View Component
@@ -630,6 +636,8 @@ export function MainApp() {
         return <MembershipView />;
       case 'settings':
         return <SettingsView />;
+      case 'general':
+        return <GeneralSettingsView />;
       case 'modules':
         return <ModuleSettings />;
       case 'profile':

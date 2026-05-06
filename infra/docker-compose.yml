@@ -24,19 +24,23 @@ services:
       dockerfile: Dockerfile
     container_name: event-erp-backend
     environment:
+      DB_HOST: evo_mt_postgres
+      DB_PORT: 5432
+      DB_NAME: evo_mt
+      DB_USER: postgres
+      DB_PASSWORD: postgres
       DATABASE_URL: postgresql://${DB_USER:-eventerp}:${DB_PASSWORD:-changeme}@db:5432/${DB_NAME:-eventerp}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - ../src/backend:/app
       - /app/node_modules
-    command: npm run dev
 
   frontend:
     build:
@@ -46,11 +50,10 @@ services:
     environment:
       REACT_APP_API_URL: http://localhost:3000
     ports:
-      - "5173:5173"
+      - "80:80"
     volumes:
       - ../src/frontend:/app
       - /app/node_modules
-    command: npm run dev
 
 volumes:
   postgres_data:

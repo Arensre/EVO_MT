@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { Plus, Trash2, Award, Briefcase, ArrowLeft, BarChart3, Pencil, Check, X } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 interface Member {
   id: number;

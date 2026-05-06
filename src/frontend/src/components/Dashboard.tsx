@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Users, Calendar, UserPlus, TrendingUp, Plus, ArrowRight, UsersRound, Building2, Zap, Sun, ChevronRight, Cake } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://172.16.0.125:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 interface DashboardStats {
   members: { total: number; active: number; newThisMonth: number };
