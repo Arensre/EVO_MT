@@ -57,7 +57,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
       }`}
     >
       <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-        {isOpen && <span className="font-bold text-lg">EVO MT</span>}
+        {isOpen && <span className="font-bold text-lg">EVO</span>}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="p-1 rounded hover:bg-gray-700 transition-colors"

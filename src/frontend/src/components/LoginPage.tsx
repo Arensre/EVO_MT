@@ -22,7 +22,6 @@ export function LoginPage() {
       const response = await fetch('/api/settings/login-background');
       if (response.ok) {
         const data = await response.json();
-        // Use relative URL for the background image
         setBackgroundUrl(data.url);
       }
     } catch (error) {
@@ -53,10 +52,17 @@ export function LoginPage() {
       }}
     >
       {backgroundUrl && <div className="absolute inset-0 bg-black/30" />}
+      
       <div className="relative bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-lg w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">EVO MT</h1>
-          <p className="text-gray-600 mt-2">Bitte melden Sie sich an</p>
+          <div className="flex justify-center mb-6 px-4">
+            <img 
+              src="/logo.png" 
+              alt="EVO Logo" 
+              className="w-full max-w-xs h-auto object-contain"
+            />
+          </div>
+          <p className="text-gray-600 text-lg">Vereine einfach digital verwalten</p>
         </div>
 
         {error && (
@@ -105,7 +111,7 @@ export function LoginPage() {
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-500">
-          <p>Default: admin / admin123</p>
+          <p>EVO Vereinscloud</p>
         </div>
       </div>
     </div>
