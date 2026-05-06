@@ -80,7 +80,7 @@ export function UserProfile() {
   const moduleLabels: Record<keyof typeof permissions, string> = {
     customers: 'Kunden',
     suppliers: 'Lieferanten',
-    Members: 'Materialien'
+    materials: 'Materialien'
   };
 
   const permissionLabels = {
@@ -260,7 +260,7 @@ export function UserProfile() {
                       </div>
                       <div className="grid grid-cols-3 gap-2">
                         {Object.entries(permissionLabels).map(([action, label]) => {
-                          const hasPerm = permissions[module][action as keyof ModulePermissions];
+                          const hasPerm = permissions[module]?.[action as keyof ModulePermissions] ?? false;
                           return (
                             <div
                               key={action}

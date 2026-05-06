@@ -976,7 +976,7 @@ function TimelineView({ typeHistory, functionHistory, areaHistory, memberTypes, 
 
             {/* Entries */}
             <div className="space-y-3">
-              {(['type', 'function'] as const).map(category => {
+              {(['type', 'function', 'area'] as const).map(category => {
                 const categoryEntries = allEntries.filter(e => e.category === category);
                 if (categoryEntries.length === 0) return null;
                 
@@ -1006,7 +1006,7 @@ function TimelineView({ typeHistory, functionHistory, areaHistory, memberTypes, 
           {/* Summary */}
           <div className="mt-6 pt-6 border-t border-gray-200">
             <h4 className="font-medium text-gray-900 mb-3">Zusammenfassung</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <span className="text-gray-500">Mitgliedsarten:</span>{' '}
                 <span className="font-medium">{typeHistory.length}</span>
@@ -1014,6 +1014,10 @@ function TimelineView({ typeHistory, functionHistory, areaHistory, memberTypes, 
               <div>
                 <span className="text-gray-500">Funktionen:</span>{' '}
                 <span className="font-medium">{functionHistory.length}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Bereiche:</span>{' '}
+                <span className="font-medium">{areaHistory.length}</span>
               </div>
             </div>
           </div>
