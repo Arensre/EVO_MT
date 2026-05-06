@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { Plus, Trash2, Award, Briefcase, ArrowLeft, BarChart3, Pencil, Check, X } from 'lucide-react';
+import { Plus, Trash2, Award, Briefcase, ArrowLeft, BarChart3, Pencil, Check, X, MapPin } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -41,16 +41,31 @@ interface FunctionHistoryEntry {
   notes?: string;
 }
 
+interface MemberArea {
+  id: number;
+  name: string;
+}
+
+interface AreaHistoryEntry {
+  id: number;
+  area_id: number;
+  area_name: string;
+  start_date: string;
+  end_date?: string;
+  notes?: string;
+}
+
 interface MembershipDetailProps {
   member: Member;
   memberTypes: MemberType[];
   memberFunctions: MemberFunction[];
+  memberAreas: MemberArea[];
   onBack: () => void;
 }
 
-export function MembershipDetail({ member, memberTypes, memberFunctions, onBack }: MembershipDetailProps) {
+export function MembershipDetail({ member, memberTypes, memberFunctions, memberAreas, onBack }: MembershipDetailProps) {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'types' | 'functions' | 'timeline'>('types');
+  const [activeTab, setActiveTab] = useState<'types' | 'functions' | 'areas' | 'timeline'>('types');
   
   const [showAddType, setShowAddType] = useState(false);
   const [showAddFunction, setShowAddFunction] = useState(false);
@@ -69,9 +84,19 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
     notes: ''
   });
 
+  const [newArea, setNewArea] = useState({
+    area_id: '',
+    start_date: '',
+    end_date: '',
+    notes: ''
+  });
+
   // Inline editing states
   const [editingType, setEditingType] = useState<TypeHistoryEntry | null>(null);
   const [editingFunction, setEditingFunction] = useState<FunctionHistoryEntry | null>(null);
+  const [editingArea, setEditingArea] = useState<AreaHistoryEntry | null>(null);
+
+  const [showAddArea, setShowAddArea] = useState(false);
 
   const { data: typeHistory = [], isLoading: isLoadingTypes } = useQuery({
     queryKey: ['member-type-history', member.id],
@@ -85,6 +110,14 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
     queryKey: ['member-function-history', member.id],
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/members/${member.id}/function-history`);
+      return response.data;
+    }
+  });
+
+  const { data: areaHistory = [], isLoading: isLoadingAreas } = useQuery({
+    queryKey: ['member-area-history', member.id],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/stammdaten/member-areas/member/${member.id}`);
       return response.data;
     }
   });
@@ -136,6 +169,40 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['member-function-history', member.id] });
       setEditingFunction(null);
+    }
+  });
+
+  const addAreaMutation = useMutation({
+    mutationFn: async (data: typeof newArea) => {
+      await axios.post(`${API_URL}/stammdaten/member-areas/member/${member.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['member-area-history', member.id] });
+      setShowAddArea(false);
+      setNewArea({ area_id: '', start_date: '', end_date: '', notes: '' });
+    }
+  });
+
+  const updateAreaMutation = useMutation({
+    mutationFn: async (data: AreaHistoryEntry) => {
+      await axios.put(`${API_URL}/stammdaten/member-areas/mapping/${data.id}`, {
+        area_id: data.area_id,
+        start_date: data.start_date,
+        end_date: data.end_date
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['member-area-history', member.id] });
+      setEditingArea(null);
+    }
+  });
+
+  const deleteAreaMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await axios.delete(`${API_URL}/stammdaten/member-areas/mapping/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['member-area-history', member.id] });
     }
   });
 
@@ -220,6 +287,21 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
             Funktionen
             <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">
               {functionHistory.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('areas')}
+            className={`flex items-center gap-2 py-4 border-b-2 transition-colors ${
+              activeTab === 'areas'
+                ? 'border-emerald-600 text-emerald-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <MapPin size={18} />
+            Bereiche
+            <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">
+              {areaHistory.length}
             </span>
           </button>
           
@@ -589,13 +671,190 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
           </div>
         )}
 
+        {/* Areas Tab */}
+        {activeTab === 'areas' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Bereichs-Historie</h3>
+              <button
+                onClick={() => setShowAddArea(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <Plus size={18} />
+                Hinzufügen
+              </button>
+            </div>
+            
+            {showAddArea && (
+              <div className="p-6 border-b border-gray-200 bg-gray-50">
+                <h4 className="font-medium text-gray-900 mb-4">Neuer Bereich</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bereich *</label>
+                    <select
+                      value={newArea.area_id}
+                      onChange={(e) => setNewArea({ ...newArea, area_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    >
+                      <option value="">-- Wählen --</option>
+                      {memberAreas.map((area) => (
+                        <option key={area.id} value={area.id}>{area.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Von *</label>
+                    <input
+                      type="date"
+                      value={newArea.start_date}
+                      onChange={(e) => setNewArea({ ...newArea, start_date: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bis (optional)</label>
+                    <input
+                      type="date"
+                      value={newArea.end_date}
+                      onChange={(e) => setNewArea({ ...newArea, end_date: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    />
+                  </div>
+                  
+                  <div className="flex items-end">
+                    <button
+                      onClick={() => addAreaMutation.mutate(newArea)}
+                      disabled={!newArea.area_id || !newArea.start_date}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      Speichern
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {isLoadingAreas ? (
+              <div className="p-8 text-center text-gray-500">Laden...</div>
+            ) : areaHistory.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                Keine Einträge vorhanden.
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left py-3 px-6 font-medium text-gray-700">Bereich</th>
+                    <th className="text-left py-3 px-6 font-medium text-gray-700">Von</th>
+                    <th className="text-left py-3 px-6 font-medium text-gray-700">Bis</th>
+                    <th className="text-right py-3 px-6 font-medium text-gray-700">Aktion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {areaHistory.map((entry: AreaHistoryEntry) => {
+                    const isEditing = editingArea?.id === entry.id;
+                    return (
+                    <tr key={entry.id} className="border-t border-gray-100">
+                      <td className="py-3 px-6">
+                        {isEditing ? (
+                          <select
+                            value={editingArea?.area_id || entry.area_id}
+                            onChange={(e) => setEditingArea({ ...editingArea!, area_id: parseInt(e.target.value), area_name: memberAreas.find(a => a.id === parseInt(e.target.value))?.name || '' })}
+                            className="w-full px-2 py-1 border border-gray-300 rounded"
+                          >
+                            {memberAreas.map((a) => (
+                              <option key={a.id} value={a.id}>{a.name}</option>
+                            ))}
+                          </select>
+                        ) : entry.area_name}
+                      </td>
+                      <td className="py-3 px-6">
+                        {isEditing ? (
+                          <div>
+                            <input
+                              type="date"
+                              value={editingArea?.start_date || entry.start_date}
+                              onChange={(e) => setEditingArea({ ...editingArea!, start_date: e.target.value })}
+                              className="w-full px-2 py-1 border border-gray-300 rounded"
+                            />
+                            <span className="text-xs text-gray-400 mt-1 block">Alt: {formatDate(entry.start_date)}</span>
+                          </div>
+                        ) : formatDate(entry.start_date)}
+                      </td>
+                      <td className="py-3 px-6">
+                        {isEditing ? (
+                          <div>
+                            <div className="flex gap-2">
+                              <input
+                                type="date"
+                                value={editingArea?.end_date || entry.end_date || ''}
+                                onChange={(e) => setEditingArea({ ...editingArea!, end_date: e.target.value || undefined })}
+                                className="flex-1 px-2 py-1 border border-gray-300 rounded"
+                              />
+                              <button
+                                onClick={() => setEditingArea({ ...editingArea!, end_date: undefined })}
+                                className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200"
+                              >
+                                Heute
+                              </button>
+                            </div>
+                            <span className="text-xs text-gray-400 mt-1 block">Alt: {entry.end_date ? formatDate(entry.end_date) : 'heute'}</span>
+                          </div>
+                        ) : formatDate(entry.end_date)}
+                      </td>
+                      <td className="py-3 px-6 text-right">
+                        {isEditing ? (
+                          <div className="flex items-center gap-2 justify-end">
+                            <button
+                              onClick={() => updateAreaMutation.mutate(editingArea!)}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => setEditingArea(null)}
+                              className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 justify-end">
+                            <button
+                              onClick={() => setEditingArea(entry)}
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteAreaMutation.mutate(entry.id)}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
         {/* Timeline Tab */}
         {activeTab === 'timeline' && (
           <TimelineView 
             typeHistory={typeHistory} 
             functionHistory={functionHistory}
+            areaHistory={areaHistory}
             memberTypes={memberTypes}
             memberFunctions={memberFunctions}
+            memberAreas={memberAreas}
           />
         )}
       </div>
@@ -607,11 +866,13 @@ export function MembershipDetail({ member, memberTypes, memberFunctions, onBack 
 interface TimelineViewProps {
   typeHistory: TypeHistoryEntry[];
   functionHistory: FunctionHistoryEntry[];
+  areaHistory: AreaHistoryEntry[];
   memberTypes: MemberType[];
   memberFunctions: MemberFunction[];
+  memberAreas: MemberArea[];
 }
 
-function TimelineView({ typeHistory, functionHistory, memberTypes, memberFunctions }: TimelineViewProps) {
+function TimelineView({ typeHistory, functionHistory, areaHistory, memberTypes, memberFunctions, memberAreas }: TimelineViewProps) {
   // Combine all entries with their types
   const allEntries = [
     ...typeHistory.map(entry => ({
@@ -625,6 +886,12 @@ function TimelineView({ typeHistory, functionHistory, memberTypes, memberFunctio
       category: 'function' as const,
       name: entry.function_name || memberFunctions.find(f => f.id === entry.member_function_id)?.name || 'Unbekannt',
       color: 'bg-amber-500'
+    })),
+    ...areaHistory.map(entry => ({
+      ...entry,
+      category: 'area' as const,
+      name: entry.area_name || memberAreas.find(a => a.id === entry.area_id)?.name || 'Unbekannt',
+      color: 'bg-green-500'
     }))
   ].sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
 
@@ -685,6 +952,10 @@ function TimelineView({ typeHistory, functionHistory, memberTypes, memberFunctio
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-amber-500 rounded" />
               <span className="text-sm text-gray-600">Funktion</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-green-500 rounded" />
+              <span className="text-sm text-gray-600">Bereich</span>
             </div>
           </div>
 

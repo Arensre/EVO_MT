@@ -264,6 +264,14 @@ function MembershipView() {
     }
   });
 
+  const { data: memberAreas = [] } = useQuery({
+    queryKey: ['member-areas'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/stammdaten/member-areas`);
+      return response.data;
+    }
+  });
+
   return (
     <>
       <div className="flex h-full">
@@ -281,9 +289,8 @@ function MembershipView() {
             <MembershipDetail
               member={selectedMember}
               memberTypes={memberTypes}
-              
-              
               memberFunctions={memberFunctions}
+              memberAreas={memberAreas}
               onBack={() => setSelectedMember(null)}
             />
           </div>

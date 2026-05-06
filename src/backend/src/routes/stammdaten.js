@@ -247,4 +247,229 @@ router.delete('/member-functions/:id', requireAuth, requireAdmin, async (req, re
   }
 });
 
+// ============================================
+// MEMBER AREAS (Bereiche)
+// ============================================
+
+// GET /api/stammdaten/member-areas - List all member areas
+router.get('/member-areas', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM member_areas WHERE is_active = true ORDER BY name',
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching member areas:', error);
+    res.status(500).json({ error: 'Fehler beim Laden der Bereiche' });
+  }
+});
+
+// GET /api/stammdaten/member-areas/all - List all member areas (including inactive)
+router.get('/member-areas/all', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM member_areas ORDER BY name',
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching member areas:', error);
+    res.status(500).json({ error: 'Fehler beim Laden der Bereiche' });
+  }
+});
+
+// GET /api/stammdaten/member-areas/:id - Get single member area
+router.get('/member-areas/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      'SELECT * FROM member_areas WHERE id = $1',
+      [id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Bereich nicht gefunden' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching member area:', error);
+    res.status(500).json({ error: 'Fehler beim Laden des Bereichs' });
+  }
+});
+
+// POST /api/stammdaten/member-areas - Create new member area (admin only)
+router.post('/member-areas', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { name, description, is_active } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Name ist erforderlich' });
+    }
+    
+    const result = await pool.query(
+      `INSERT INTO member_areas (name, description, is_active) 
+       VALUES ($1, $2, $3) 
+       RETURNING *`,
+      [name, description || '', is_active !== false]
+    );
+    
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating member area:', error);
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Ein Bereich mit diesem Namen existiert bereits' });
+    }
+    res.status(500).json({ error: 'Fehler beim Erstellen des Bereichs' });
+  }
+});
+
+// PUT /api/stammdaten/member-areas/:id - Update member area (admin only)
+router.put('/member-areas/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, is_active } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Name ist erforderlich' });
+    }
+    
+    const result = await pool.query(
+      `UPDATE member_areas 
+       SET name = $1, description = $2, is_active = $3, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $4 
+       RETURNING *`,
+      [name, description || '', is_active !== false, id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Bereich nicht gefunden' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating member area:', error);
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Ein Bereich mit diesem Namen existiert bereits' });
+    }
+    res.status(500).json({ error: 'Fehler beim Aktualisieren des Bereichs' });
+  }
+});
+
+// DELETE /api/stammdaten/member-areas/:id - Delete member area (admin only)
+router.delete('/member-areas/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query(
+      'DELETE FROM member_areas WHERE id = $1 RETURNING *',
+      [id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Bereich nicht gefunden' });
+    }
+    
+    res.json({ success: true, message: 'Bereich erfolgreich gelöscht' });
+  } catch (error) {
+    console.error('Error deleting member area:', error);
+    res.status(500).json({ error: 'Fehler beim Löschen des Bereichs' });
+  }
+});
+
+// ============================================
+// MEMBER AREA MAPPINGS (Bereichszuweisungen)
+// ============================================
+
+// GET /api/stammdaten/member-areas/member/:memberId - Get areas for a member
+router.get('/member-areas/member/:memberId', requireAuth, async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    const result = await pool.query(
+      `SELECT m.*, a.name as area_name, a.description as area_description
+       FROM member_area_mappings m
+       JOIN member_areas a ON m.area_id = a.id
+       WHERE m.member_id = $1 AND m.is_active = true
+       ORDER BY m.start_date DESC`,
+      [memberId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching member areas:', error);
+    res.status(500).json({ error: 'Fehler beim Laden der Bereichszuweisungen' });
+  }
+});
+
+// POST /api/stammdaten/member-areas/member/:memberId - Add area to member
+router.post('/member-areas/member/:memberId', requireAuth, async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    const { area_id, start_date, end_date } = req.body;
+    
+    if (!area_id || !start_date) {
+      return res.status(400).json({ error: 'Bereich und Startdatum sind erforderlich' });
+    }
+    
+    const result = await pool.query(
+      `INSERT INTO member_area_mappings (member_id, area_id, start_date, end_date) 
+       VALUES ($1, $2, $3, $4) 
+       RETURNING *`,
+      [memberId, area_id, start_date, end_date || null]
+    );
+    
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error adding member area:', error);
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Dieser Bereich ist bereits zugewiesen' });
+    }
+    res.status(500).json({ error: 'Fehler beim Hinzufügen des Bereichs' });
+  }
+});
+
+// PUT /api/stammdaten/member-areas/mapping/:id - Update member area mapping
+router.put('/member-areas/mapping/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { start_date, end_date, is_active } = req.body;
+    
+    const result = await pool.query(
+      `UPDATE member_area_mappings 
+       SET start_date = $1, end_date = $2, is_active = $3, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $4 
+       RETURNING *`,
+      [start_date, end_date || null, is_active !== false, id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Zuweisung nicht gefunden' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating member area mapping:', error);
+    res.status(500).json({ error: 'Fehler beim Aktualisieren der Bereichszuweisung' });
+  }
+});
+
+// DELETE /api/stammdaten/member-areas/mapping/:id - Remove area from member
+router.delete('/member-areas/mapping/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query(
+      'DELETE FROM member_area_mappings WHERE id = $1 RETURNING *',
+      [id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Zuweisung nicht gefunden' });
+    }
+    
+    res.json({ success: true, message: 'Bereichszuweisung erfolgreich entfernt' });
+  } catch (error) {
+    console.error('Error deleting member area mapping:', error);
+    res.status(500).json({ error: 'Fehler beim Entfernen der Bereichszuweisung' });
+  }
+});
+
 module.exports = router;
