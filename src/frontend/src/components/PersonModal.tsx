@@ -65,8 +65,6 @@ export function PersonModal({ isOpen, customerId, supplierId, person, onClose, o
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" onClick={onClose}>
       <div className="flex items-center justify-center min-h-screen px-4 py-4">
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50"></div>
-        
         <div 
           className="bg-white rounded-lg shadow-xl w-full max-w-lg relative z-10"
           onClick={(e) => e.stopPropagation()}

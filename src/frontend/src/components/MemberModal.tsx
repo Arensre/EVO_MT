@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { X, Asterisk } from "lucide-react";
+import { X, Asterisk, Bold, Italic, List, Link as LinkIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
 import type { MemberFormData } from "../types";
 
 interface MemberModalProps {
@@ -10,7 +11,7 @@ interface MemberModalProps {
   onSubmit: (data: MemberFormData) => void;
 }
 
-// All possible fields
+// All possible fields - matching MemberDetail.tsx
 const allFieldDefinitions = [
   { key: "first_name", label: "Vorname", type: "text" },
   { key: "last_name", label: "Nachname", type: "text" },
@@ -21,6 +22,32 @@ const allFieldDefinitions = [
   { key: "city", label: "Ort", type: "text" },
   { key: "country", label: "Land", type: "text" },
 ];
+
+// Simple Markdown Toolbar
+function MarkdownToolbar({ onInsert }: { onInsert: (text: string) => void }) {
+  const buttons = [
+    { icon: Bold, text: "**fett**", label: "Fett" },
+    { icon: Italic, text: "*kursiv*", label: "Kursiv" },
+    { icon: List, text: "\n- Listenpunkt", label: "Liste" },
+    { icon: LinkIcon, text: "[Link](url)", label: "Link" },
+  ];
+
+  return (
+    <div className="flex gap-1 mb-2">
+      {buttons.map(({ icon: Icon, text, label }) => (
+        <button
+          key={label}
+          onClick={() => onInsert(text)}
+          className="p-1.5 text-gray-600 hover:bg-gray-100 rounded"
+          title={label}
+          type="button"
+        >
+          <Icon size={16} />
+        </button>
+      ))}
+    </div>
+  );
+}
 
 // Fetch module settings for required fields
 const fetchModuleSettings = async () => {
@@ -38,16 +65,17 @@ export function MemberModal({
     last_name: "",
     email: "",
     phone: "",
-    
     address: "",
     postal_code: "",
     city: "",
     country: "Deutschland",
+    notes: "",
     is_active: true,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [showNotesPreview, setShowNotesPreview] = useState(false);
 
   // Fetch required fields from module settings
   const { data: moduleSettings } = useQuery({
@@ -66,13 +94,9 @@ export function MemberModal({
     return requiredFields[fieldKey] === true;
   };
 
-  // Filter visible fields based on module settings
-  const visibleFields = allFieldDefinitions.filter(field => {
-    // Always show first_name and last_name
-    if (field.key === 'first_name' || field.key === 'last_name') return true;
-    // Show if required in module settings
-    return isRequiredField(field.key);
-  });
+  // All fields should be visible in the modal (not just required ones)
+  // Required fields are marked with a red asterisk
+  const visibleFields = allFieldDefinitions;
 
   useEffect(() => {
     if (!isOpen) {
@@ -81,15 +105,16 @@ export function MemberModal({
         last_name: "",
         email: "",
         phone: "",
-        
         address: "",
         postal_code: "",
         city: "",
         country: "Deutschland",
+        notes: "",
         is_active: true,
       });
       setErrors({});
       setTouched({});
+      setShowNotesPreview(false);
     }
   }, [isOpen]);
 
@@ -126,15 +151,16 @@ export function MemberModal({
       last_name: "",
       email: "",
       phone: "",
-      
       address: "",
       postal_code: "",
       city: "",
       country: "Deutschland",
+      notes: "",
       is_active: true,
     });
     setErrors({});
     setTouched({});
+    setShowNotesPreview(false);
     onClose();
   };
 
@@ -220,6 +246,54 @@ export function MemberModal({
           <form onSubmit={handleSubmit} className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {visibleFields.map(renderField)}
+            </div>
+
+            {/* Notes Field with Markdown Support */}
+            <div className="mt-6">
+              <label className="block text-sm font-medium mb-1 flex items-center gap-1 text-gray-700">
+                Notizen
+                {isRequiredField("notes") && (
+                  <Asterisk size={12} className="text-red-500 fill-red-500" />
+                )}
+              </label>
+              <MarkdownToolbar 
+                onInsert={(text) => 
+                  setFormData({ ...formData, notes: (formData.notes || "") + text })
+                } 
+              />
+              <div className="flex gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNotesPreview(false)}
+                  className={`text-xs px-2 py-1 rounded ${!showNotesPreview ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
+                >
+                  Bearbeiten
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNotesPreview(true)}
+                  className={`text-xs px-2 py-1 rounded ${showNotesPreview ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
+                >
+                  Vorschau
+                </button>
+              </div>
+              {showNotesPreview ? (
+                <div className="prose prose-sm max-w-none border border-gray-300 rounded-lg p-3 min-h-[150px] bg-white">
+                  <ReactMarkdown>{formData.notes || ""}</ReactMarkdown>
+                </div>
+              ) : (
+                <textarea
+                  value={formData.notes || ""}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onBlur={() => handleBlur("notes")}
+                  rows={6}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  placeholder="Notizen in Markdown-Format..."
+                />
+              )}
+              {touched.notes && errors.notes && (
+                <p className="mt-1 text-sm text-red-600">{errors.notes}</p>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">

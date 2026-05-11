@@ -43,6 +43,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/stammdaten', stammdatenRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/module-settings', moduleSettingsRoutes);
+
+const importRoutes = require('./routes/import');
+app.use('/api/import', importRoutes);
 app.use('/api/members', memberHistoryRoutes);
 
 app.use('/api/users', avatarRoutes);

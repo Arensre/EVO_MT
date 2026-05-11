@@ -20,6 +20,7 @@ import { UserManagement } from './components/UserManagement';
 import { Stammdaten } from './components/Stammdaten';
 import { ModuleSettings } from './components/ModuleSettings';
 import { GeneralSettings } from './components/GeneralSettings';
+import { Importer } from './components/Importer';
 import { useAuth } from './contexts/AuthContext';
 import { customerApi, supplierApi } from './api';
 import type { Customer, CustomerFormData, Supplier, SupplierFormData, View } from './types';
@@ -99,6 +100,11 @@ function ProfileView() {
 // Users View Component
 function UsersView() {
   return <UserManagement />;
+}
+
+// Importer View Component
+function ImporterView() {
+  return <Importer />;
 }
 
 // Members View Component
@@ -647,6 +653,8 @@ export function MainApp() {
         return <GeneralSettingsView />;
       case 'modules':
         return <ModuleSettings />;
+      case 'importer':
+        return <ImporterView />;
       case 'profile':
         return <ProfileView />;
       case 'users':

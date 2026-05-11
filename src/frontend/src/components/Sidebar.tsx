@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle, Award, Monitor } from 'lucide-react';
+import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle, Award, Monitor, FileSpreadsheet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
@@ -41,7 +41,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
 
   const isErpActive = activeView === 'customers' || activeView === 'suppliers';
   const isMembersActive = activeView === 'members';
-  const isAdminActive = activeView === 'settings' || activeView === 'users' || activeView === 'modules' || activeView === 'general';
+  const isAdminActive = activeView === 'settings' || activeView === 'users' || activeView === 'modules' || activeView === 'general' || activeView === 'importer';
 
   // Generate initials for avatar placeholder
   const getInitials = () => {
@@ -238,6 +238,17 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
                 >
                   <Settings size={16} />
                   <span>Module</span>
+                </button>
+                <button
+                  onClick={() => onViewChange('importer')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'importer'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <FileSpreadsheet size={16} />
+                  <span>Import / Export</span>
                 </button>
                 <button
                   onClick={() => onViewChange('users')}

@@ -1,7 +1,36 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Bold, Italic, List, Link as LinkIcon } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import type { SupplierFormData } from '../types';
+
+// Simple Markdown Toolbar
+function MarkdownToolbar({ onInsert }: { onInsert: (text: string) => void }) {
+  const buttons = [
+    { icon: Bold, text: '**fett**', label: 'Fett' },
+    { icon: Italic, text: '*kursiv*', label: 'Kursiv' },
+    { icon: List, text: '\n- Listenpunkt', label: 'Liste' },
+    { icon: LinkIcon, text: '[Link](url)', label: 'Link' },
+  ];
+
+  return (
+    <div className="flex gap-1 mb-2">
+      {buttons.map(({ icon: Icon, text, label }) => (
+        <button
+          key={label}
+          onClick={() => onInsert(text)}
+          className="p-1.5 text-gray-600 hover:bg-gray-100 rounded"
+          title={label}
+          type="button"
+        >
+          <Icon size={16} />
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const schema = z.object({
   name: z.string().min(1, 'Name ist erforderlich'),
@@ -22,6 +51,9 @@ interface SupplierFormProps {
 }
 
 export function SupplierForm({ onSubmit, onCancel }: SupplierFormProps) {
+  const [notes, setNotes] = useState('');
+  const [showNotesPreview, setShowNotesPreview] = useState(false);
+  
   const {
     register,
     handleSubmit,
@@ -42,8 +74,12 @@ export function SupplierForm({ onSubmit, onCancel }: SupplierFormProps) {
     },
   });
 
+  const onFormSubmit = (data: SupplierFormData) => {
+    onSubmit({ ...data, notes });
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Name *
@@ -132,13 +168,51 @@ export function SupplierForm({ onSubmit, onCancel }: SupplierFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Notizen</label>
-        <textarea
-          {...register('notes')}
-          rows={3}
+        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+        <select
+          {...register('status')}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600"
-          placeholder="Notizen (Markdown unterstützt)..."
+        >
+          <option value="active">Aktiv</option>
+          <option value="inactive">Inaktiv</option>
+        </select>
+      </div>
+
+      {/* Notes Field with Markdown Support */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Notizen</label>
+        <MarkdownToolbar 
+          onInsert={(text) => setNotes((prev) => prev + text)} 
         />
+        <div className="flex gap-2 mb-2">
+          <button
+            type="button"
+            onClick={() => setShowNotesPreview(false)}
+            className={`text-xs px-2 py-1 rounded ${!showNotesPreview ? 'bg-amber-100 text-amber-700' : 'text-gray-500'}`}
+          >
+            Bearbeiten
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowNotesPreview(true)}
+            className={`text-xs px-2 py-1 rounded ${showNotesPreview ? 'bg-amber-100 text-amber-700' : 'text-gray-500'}`}
+          >
+            Vorschau
+          </button>
+        </div>
+        {showNotesPreview ? (
+          <div className="prose prose-sm max-w-none border border-gray-300 rounded-lg p-3 min-h-[150px] bg-white">
+            <ReactMarkdown>{notes || ""}</ReactMarkdown>
+          </div>
+        ) : (
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={6}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none"
+            placeholder="Notizen in Markdown-Format..."
+          />
+        )}
       </div>
 
       <div className="flex gap-3 pt-4 border-t border-gray-200">

@@ -95,22 +95,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     const response = await axios.post('/api/auth/login', { username, password });
-    const { token, user } = response.data;
+    const { token } = response.data;
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser({ ...user, avatar_url: user.avatar_url });
-    
-    // Set permissions from login response
-    if (user.role === 'admin') {
-      setPermissions(adminPermissions);
-    } else if (user.permissions) {
-      setPermissions({
-        ...defaultPermissions,
-        ...user.permissions
-      });
-    } else {
-      setPermissions(defaultPermissions);
-    }
+    // Nach Login vollstaendige User-Daten vom Server holen (inkl. avatar_url)
+    await fetchUser();
   };
 
   const logout = async () => {
