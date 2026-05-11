@@ -212,14 +212,7 @@ router.post('/execute', requireAuth, requirePermission('members', 'write'), asyn
     let insertedCount = 0;
     const insertErrors = [];
     
-    // Get starting number for modules without database trigger
-    let currentNumber = null;
-    if (module === 'suppliers') {
-      const result = await client.query(
-        "SELECT COALESCE(MAX(NULLIF(regexp_replace(supplier_number, '[^0-9]', '', 'g'), '')), '0')::int as max_num FROM suppliers WHERE supplier_number LIKE 'L%'"
-      );
-      currentNumber = parseInt(result.rows[0].max_num) || 0;
-    }
+    // Database triggers handle number generation for all modules
     
     for (const row of validData) {
       try {
