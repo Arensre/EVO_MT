@@ -651,11 +651,9 @@ export function MainApp() {
       case 'members':
         return <MembersView />;
       case 'membership':
+        return <MembershipView />;
       case 'calendar':
         return <CalendarView />;
-        return <MembershipView />;
-      case 'settings':
-        return <SettingsView />;
       case 'general':
         return <GeneralSettingsView />;
       case 'modules':
