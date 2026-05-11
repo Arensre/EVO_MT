@@ -132,7 +132,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
         {/* 3) Vereinsaktivitäten (NEU) */}
         <div className="mt-4">
           <button
-            onClick={() => onViewChange('membership')}
+            onClick={() => onViewChange('calendar')}
             className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
               activeView === 'calendar'
                 ? 'bg-blue-600 text-white'
@@ -294,27 +294,9 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
               : 'text-gray-300 hover:bg-gray-700 hover:text-white'
           }`}
         >
-          {user?.avatar_url ? (
-            <img
-              src={user.avatar_url}
-              alt={`${user.first_name} ${user.last_name}`}
-              className="w-8 h-8 rounded-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const parent = e.currentTarget.parentElement;
-                if (parent) {
-                  const fallback = document.createElement('div');
-                  fallback.className = 'w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold';
-                  fallback.textContent = getInitials();
-                  parent.insertBefore(fallback, e.currentTarget);
-                }
-              }}
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-              {getInitials()}
-            </div>
-          )}
+          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+            {getInitials()}
+          </div>
           {isOpen && (
             <div className="flex-1 text-left overflow-hidden">
               <div className="font-medium truncate">{user?.first_name} {user?.last_name}</div>
