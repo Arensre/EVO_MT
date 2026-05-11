@@ -18,26 +18,18 @@ interface Event {
   category_color?: string;
 }
 
-interface EventCategory {
-  id: number;
-  name: string;
-  color: string;
-}
-
 type ViewType = 'month' | 'week' | 'list';
 
 export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<ViewType>('month');
   const [events, setEvents] = useState<Event[]>([]);
-  const [categories, setCategories] = useState<EventCategory[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     fetchEvents();
-    fetchCategories();
   }, []);
 
   const fetchEvents = async () => {
@@ -49,18 +41,6 @@ export function Calendar() {
       setEvents(response.data);
     } catch (error) {
       console.error('Error fetching events:', error);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('/api/events/categories/list', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setCategories(response.data);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
     }
   };
 
@@ -143,12 +123,10 @@ export function Calendar() {
     const firstDay = getFirstDayOfMonth(year, month);
     const days = [];
 
-    // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="h-24 bg-gray-50"></div>);
     }
 
-    // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = formatDateStr(year, month, day);
       const dayEvents = getEventsForDate(dateStr);

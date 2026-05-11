@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Calendar, Briefcase, LogOut } from 'lucide-react';
+import { Users, Calendar as CalendarIcon, Briefcase, LogOut } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { CustomerList } from './components/CustomerList';
 import { CustomerDetail } from './components/CustomerDetail';
@@ -17,8 +17,8 @@ import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { Dashboard } from "./components/Dashboard";
 import { UserProfile } from './components/UserProfile';
 import { UserManagement } from './components/UserManagement';
-import { Stammdaten } from './components/Stammdaten';
 import { ModuleSettings } from './components/ModuleSettings';
+import { Calendar } from './components/Calendar';
 import { GeneralSettings } from './components/GeneralSettings';
 import { Importer } from './components/Importer';
 import { useAuth } from './contexts/AuthContext';
@@ -61,7 +61,7 @@ function HomeView() {
 
         <div className="bg-white p-6 rounded-lg shadow border-l-4 border-emerald-500">
           <div className="flex items-center gap-3">
-            <Calendar className="text-emerald-600" size={32} />
+            <CalendarIcon className="text-emerald-600" size={32} />
             <div>
               <div className="text-2xl font-bold text-gray-900">Events</div>
               <div className="text-gray-500">Planen</div>
@@ -83,9 +83,6 @@ function HomeView() {
   );
 }
 
-function SettingsView() {
-  return <Stammdaten />;
-}
 
 // General Settings View Component
 function GeneralSettingsView() {
