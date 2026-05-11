@@ -62,12 +62,84 @@ async function generateSupplierNumber() {
   return 'L' + String(nextNumber).padStart(5, '0');
 }
 
-// Field definitions for templates
+// Field definitions for templates and validation
 const fieldDefinitions = {
-  members: ['first_name', 'last_name', 'email', 'phone', 'address', 'postal_code', 'city', 'country', 'notes'],
-  customers: ['name', 'type', 'email', 'phone', 'address', 'postal_code', 'city', 'country', 'status', 'notes'],
-  suppliers: ['name', 'type', 'email', 'phone', 'address', 'postal_code', 'city', 'country', 'status', 'notes']
+  members: {
+    required: ['first_name', 'last_name'],
+    optional: ['email', 'phone', 'address', 'postal_code', 'city', 'country', 'notes'],
+    all: ['first_name', 'last_name', 'email', 'phone', 'address', 'postal_code', 'city', 'country', 'notes']
+  },
+  customers: {
+    required: ['name', 'type'],
+    optional: ['email', 'phone', 'address', 'postal_code', 'city', 'country', 'status', 'notes'],
+    all: ['name', 'type', 'email', 'phone', 'address', 'postal_code', 'city', 'country', 'status', 'notes']
+  },
+  suppliers: {
+    required: ['name', 'type'],
+    optional: ['email', 'phone', 'address', 'postal_code', 'city', 'country', 'status', 'notes'],
+    all: ['name', 'type', 'email', 'phone', 'address', 'postal_code', 'city', 'country', 'status', 'notes']
+  }
 };
+
+// Parse CSV with semicolon delimiter
+function parseCSV(csvText) {
+  const lines = csvText.split('\n').filter(line => line.trim());
+  if (lines.length < 1) return { headers: [], data: [] };
+  
+  const headers = lines[0].split(';').map(h => h.trim());
+  const data = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(';');
+    const row = {};
+    headers.forEach((header, index) => {
+      row[header] = values[index] ? values[index].trim() : '';
+    });
+    data.push(row);
+  }
+  
+  return { headers, data };
+}
+
+// Validate data against module schema
+function validateData(module, data) {
+  const def = fieldDefinitions[module];
+  const errors = [];
+  const validData = [];
+  
+  data.forEach((row, index) => {
+    const rowErrors = [];
+    const validatedRow = {};
+    
+    // Check required fields
+    def.required.forEach(field => {
+      if (!row[field] || row[field].trim() === '') {
+        rowErrors.push(`Feld "${field}" ist erforderlich`);
+      }
+    });
+    
+    // Copy all defined fields
+    def.all.forEach(field => {
+      validatedRow[field] = row[field] || '';
+    });
+    
+    // Validate email format if provided
+    if (row.email && row.email.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(row.email)) {
+        rowErrors.push('Ungültige E-Mail-Adresse');
+      }
+    }
+    
+    if (rowErrors.length > 0) {
+      errors.push({ row: index + 2, errors: rowErrors, data: row });
+    } else {
+      validData.push(validatedRow);
+    }
+  });
+  
+  return { validData, errors };
+}
 
 // Download template
 router.get('/template/:module', requireAuth, async (req, res) => {
@@ -78,10 +150,10 @@ router.get('/template/:module', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Ungültiges Modul' });
     }
     
-    const fields = fieldDefinitions[module];
+    const def = fieldDefinitions[module];
     
     // Create CSV header
-    const header = fields.join(';') + '\n';
+    const header = def.all.join(';') + '\n';
     
     // Add sample data row
     let sampleData = '';
@@ -104,54 +176,147 @@ router.get('/template/:module', requireAuth, async (req, res) => {
   }
 });
 
-// Parse CSV helper
-function parseCSV(csvText) {
-  const lines = csvText.split('\n').filter(line => line.trim());
-  if (lines.length < 2) return [];
-  
-  const headers = lines[0].split(';').map(h => h.trim());
-  const data = [];
-  
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(';');
-    const row = {};
-    headers.forEach((header, index) => {
-      row[header] = values[index] ? values[index].trim() : '';
-    });
-    data.push(row);
-  }
-  
-  return data;
-}
-
-// Preview import (no database changes)
+// Preview import - store file temporarily and return preview
 router.post('/preview', requireAuth, requirePermission('members', 'write'), async (req, res) => {
   try {
-    // This would parse the uploaded file and return preview data
-    // For now, return a placeholder
-    res.json({ 
-      preview: [],
-      message: 'Preview not yet implemented - file upload needed'
+    const { module } = req.body;
+    const fileContent = req.body.fileContent; // Base64 encoded
+    
+    if (!module || !fieldDefinitions[module]) {
+      return res.status(400).json({ error: 'Ungültiges Modul' });
+    }
+    
+    if (!fileContent) {
+      return res.status(400).json({ error: 'Keine Datei hochgeladen' });
+    }
+    
+    // Decode base64
+    const csvText = Buffer.from(fileContent, 'base64').toString('utf-8');
+    
+    // Parse CSV
+    const { headers, data } = parseCSV(csvText);
+    
+    // Validate headers
+    const def = fieldDefinitions[module];
+    const missingRequired = def.required.filter(f => !headers.includes(f));
+    
+    if (missingRequired.length > 0) {
+      return res.status(400).json({
+        error: 'Fehlende Pflichtfelder im CSV',
+        missingFields: missingRequired
+      });
+    }
+    
+    // Validate data
+    const { validData, errors } = validateData(module, data);
+    
+    res.json({
+      preview: validData.slice(0, 10), // First 10 rows for preview
+      totalRows: data.length,
+      validRows: validData.length,
+      errorRows: errors.length,
+      errors: errors.slice(0, 5), // Show first 5 errors
+      headers
     });
   } catch (error) {
     console.error('Preview error:', error);
-    res.status(500).json({ error: 'Vorschau fehlgeschlagen' });
+    res.status(500).json({ error: 'Vorschau fehlgeschlagen: ' + error.message });
   }
 });
 
 // Execute import
 router.post('/execute', requireAuth, requirePermission('members', 'write'), async (req, res) => {
+  const client = await pool.connect();
+  
   try {
-    // This would process the uploaded file and import to database
-    // For now, return a placeholder
-    res.json({ 
-      success: 0, 
-      errors: 0,
-      message: 'Import not yet implemented - file upload needed'
+    const { module } = req.body;
+    const fileContent = req.body.fileContent;
+    const userId = req.user?.id;
+    
+    if (!module || !fieldDefinitions[module]) {
+      return res.status(400).json({ error: 'Ungültiges Modul' });
+    }
+    
+    if (!fileContent) {
+      return res.status(400).json({ error: 'Keine Datei hochgeladen' });
+    }
+    
+    // Decode and parse
+    const csvText = Buffer.from(fileContent, 'base64').toString('utf-8');
+    const { data } = parseCSV(csvText);
+    
+    // Validate
+    const { validData, errors } = validateData(module, data);
+    
+    if (validData.length === 0) {
+      return res.status(400).json({
+        error: 'Keine gültigen Daten zum Importieren',
+        errors
+      });
+    }
+    
+    // Start transaction
+    await client.query('BEGIN');
+    
+    let insertedCount = 0;
+    const insertErrors = [];
+    
+    for (const row of validData) {
+      try {
+        if (module === 'members') {
+          const memberNumber = await generateMemberNumber();
+          await client.query(
+            `INSERT INTO members (member_number, first_name, last_name, email, phone, 
+             address, postal_code, city, country, notes, created_by)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+            [memberNumber, row.first_name, row.last_name, row.email || null,
+             row.phone || null, row.address || null, row.postal_code || null,
+             row.city || null, row.country || 'Deutschland', row.notes || null, userId]
+          );
+        } else if (module === 'customers') {
+          const customerNumber = await generateCustomerNumber();
+          await client.query(
+            `INSERT INTO customers (customer_number, name, type, email, phone, 
+             address, postal_code, city, country, status, notes, created_by)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+            [customerNumber, row.name, row.type, row.email || null,
+             row.phone || null, row.address || null, row.postal_code || null,
+             row.city || null, row.country || 'Deutschland', 
+             row.status || 'active', row.notes || null, userId]
+          );
+        } else if (module === 'suppliers') {
+          const supplierNumber = await generateSupplierNumber();
+          await client.query(
+            `INSERT INTO suppliers (supplier_number, name, type, email, phone, 
+             address, postal_code, city, country, status, notes, created_by)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+            [supplierNumber, row.name, row.type, row.email || null,
+             row.phone || null, row.address || null, row.postal_code || null,
+             row.city || null, row.country || 'Deutschland', 
+             row.status || 'active', row.notes || null, userId]
+          );
+        }
+        insertedCount++;
+      } catch (err) {
+        insertErrors.push({ row: row, error: err.message });
+      }
+    }
+    
+    await client.query('COMMIT');
+    
+    res.json({
+      success: insertedCount,
+      errors: errors.length + insertErrors.length,
+      importErrors: insertErrors.slice(0, 5),
+      message: `${insertedCount} von ${data.length} Einträgen importiert`
     });
+    
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Import error:', error);
-    res.status(500).json({ error: 'Import fehlgeschlagen' });
+    res.status(500).json({ error: 'Import fehlgeschlagen: ' + error.message });
+  } finally {
+    client.release();
   }
 });
 
