@@ -212,8 +212,6 @@ router.post('/execute', requireAuth, requirePermission('members', 'write'), asyn
     let insertedCount = 0;
     const insertErrors = [];
     
-    // Database triggers handle number generation for all modules
-    
     for (const row of validData) {
       try {
         if (module === 'members') {
@@ -238,13 +236,12 @@ router.post('/execute', requireAuth, requirePermission('members', 'write'), asyn
              row.status || 'active', row.notes || null]
           );
         } else if (module === 'suppliers') {
-          currentNumber++;
-          const supplierNumber = 'L' + String(currentNumber).padStart(5, '0');
+          // Database trigger generates supplier_number
           await client.query(
-            `INSERT INTO suppliers (supplier_number, name, type, email, phone, 
+            `INSERT INTO suppliers (name, type, email, phone, 
              address, postal_code, city, country, status, notes)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-            [supplierNumber, row.name, row.type, row.email || null,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+            [row.name, row.type, row.email || null,
              row.phone || null, row.address || null, row.postal_code || null,
              row.city || null, row.country || 'Deutschland', 
              row.status || 'active', row.notes || null]
