@@ -35,9 +35,11 @@ export function Calendar() {
   const fetchEvents = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('Fetching events with token:', token ? 'present' : 'missing');
       const response = await axios.get('/api/events', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log('Fetched events:', response.data);
       setEvents(response.data);
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -98,7 +100,10 @@ export function Calendar() {
   };
 
   const getEventsForDate = (dateStr: string) => {
-    return events.filter(event => event.start_date === dateStr);
+    const dayEvents = events.filter(event => event.start_date === dateStr);
+    if (dayEvents.length > 0) {
+    }
+    return dayEvents;
   };
 
   const formatDateStr = (year: number, month: number, day: number) => {
@@ -143,7 +148,7 @@ export function Calendar() {
           <div className={`text-sm font-medium ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
             {day}
           </div>
-          <div className="mt-1 space-y-1">
+          <div className="mt-1 space-y-1 min-h-[20px]">
             {dayEvents.slice(0, 3).map((event) => (
               <div
                 key={event.id}
@@ -151,8 +156,12 @@ export function Calendar() {
                   e.stopPropagation();
                   handleEventClick(event);
                 }}
-                className="text-xs px-1.5 py-0.5 rounded truncate cursor-pointer"
-                style={{ backgroundColor: event.category_color || '#6B7280', color: 'white' }}
+                className="text-xs px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80"
+                style={{ 
+                  backgroundColor: event.category_color || '#6B7280', 
+                  color: 'white',
+                  maxWidth: '100%'
+                }}
                 title={event.title}
               >
                 {event.title}
@@ -190,7 +199,7 @@ export function Calendar() {
           <div className="p-8 text-center text-gray-500">
             <CalendarIcon size={48} className="mx-auto text-gray-300 mb-4" />
             <p>Keine Termine vorhanden</p>
-            <p className="text-sm mt-1">Klicken Sie auf &quot;+&quot; um einen neuen Termin zu erstellen</p>
+            <p className="text-sm mt-1">Klicken Sie auf "+" um einen neuen Termin zu erstellen</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
