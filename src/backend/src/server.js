@@ -36,6 +36,8 @@ const avatarRoutes = require('./routes/avatar');
 const stammdatenRoutes = require('./routes/stammdaten');
 const memberRoutes = require('./routes/members');
 const moduleSettingsRoutes = require('./routes/module-settings');
+const eventRoutes = require('./routes/events');
+app.use('/api/events', eventRoutes);
 const memberHistoryRoutes = require('./routes/member-history');
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -43,6 +45,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/stammdaten', stammdatenRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/module-settings', moduleSettingsRoutes);
+const eventRoutes = require('./routes/events');
+app.use('/api/events', eventRoutes);
 
 const importRoutes = require('./routes/import');
 app.use('/api/import', importRoutes);

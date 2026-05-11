@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle, Award, Monitor, FileSpreadsheet } from 'lucide-react';
+import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LogOut, Database, Building2, UserCircle, Award, Monitor, FileSpreadsheet, Calendar } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
 // APP VERSION - Increment on every deployment
-const APP_VERSION = '1.18.1-2026-05-06-0956';
+const APP_VERSION = '1.19.0-2026-05-11';
 
 interface SidebarProps {
   activeView: View;
@@ -67,7 +67,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
       </div>
 
       <nav className="flex-1 py-4">
-        {/* Home */}
+        {/* 1) Dashboard (ehemals Home) */}
         <button
           onClick={() => onViewChange('home')}
           className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
@@ -77,10 +77,74 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
           }`}
         >
           <Home size={20} />
-          {isOpen && <span>Home</span>}
+          {isOpen && <span>Dashboard</span>}
         </button>
 
-        {/* ERP (aufgklappbar) - nur anzeigen wenn Kunden oder Lieferanten aktiviert */}
+        {/* 2) Mitgliederverwaltung (aufgklappbar) */}
+        {isModuleEnabled('members') && (
+          <div className="mt-4">
+            <button
+              onClick={() => setMembersExpanded(!membersExpanded)}
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+                isMembersActive
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <UsersRound size={20} />
+                {isOpen && <span>Mitgliederverwaltung</span>}
+              </div>
+              {isOpen && (
+                membersExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+              )}
+            </button>
+
+            {membersExpanded && isOpen && (
+              <div className="bg-gray-900 py-2">
+                <button
+                  onClick={() => onViewChange('members')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'members'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <UsersRound size={16} />
+                  <span>Mitglieder</span>
+                </button>
+                <button
+                  onClick={() => onViewChange('membership')}
+                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
+                    activeView === 'membership'
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Award size={16} />
+                  <span>Mitgliedschaft</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 3) Vereinsaktivitäten (NEU) */}
+        <div className="mt-4">
+          <button
+            onClick={() => onViewChange('calendar')}
+            className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+              activeView === 'calendar'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+            }`}
+          >
+            <Calendar size={20} />
+            {isOpen && <span>Vereinsaktivitäten</span>}
+          </button>
+        </div>
+
+        {/* 4) ERP (aufgklappbar) */}
         {(isModuleEnabled('customers') || isModuleEnabled('suppliers')) && (
           <div className="mt-4">
             <button
@@ -133,56 +197,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
           </div>
         )}
 
-        {/* Mitgliederverwaltung (aufgklappbar) - nur anzeigen wenn aktiviert */}
-        {isModuleEnabled('members') && (
-          <div className="mt-4">
-            <button
-              onClick={() => setMembersExpanded(!membersExpanded)}
-              className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
-                isMembersActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <UserCircle size={20} />
-                {isOpen && <span>Mitgliederverwaltung</span>}
-              </div>
-              {isOpen && (
-                membersExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-              )}
-            </button>
-
-            {membersExpanded && isOpen && (
-              <div className="bg-gray-900 py-2">
-                <button
-                  onClick={() => onViewChange('members')}
-                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                    activeView === 'members'
-                      ? 'text-blue-400'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <UsersRound size={16} />
-                  <span>Mitglieder</span>
-                </button>
-                <button
-                  onClick={() => onViewChange('membership')}
-                  className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
-                    activeView === 'membership'
-                      ? 'text-blue-400'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Award size={16} />
-                  <span>Mitgliedschaft</span>
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Administration (aufgklappbar) - nur für Administratoren */}
+        {/* 5) Administration (aufgklappbar) - nur für Administratoren */}
         {user?.role === 'admin' && (
           <div className="mt-4">
             <button
@@ -239,6 +254,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
                   <Settings size={16} />
                   <span>Module</span>
                 </button>
+                
                 <button
                   onClick={() => onViewChange('importer')}
                   className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
@@ -250,6 +266,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
                   <FileSpreadsheet size={16} />
                   <span>Import / Export</span>
                 </button>
+                
                 <button
                   onClick={() => onViewChange('users')}
                   className={`w-full flex items-center gap-3 px-8 py-2 transition-colors ${
@@ -258,8 +275,8 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
                       : 'text-gray-400 hover:text-white'
                   }`}
                 >
-                  <UsersRound size={16} />
-                  <span>Benutzerverwaltung</span>
+                  <UserCircle size={16} />
+                  <span>Benutzer</span>
                 </button>
               </div>
             )}
@@ -267,58 +284,42 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
         )}
       </nav>
 
-      {/* User Profile & Logout */}
-      <div className="border-t border-gray-700">
+      {/* User Profile Section */}
+      <div className="border-t border-gray-700 p-4">
+        <button
+          onClick={() => onViewChange('profile')}
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+            activeView === 'profile'
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+          }`}
+        >
+          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+            {getInitials()}
+          </div>
+          {isOpen && (
+            <div className="flex-1 text-left overflow-hidden">
+              <div className="font-medium truncate">{user?.first_name} {user?.last_name}</div>
+              <div className="text-xs text-gray-400 truncate">{user?.role === 'admin' ? 'Administrator' : 'Benutzer'}</div>
+            </div>
+          )}
+        </button>
+
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 transition-colors text-orange-400 hover:bg-gray-700 hover:text-orange-300"
+          className="w-full flex items-center gap-3 px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
         >
           <LogOut size={20} />
           {isOpen && <span>Abmelden</span>}
         </button>
-
-        {isOpen && user && (
-          <button
-            onClick={() => onViewChange("profile")}
-            className={`w-full p-4 border-t border-gray-700 text-left transition-colors ${
-              activeView === "profile"
-                ? "bg-gray-700"
-                : "hover:bg-gray-700"
-            }`}
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className={`w-10 h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 ${
-                activeView === "profile"
-                  ? "bg-blue-600"
-                  : "bg-gradient-to-br from-blue-500 to-blue-600"
-              }`}>
-                {user.avatar_url ? (
-                  <img 
-                    src={user.avatar_url + '?t=' + Date.now()} 
-                    alt="Avatar" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-white text-sm font-semibold">
-                    {getInitials()}
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm text-gray-200 truncate">
-                  {user.first_name} {user.last_name}
-                </div>
-                <div className="text-xs text-gray-500 capitalize">
-                  {user.role}
-                </div>
-              </div>
-            </div>
-            <div className="text-xs text-gray-600 mt-1 font-mono">
-              v{APP_VERSION}
-            </div>
-          </button>
-        )}
       </div>
+
+      {/* Version */}
+      {isOpen && (
+        <div className="px-4 py-2 text-xs text-gray-500 border-t border-gray-700">
+          Version {APP_VERSION}
+        </div>
+      )}
     </div>
   );
 }

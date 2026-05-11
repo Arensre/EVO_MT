@@ -98,6 +98,11 @@ function ProfileView() {
 }
 
 // Users View Component
+// Calendar View Component
+function CalendarView() {
+  return <Calendar />;
+}
+
 function UsersView() {
   return <UserManagement />;
 }
@@ -646,6 +651,8 @@ export function MainApp() {
       case 'members':
         return <MembersView />;
       case 'membership':
+      case 'calendar':
+        return <CalendarView />;
         return <MembershipView />;
       case 'settings':
         return <SettingsView />;

@@ -1,6 +1,6 @@
 export type CustomerType = 'company' | 'club' | 'private';
 export type SupplierType = 'company' | 'private';
-export type View = 'home' | 'customers' | 'suppliers' | 'settings' | 'profile' | 'users' | 'members' | 'modules' | 'membership' | 'general' | 'importer';
+export type View = 'home' | 'calendar' | 'customers' | 'suppliers' | 'settings' | 'profile' | 'users' | 'members' | 'modules' | 'membership' | 'general' | 'importer';
 
 export interface Customer {
   id: number;
