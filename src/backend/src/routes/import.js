@@ -267,33 +267,33 @@ router.post('/execute', requireAuth, requirePermission('members', 'write'), asyn
           const memberNumber = await generateMemberNumber();
           await client.query(
             `INSERT INTO members (member_number, first_name, last_name, email, phone, 
-             address, postal_code, city, country, notes, created_by)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+             street, postal_code, city, country, notes)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
             [memberNumber, row.first_name, row.last_name, row.email || null,
              row.phone || null, row.address || null, row.postal_code || null,
-             row.city || null, row.country || 'Deutschland', row.notes || null, userId]
+             row.city || null, row.country || 'Deutschland', row.notes || null]
           );
         } else if (module === 'customers') {
           const customerNumber = await generateCustomerNumber();
           await client.query(
             `INSERT INTO customers (customer_number, name, type, email, phone, 
-             address, postal_code, city, country, status, notes, created_by)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+             address, postal_code, city, country, status, notes)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
             [customerNumber, row.name, row.type, row.email || null,
              row.phone || null, row.address || null, row.postal_code || null,
              row.city || null, row.country || 'Deutschland', 
-             row.status || 'active', row.notes || null, userId]
+             row.status || 'active', row.notes || null]
           );
         } else if (module === 'suppliers') {
           const supplierNumber = await generateSupplierNumber();
           await client.query(
             `INSERT INTO suppliers (supplier_number, name, type, email, phone, 
-             address, postal_code, city, country, status, notes, created_by)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+             address, postal_code, city, country, status, notes)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
             [supplierNumber, row.name, row.type, row.email || null,
              row.phone || null, row.address || null, row.postal_code || null,
              row.city || null, row.country || 'Deutschland', 
-             row.status || 'active', row.notes || null, userId]
+             row.status || 'active', row.notes || null]
           );
         }
         insertedCount++;
