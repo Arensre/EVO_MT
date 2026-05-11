@@ -261,10 +261,31 @@ router.post('/execute', requireAuth, requirePermission('members', 'write'), asyn
     let insertedCount = 0;
     const insertErrors = [];
     
+    // Get starting number for the batch
+    let currentNumber = null;
+    if (module === 'members') {
+      const result = await client.query(
+        "SELECT COALESCE(MAX(NULLIF(regexp_replace(member_number, '[^0-9]', '', 'g'), '')), '0')::int as max_num FROM members WHERE member_number LIKE 'M%'"
+      );
+      currentNumber = parseInt(result.rows[0].max_num) || 0;
+    } else if (module === 'customers') {
+      const result = await client.query(
+        "SELECT COALESCE(MAX(NULLIF(regexp_replace(customer_number, '[^0-9]', '', 'g'), '')), '0')::int as max_num FROM customers WHERE customer_number LIKE 'K%'"
+      );
+      currentNumber = parseInt(result.rows[0].max_num) || 0;
+    } else if (module === 'suppliers') {
+      const result = await client.query(
+        "SELECT COALESCE(MAX(NULLIF(regexp_replace(supplier_number, '[^0-9]', '', 'g'), '')), '0')::int as max_num FROM suppliers WHERE supplier_number LIKE 'L%'"
+      );
+      currentNumber = parseInt(result.rows[0].max_num) || 0;
+    }
+    
     for (const row of validData) {
       try {
+        currentNumber++; // Increment for each row
+        
         if (module === 'members') {
-          const memberNumber = await generateMemberNumber();
+          const memberNumber = 'M' + String(currentNumber).padStart(5, '0');
           await client.query(
             `INSERT INTO members (member_number, first_name, last_name, email, phone, 
              street, postal_code, city, country, notes)
@@ -274,7 +295,7 @@ router.post('/execute', requireAuth, requirePermission('members', 'write'), asyn
              row.city || null, row.country || 'Deutschland', row.notes || null]
           );
         } else if (module === 'customers') {
-          const customerNumber = await generateCustomerNumber();
+          const customerNumber = 'K' + String(currentNumber).padStart(5, '0');
           await client.query(
             `INSERT INTO customers (customer_number, name, type, email, phone, 
              address, postal_code, city, country, status, notes)
@@ -285,7 +306,7 @@ router.post('/execute', requireAuth, requirePermission('members', 'write'), asyn
              row.status || 'active', row.notes || null]
           );
         } else if (module === 'suppliers') {
-          const supplierNumber = await generateSupplierNumber();
+          const supplierNumber = 'L' + String(currentNumber).padStart(5, '0');
           await client.query(
             `INSERT INTO suppliers (supplier_number, name, type, email, phone, 
              address, postal_code, city, country, status, notes)
