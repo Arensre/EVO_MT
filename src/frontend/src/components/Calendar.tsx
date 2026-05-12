@@ -24,6 +24,7 @@ type ViewType = 'month' | 'week' | 'list';
 export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<ViewType>('month');
+  const [showCalendarWeeks, setShowCalendarWeeks] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -147,6 +148,14 @@ export function Calendar() {
     setIsModalOpen(true);
   };
 
+  const getCalendarWeek = (date: Date) => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  };
+
   const renderMonthView = () => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -204,7 +213,14 @@ export function Calendar() {
         const weekEnd = [...week].reverse().find(d => d !== null);
         
         return (
-          <div key={weekIndex} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+          <div key={weekIndex} className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            {showCalendarWeeks && weekStart && (
+              <div className="absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center bg-gray-50 border-r border-gray-200">
+                <span className="text-xs font-medium text-gray-500">
+                  KW{getCalendarWeek(new Date(year, month, weekStart))}
+                </span>
+              </div>
+            )}
             {/* Multi-day events for this week */}
             <div className="border-b border-gray-100">
               {multiDayEvents
@@ -448,6 +464,14 @@ export function Calendar() {
             >
               <List size={16} />
               Liste
+            </button>
+            <button
+              onClick={() => setShowCalendarWeeks(!showCalendarWeeks)}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                showCalendarWeeks ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              KW
             </button>
           </div>
         </div>
