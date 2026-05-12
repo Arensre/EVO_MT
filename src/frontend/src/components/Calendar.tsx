@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, List, Filter } from 'lucide-react';
 import axios from 'axios';
 import { EventModal } from './EventModal';
