@@ -206,7 +206,7 @@ export function Calendar() {
         return (
           <div key={weekIndex} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
             {/* Multi-day events for this week */}
-            <div className="bg-gray-50 border-b">
+            <div className="border-b border-gray-100">
               {multiDayEvents
                 .filter(event => {
                   const eventStart = event.start_date ? event.start_date.split('T')[0] : '';
@@ -255,7 +255,7 @@ export function Calendar() {
             <div className="grid grid-cols-7">
               {week.map((day, dayIndex) => {
                 if (day === null) {
-                  return <div key={dayIndex} className="h-24 bg-gray-200 border-r last:border-r-0"></div>;
+                  return <div key={dayIndex} className="h-24 bg-gray-200 border-r border-gray-100 last:border-r-0"></div>;
                 }
                 
                 const dateStr = formatDateStr(year, month, day);
@@ -270,7 +270,7 @@ export function Calendar() {
                   <div
                     key={day}
                     onClick={() => handleDateClick(year, month, day)}
-                    className={`h-24 border-r last:border-r-0 p-2 cursor-pointer hover:bg-gray-50 hover:shadow-inner transition-colors ${
+                    className={`h-24 border-r border-gray-100 last:border-r-0 p-2 cursor-pointer hover:bg-gray-50 hover:shadow-inner transition-colors ${
                       isToday ? 'bg-blue-50' : 'bg-white'
                     }`}
                   >
