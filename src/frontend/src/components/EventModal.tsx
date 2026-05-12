@@ -71,7 +71,10 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, event, initialDa
         end_date: event.end_date ? event.end_date.split('T')[0] : (event.start_date ? event.start_date.split('T')[0] : ''),
       });
     } else if (initialDate) {
-      const dateStr = initialDate.toISOString().split('T')[0];
+      const year = initialDate.getFullYear();
+      const month = String(initialDate.getMonth() + 1).padStart(2, '0');
+      const day = String(initialDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       setFormData({
         title: '',
         description: '',
