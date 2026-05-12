@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Settings, Users, Building2, Truck, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Plus, X, AlertCircle } from 'lucide-react';
+import { CalendarSettings } from './CalendarSettings';
+import { Settings, Users, Building2, Truck, Calendar as CalendarIcon, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Plus, X, AlertCircle } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
@@ -24,10 +25,12 @@ const modules = [
   { key: 'members', name: 'Mitglieder', icon: Users, description: 'Mitgliederverwaltung und Funktionen' },
   { key: 'customers', name: 'Kunden', icon: Building2, description: 'Kundenstamm und Ansprechpartner' },
   { key: 'suppliers', name: 'Lieferanten', icon: Truck, description: 'Lieferantenverwaltung' },
+  { key: 'calendar', name: 'Kalender', icon: CalendarIcon, description: 'Kalender und Terminkategorien' },
 ];
 
 // Field definitions per module
 const fieldDefinitions: Record<string, FieldDefinition[]> = {
+  calendar: [],
   members: [
     { key: 'first_name', label: 'Vorname', predefined: true },
     { key: 'last_name', label: 'Nachname', predefined: true },
@@ -197,6 +200,62 @@ export function ModuleSettings() {
       },
     });
   };
+
+  // Calendar settings view
+  if (activeTab === 'calendar') {
+    return (
+      <div className="max-w-6xl mx-auto overflow-y-auto max-h-screen">
+        <div className="p-6 pb-0">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <Settings className="text-emerald-600" size={32} />
+            Moduleinstellungen
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Verwalten Sie die Aktivierung und Pflichtfelder für jedes Modul.
+          </p>
+        </div>
+        
+        {/* Tabs */}
+        <div className="border-b border-gray-200 mb-6 px-6">
+          <nav className="flex gap-8">
+            {modules.map((module) => {
+              const Icon = module.icon;
+              const isActive = activeTab === module.key;
+              const setting = localSettings[module.key];
+
+              return (
+                <button
+                  key={module.key}
+                  onClick={() => setActiveTab(module.key)}
+                  className={`flex items-center gap-2 pb-4 px-2 border-b-2 transition-colors ${
+                    isActive
+                      ? 'border-emerald-600 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span className="font-medium">{module.name}</span>
+                  {setting && (
+                    <span
+                      className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
+                        setting.is_enabled
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-gray-100 text-gray-500'
+                      }`}
+                    >
+                      {setting.is_enabled ? 'Aktiv' : 'Inaktiv'}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+        
+        <CalendarSettings />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
