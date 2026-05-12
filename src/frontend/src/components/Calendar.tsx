@@ -434,12 +434,20 @@ export function Calendar() {
         {multiDayEvents.length > 0 && (
           <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white p-3">
             <h3 className="text-sm font-medium text-gray-700 mb-2">Mehrtägige Termine</h3>
-            <div className="flex gap-2">
+            <div className="relative h-12" style={{ width: '87.5%', marginLeft: '12.5%' }}>
               {multiDayEvents.map(event => {
                 const eventStart = event.start_date ? event.start_date.split('T')[0] : '';
                 const eventEnd = event.end_date ? event.end_date.split('T')[0] : eventStart;
-                const startDayIndex = weekDays.findIndex(d => formatDateStr(d.getFullYear(), d.getMonth(), d.getDate()) === eventStart);
-                const endDayIndex = weekDays.findIndex(d => formatDateStr(d.getFullYear(), d.getMonth(), d.getDate()) === eventEnd);
+                
+                // Calculate position within the visible week
+                const startDayIndex = weekDays.findIndex(d => 
+                  formatDateStr(d.getFullYear(), d.getMonth(), d.getDate()) === eventStart
+                );
+                const endDayIndex = weekDays.findIndex(d => 
+                  formatDateStr(d.getFullYear(), d.getMonth(), d.getDate()) === eventEnd
+                );
+                
+                // Clamp to visible week
                 const actualStartIndex = startDayIndex < 0 ? 0 : startDayIndex;
                 const actualEndIndex = endDayIndex < 0 ? 6 : endDayIndex;
                 const span = actualEndIndex - actualStartIndex + 1;
@@ -448,10 +456,10 @@ export function Calendar() {
                   <div
                     key={event.id}
                     onClick={() => handleEventClick(event)}
-                    className="px-3 py-2 rounded-lg text-white text-sm truncate cursor-pointer hover:opacity-80"
+                    className="absolute top-1 h-10 px-2 py-1 rounded text-white text-sm truncate cursor-pointer hover:opacity-80 flex items-center"
                     style={{
-                      marginLeft: `${actualStartIndex * 14.28}%`,
-                      width: `${span * 14.28 - 1}%`,
+                      left: `${actualStartIndex * 14.28}%`,
+                      width: `${span * 14.28}%`,
                       backgroundColor: event.category_color || '#6B7280'
                     }}
                   >
@@ -484,19 +492,40 @@ export function Calendar() {
           
           {/* Time slots */}
           <div className="relative">
-            {timeSlots.map((time, _timeIndex) => (
+            {timeSlots.map((time, timeIndex) => (
               <div key={time} className="grid grid-cols-8 min-h-[60px] border-b border-gray-100 last:border-b-0">
                 <div className="p-2 text-xs text-gray-400 border-r border-gray-200 flex items-center justify-center">
                   {time}
                 </div>
                 {weekDays.map((day, dayIndex) => {
                   const dateStr = formatDateStr(day.getFullYear(), day.getMonth(), day.getDate());
-                  const dayEvents = singleDayEvents.filter(e => {
+                  const slotHour = parseInt(time.split(':')[0]);
+                  
+                  // Filter events that start in this slot
+                  const slotEvents = singleDayEvents.filter(e => {
                     const eventDate = e.start_date ? e.start_date.split('T')[0] : '';
+                    if (eventDate !== dateStr) return false;
                     const eventTime = e.start_time || '00:00';
                     const eventHour = parseInt(eventTime.split(':')[0]);
-                    const slotHour = parseInt(time.split(':')[0]);
-                    return eventDate === dateStr && eventHour === slotHour;
+                    return eventHour === slotHour;
+                  });
+                  
+                  // Pre-calculate event positions
+                  const positionedEvents = slotEvents.map(event => {
+                    const startTime = event.start_time || '00:00';
+                    const endTime = event.end_time || startTime;
+                    const startHour = parseInt(startTime.split(':')[0]);
+                    const startMin = parseInt(startTime.split(':')[1]) || 0;
+                    const endHour = parseInt(endTime.split(':')[0]);
+                    const endMin = parseInt(endTime.split(':')[1]) || 0;
+                    
+                    const durationHours = endHour - startHour + (endMin - startMin) / 60;
+                    
+                    return {
+                      ...event,
+                      duration: Math.max(0.5, durationHours), // Minimum 30 min display
+                      topOffset: (startMin / 60) * 60 // 60px per hour
+                    };
                   });
                   
                   return (
@@ -504,29 +533,26 @@ export function Calendar() {
                       key={dayIndex}
                       onClick={() => handleDateClick(day.getFullYear(), day.getMonth(), day.getDate())}
                       className="border-r last:border-r-0 border-gray-100 p-1 relative hover:bg-gray-50 transition-colors cursor-pointer"
+                      style={{ minHeight: '60px' }}
                     >
-                      {dayEvents.map(event => {
-                          const startHour = parseInt(event.start_time?.substring(0, 2) || '0');
-                          const endHour = parseInt(event.end_time?.substring(0, 2) || String(startHour));
-                          const duration = Math.max(1, endHour - startHour);
-                          return (
-                            <div
-                              key={event.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEventClick(event);
-                              }}
-                              className="px-2 py-1 rounded text-xs text-white truncate cursor-pointer hover:opacity-80 mb-1"
-                              style={{
-                                backgroundColor: event.category_color || '#6B7280',
-                                height: `${duration * 60}px`,
-                                zIndex: 10
-                              }}
-                            >
-                              {event.title}
-                            </div>
-                          );
-                        })}
+                      {positionedEvents.map(event => (
+                        <div
+                          key={event.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEventClick(event);
+                          }}
+                          className="absolute left-1 right-1 px-2 py-1 rounded text-xs text-white truncate cursor-pointer hover:opacity-80"
+                          style={{
+                            top: `${event.topOffset}px`,
+                            height: `${event.duration * 60}px`,
+                            backgroundColor: event.category_color || '#6B7280',
+                            zIndex: 10
+                          }}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
                     </div>
                   );
                 })}
