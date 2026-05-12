@@ -478,7 +478,7 @@ export function Calendar() {
           
           {/* Time slots */}
           <div className="relative">
-            {timeSlots.map((time, timeIndex) => (
+            {timeSlots.map((time, _timeIndex) => (
               <div key={time} className="grid grid-cols-8 min-h-[60px] border-b border-gray-100 last:border-b-0">
                 <div className="p-2 text-xs text-gray-400 border-r border-gray-200 flex items-center justify-center">
                   {time}
