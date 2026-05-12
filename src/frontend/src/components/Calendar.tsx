@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, List, Filter } from 'lucide-react';
 import axios from 'axios';
 import { EventModal } from './EventModal';
@@ -210,11 +210,49 @@ export function Calendar() {
   };
 
 
+
+
+  // Memoized calendar data to ensure proper recalculation when currentDate changes
+  const monthData = useMemo(() => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const daysInMonth = getDaysInMonth(year, month);
+    const firstDay = getFirstDayOfMonth(year, month);
+    
+    // Build week by week
+    const weeks = [];
+    let currentWeek = [];
+    let dayCounter = 1;
+    
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+      currentWeek.push(null);
+    }
+    
+    // Days of month
+    while (dayCounter <= daysInMonth) {
+      currentWeek.push(dayCounter);
+      if (currentWeek.length === 7) {
+        weeks.push([...currentWeek]);
+        currentWeek = [];
+      }
+      dayCounter++;
+    }
+    
+    // Fill last week
+    if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        currentWeek.push(null);
+      }
+      weeks.push([...currentWeek]);
+    }
+    
+    return { year, month, daysInMonth, firstDay, weeks };
+  }, [currentDate, getDaysInMonth, getFirstDayOfMonth]);
+
   const renderMonthView = () => {
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  const daysInMonth = getDaysInMonth(year, month);
-  const firstDay = getFirstDayOfMonth(year, month);
+  // Use memoized calendar data
+  const { year, month, daysInMonth, weeks } = monthData;
   
   // Get all events for this month
   const monthEvents = filteredEvents.filter(event => {
@@ -231,34 +269,6 @@ export function Calendar() {
     const end = e.end_date ? e.end_date.split('T')[0] : start;
     return start !== end;
   });
-  
-  // Build week by week
-  const weeks = [];
-  let currentWeek = [];
-  let dayCounter = 1;
-  
-  // Empty cells before first day
-  for (let i = 0; i < firstDay; i++) {
-    currentWeek.push(null);
-  }
-  
-  // Days of month
-  while (dayCounter <= daysInMonth) {
-    currentWeek.push(dayCounter);
-    if (currentWeek.length === 7) {
-      weeks.push(currentWeek);
-      currentWeek = [];
-    }
-    dayCounter++;
-  }
-  
-  // Fill last week
-  if (currentWeek.length > 0) {
-    while (currentWeek.length < 7) {
-      currentWeek.push(null);
-    }
-    weeks.push(currentWeek);
-  }
   
   return (
     <div className="space-y-4">
