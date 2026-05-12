@@ -461,7 +461,7 @@ export function Calendar() {
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7">
+            <div>
               {renderMonthView()}
             </div>
           </>
