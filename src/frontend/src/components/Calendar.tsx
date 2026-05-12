@@ -281,7 +281,7 @@ export function Calendar() {
           const weekEnd = [...week].reverse().find(d => d !== null);
           
           return (
-            <div key={weekIndex} className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div key={`${year}-${month}-week-${weekIndex}`} className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm">
               {showCalendarWeeks && weekStart && (
                 <div className="absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center bg-gray-50 border-r border-gray-200">
                   <span className="text-xs font-medium text-gray-500">
@@ -352,7 +352,7 @@ export function Calendar() {
                   
                   return (
                     <div
-                      key={day}
+                      key={`${year}-${month}-${day}`}
                       onClick={() => handleDateClick(year, month, day)}
                       className={`h-24 border-r border-gray-100 last:border-r-0 p-2 cursor-pointer hover:bg-gray-50 hover:shadow-inner transition-colors ${
                         isToday ? 'bg-blue-50' : 'bg-white'
