@@ -103,6 +103,20 @@ export function Calendar() {
     setCurrentDate(d);
   };
 
+  const handlePrevWeek = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(currentDate.getDate() - 7);
+    newDate.setHours(12, 0, 0, 0);
+    setCurrentDate(newDate);
+  };
+
+  const handleNextWeek = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(currentDate.getDate() + 7);
+    newDate.setHours(12, 0, 0, 0);
+    setCurrentDate(newDate);
+  };
+
 
   const handleSave = async (eventData: Event) => {
     try {
@@ -215,6 +229,18 @@ export function Calendar() {
     return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
   };
 
+  const formatDateRange = () => {
+    const weekStart = new Date(currentDate);
+    const day = weekStart.getDay();
+    const mondayOffset = day === 0 ? -6 : 1 - day;
+    weekStart.setDate(currentDate.getDate() + mondayOffset);
+    
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+    return `${weekStart.toLocaleDateString('de-DE', options)} - ${weekEnd.toLocaleDateString('de-DE', options)}`;
+  };
 
 
   const renderMonthView = () => {
@@ -661,21 +687,43 @@ export function Calendar() {
       <div className="bg-white rounded-lg shadow mb-6">
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
-              onClick={handlePrevMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <h2 className="text-xl font-semibold text-gray-900">
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-            </h2>
-            <button
-              onClick={handleNextMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ChevronRight size={20} />
-            </button>
+            {viewType === 'week' ? (
+              <>
+                <button
+                  onClick={handlePrevWeek}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  <span>KW {getCalendarWeek(currentDate)}, {formatDateRange()}</span>
+                </h2>
+                <button
+                  onClick={handleNextWeek}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handlePrevMonth}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  <span>{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
+                </h2>
+                <button
+                  onClick={handleNextMonth}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
