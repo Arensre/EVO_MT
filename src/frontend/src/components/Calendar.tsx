@@ -276,7 +276,7 @@ export function Calendar() {
               </div>
             )}
             {/* Multi-day events for this week */}
-            <div className="border-b border-gray-100">
+            <div className={`border-b border-gray-100 ${showCalendarWeeks ? "pl-10" : ""}`}>
               {multiDayEvents
                 .filter(event => {
                   const eventStart = event.start_date ? event.start_date.split('T')[0] : '';
@@ -322,7 +322,7 @@ export function Calendar() {
             </div>
             
             {/* Days grid */}
-            <div className="grid grid-cols-7">
+            <div className={`grid grid-cols-7 ${showCalendarWeeks ? "pl-10" : ""}`}>
               {week.map((day, dayIndex) => {
                 if (day === null) {
                   return <div key={dayIndex} className="h-24 bg-gray-200 border-r border-gray-100 last:border-r-0"></div>;
