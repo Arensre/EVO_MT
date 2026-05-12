@@ -16,6 +16,7 @@ interface Event {
   category_id?: number;
   category_name?: string;
   category_color?: string;
+  position?: 'single' | 'start' | 'middle' | 'end';
 }
 
 type ViewType = 'month' | 'week' | 'list';
@@ -100,9 +101,34 @@ export function Calendar() {
   };
 
   const getEventsForDate = (dateStr: string) => {
-    const dayEvents = events.filter(event => event.start_date && event.start_date.startsWith(dateStr));
-    if (dayEvents.length > 0) {
-    }
+    const dayEvents = events.filter(event => {
+      const startDate = event.start_date ? event.start_date.split('T')[0] : null;
+      const endDate = event.end_date ? event.end_date.split('T')[0] : startDate;
+      if (!startDate) return false;
+      
+      // Event starts on this day
+      if (startDate === dateStr) return true;
+      // Event spans over this day
+      if (endDate && endDate !== startDate) {
+        const current = new Date(dateStr);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        return current >= start && current <= end;
+      }
+      return false;
+    }).map(event => {
+      const eventStart = event.start_date ? event.start_date.split('T')[0] : '';
+      const eventEnd = event.end_date ? event.end_date.split('T')[0] : eventStart;
+      
+      let position: 'single' | 'start' | 'middle' | 'end' = 'single';
+      if (eventStart !== eventEnd) {
+        if (dateStr === eventStart) position = 'start';
+        else if (dateStr === eventEnd) position = 'end';
+        else position = 'middle';
+      }
+      
+      return { ...event, position };
+    });
     return dayEvents;
   };
 
