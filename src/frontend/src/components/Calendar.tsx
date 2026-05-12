@@ -148,61 +148,167 @@ export function Calendar() {
   };
 
   const renderMonthView = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const daysInMonth = getDaysInMonth(year, month);
-    const firstDay = getFirstDayOfMonth(year, month);
-    const days = [];
-
-    for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-24 bg-gray-50"></div>);
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDay = getFirstDayOfMonth(year, month);
+  
+  // Get all events for this month
+  const monthEvents = events.filter(event => {
+    const start = event.start_date ? event.start_date.split('T')[0] : '';
+    const end = event.end_date ? event.end_date.split('T')[0] : start;
+    const monthStart = formatDateStr(year, month, 1);
+    const monthEnd = formatDateStr(year, month, daysInMonth);
+    return start <= monthEnd && end >= monthStart;
+  });
+  
+  // Separate multi-day and single-day events
+  const multiDayEvents = monthEvents.filter(e => {
+    const start = e.start_date ? e.start_date.split('T')[0] : '';
+    const end = e.end_date ? e.end_date.split('T')[0] : start;
+    return start !== end;
+  });
+  
+  // Build week by week
+  const weeks = [];
+  let currentWeek = [];
+  let dayCounter = 1;
+  
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
+    currentWeek.push(null);
+  }
+  
+  // Days of month
+  while (dayCounter <= daysInMonth) {
+    currentWeek.push(dayCounter);
+    if (currentWeek.length === 7) {
+      weeks.push(currentWeek);
+      currentWeek = [];
     }
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = formatDateStr(year, month, day);
-      const dayEvents = getEventsForDate(dateStr);
-      const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
-
-      days.push(
-        <div
-          key={day}
-          onClick={() => handleDateClick(year, month, day)}
-          className={`h-24 border border-gray-200 p-2 cursor-pointer hover:bg-gray-50 transition-colors ${
-            isToday ? 'bg-blue-50' : 'bg-white'
-          }`}
-        >
-          <div className={`text-sm font-medium ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
-            {day}
-          </div>
-          <div className="mt-1 space-y-1 min-h-[20px]">
-            {dayEvents.slice(0, 3).map((event) => (
-              <div
-                key={event.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEventClick(event);
-                }}
-                className="text-xs px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80"
-                style={{ 
-                  backgroundColor: event.category_color || '#6B7280', 
-                  color: 'white',
-                  maxWidth: '100%'
-                }}
-                title={event.title}
-              >
-                {event.title}
-              </div>
-            ))}
-            {dayEvents.length > 3 && (
-              <div className="text-xs text-gray-500 px-1.5">+{dayEvents.length - 3} mehr</div>
-            )}
-          </div>
-        </div>
-      );
+    dayCounter++;
+  }
+  
+  // Fill last week
+  if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) {
+      currentWeek.push(null);
     }
+    weeks.push(currentWeek);
+  }
+  
+  return (
+    <div className="space-y-4">
+      {weeks.map((week, weekIndex) => {
+        const weekStart = week.find(d => d !== null);
+        const weekEnd = [...week].reverse().find(d => d !== null);
+        
+        return (
+          <div key={weekIndex} className="border rounded-lg overflow-hidden">
+            {/* Multi-day events for this week */}
+            <div className="bg-gray-50 border-b">
+              {multiDayEvents
+                .filter(event => {
+                  const eventStart = event.start_date ? event.start_date.split('T')[0] : '';
+                  const eventEnd = event.end_date ? event.end_date.split('T')[0] : eventStart;
+                  const weekStartStr = weekStart ? formatDateStr(year, month, weekStart) : '';
+                  const weekEndStr = weekEnd ? formatDateStr(year, month, weekEnd) : '';
+                  return eventStart <= weekEndStr && eventEnd >= weekStartStr;
+                })
+                .map(event => {
+                  const eventStart = event.start_date ? event.start_date.split('T')[0] : '';
+                  const eventEnd = event.end_date ? event.end_date.split('T')[0] : eventStart;
+                  const weekStartStr = weekStart ? formatDateStr(year, month, weekStart) : '';
+                  const weekEndStr = weekEnd ? formatDateStr(year, month, weekEnd) : '';
+                  
+                  const visibleStart = eventStart > weekStartStr ? eventStart : weekStartStr;
+                  const visibleEnd = eventEnd < weekEndStr ? eventEnd : weekEndStr;
+                  
+                  const startDayIndex = week.findIndex(d => d && formatDateStr(year, month, d) === visibleStart);
+                  const endDayIndex = week.findIndex(d => d && formatDateStr(year, month, d) === visibleEnd);
+                  
+                  if (startDayIndex === -1 || endDayIndex === -1) return null;
+                  
+                  const span = endDayIndex - startDayIndex + 1;
+                  
+                  return (
+                    <div
+                      key={event.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEventClick(event);
+                      }}
+                      className="mx-1 my-1 px-2 py-1 rounded cursor-pointer text-white text-sm truncate hover:opacity-80"
+                      style={{
+                        marginLeft: `${startDayIndex * 14.28}%`,
+                        width: `${span * 14.28}%`,
+                        backgroundColor: event.category_color || '#6B7280'
+                      }}
+                    >
+                      {event.title}
+                    </div>
+                  );
+                })}
+            </div>
+            
+            {/* Days grid */}
+            <div className="grid grid-cols-7">
+              {week.map((day, dayIndex) => {
+                if (day === null) {
+                  return <div key={dayIndex} className="h-24 bg-gray-50 border-r last:border-r-0"></div>;
+                }
+                
+                const dateStr = formatDateStr(year, month, day);
+                const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+                const dayEvents = getEventsForDate(dateStr).filter(e => {
+                  const s = e.start_date ? e.start_date.split('T')[0] : '';
+                  const ed = e.end_date ? e.end_date.split('T')[0] : s;
+                  return s === ed; // Only single-day events
+                });
+                
+                return (
+                  <div
+                    key={day}
+                    onClick={() => handleDateClick(year, month, day)}
+                    className={`h-24 border-r last:border-r-0 p-2 cursor-pointer hover:bg-gray-50 transition-colors ${
+                      isToday ? 'bg-blue-50' : 'bg-white'
+                    }`}
+                  >
+                    <div className={`text-sm font-medium ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
+                      {day}
+                    </div>
+                    <div className="mt-1 space-y-1">
+                      {dayEvents.slice(0, 3).map((event) => (
+                        <div
+                          key={event.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEventClick(event);
+                          }}
+                          className="text-xs px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80"
+                          style={{ 
+                            backgroundColor: event.category_color || '#6B7280', 
+                            color: 'white'
+                          }}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                      {dayEvents.length > 3 && (
+                        <div className="text-xs text-gray-500">+{dayEvents.length - 3}</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
-    return days;
-  };
 
   const renderWeekView = () => {
     return (
