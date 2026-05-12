@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, List } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, List, Filter } from 'lucide-react';
 import axios from 'axios';
 import { EventModal } from './EventModal';
 
@@ -25,14 +25,52 @@ export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<ViewType>('month');
   const [showCalendarWeeks, setShowCalendarWeeks] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>();
+  const [searchText, setSearchText] = useState<string>();
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/events/categories/list', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    };
+    loadCategories();
+  }, []);
+// Filter events based on selected filters
+  const filteredEvents = events.filter(event => {
+    // Category filter
+    if (selectedCategory && event.category_id?.toString() !== selectedCategory) {
+      return false;
+    }
+    // Text search
+    if (searchText) {
+      const search = searchText.toLowerCase();
+      const titleMatch = event.title?.toLowerCase().includes(search);
+      const descMatch = event.description?.toLowerCase().includes(search);
+      const locMatch = event.location?.toLowerCase().includes(search);
+      if (!titleMatch && !descMatch && !locMatch) {
+        return false;
+      }
+    }
+    return true;
+  });
+
 
   const fetchEvents = async () => {
     try {
@@ -102,7 +140,7 @@ export function Calendar() {
   };
 
   const getEventsForDate = (dateStr: string) => {
-    const dayEvents = events.filter(event => {
+    const dayEvents = filteredEvents.filter(event => {
       const startDate = event.start_date ? event.start_date.split('T')[0] : null;
       const endDate = event.end_date ? event.end_date.split('T')[0] : startDate;
       if (!startDate) return false;
@@ -163,7 +201,7 @@ export function Calendar() {
   const firstDay = getFirstDayOfMonth(year, month);
   
   // Get all events for this month
-  const monthEvents = events.filter(event => {
+  const monthEvents = filteredEvents.filter(event => {
     const start = event.start_date ? event.start_date.split('T')[0] : '';
     const end = event.end_date ? event.end_date.split('T')[0] : start;
     const monthStart = formatDateStr(year, month, 1);
@@ -325,7 +363,6 @@ export function Calendar() {
   );
 };
 
-
   const renderWeekView = () => {
     return (
       <div className="bg-white rounded-lg shadow p-6 text-center">
@@ -465,14 +502,80 @@ export function Calendar() {
               <List size={16} />
               Liste
             </button>
-            <button
-              onClick={() => setShowCalendarWeeks(!showCalendarWeeks)}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                showCalendarWeeks ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              KW
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+                  showFilters ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Filter size={16} />
+                Filter
+              </button>
+              
+              {showFilters && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50">
+                  <div className="space-y-4">
+                    {/* Category filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Kategorie</label>
+                      <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
+                        <option value="">Alle Kategorien</option>
+                        {categories.map((cat: any) => (
+                          <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Text search */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Suche</label>
+                      <input
+                        type="text"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        placeholder="Titel, Beschreibung, Ort..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      />
+                    </div>
+                    
+                    {/* KW toggle */}
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                      <span className="text-sm font-medium text-gray-700">Kalenderwochen</span>
+                      <button
+                        onClick={() => setShowCalendarWeeks(!showCalendarWeeks)}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                          showCalendarWeeks ? 'bg-emerald-500' : 'bg-gray-200'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                            showCalendarWeeks ? 'translate-x-5' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    
+                    {/* Reset button */}
+                    {(selectedCategory || searchText) && (
+                      <button
+                        onClick={() => {
+                          setSelectedCategory('');
+                          setSearchText('');
+                        }}
+                        className="w-full py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Filter zurücksetzen
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
