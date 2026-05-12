@@ -467,7 +467,13 @@ export function Calendar() {
         <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
           {/* Header row */}
           <div className="grid grid-cols-8 border-b border-gray-200">
-            <div className="p-3 bg-gray-50 border-r border-gray-200"></div>
+            <div className="p-3 bg-gray-50 border-r border-gray-200 flex items-center justify-center">
+              {showCalendarWeeks && weekStart && (
+                <span className="text-sm font-medium text-gray-600">
+                  KW{getCalendarWeek(weekStart)}
+                </span>
+              )}
+            </div>
             {weekDays.map((day, index) => (
               <div key={index} className="p-3 text-center bg-gray-50 border-r last:border-r-0 border-gray-200">
                 <div className="text-sm font-medium text-gray-500">{weekDayNames[index]}</div>
@@ -499,19 +505,28 @@ export function Calendar() {
                       onClick={() => handleDateClick(day.getFullYear(), day.getMonth(), day.getDate())}
                       className="border-r last:border-r-0 border-gray-100 p-1 relative hover:bg-gray-50 transition-colors cursor-pointer"
                     >
-                      {dayEvents.map(event => (
-                        <div
-                          key={event.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEventClick(event);
-                          }}
-                          className="px-2 py-1 rounded text-xs text-white truncate cursor-pointer hover:opacity-80 mb-1"
-                          style={{ backgroundColor: event.category_color || '#6B7280' }}
-                        >
-                          {event.title}
-                        </div>
-                      ))}
+                      {dayEvents.map(event => {
+                          const startHour = parseInt(event.start_time?.substring(0, 2) || '0');
+                          const endHour = parseInt(event.end_time?.substring(0, 2) || String(startHour));
+                          const duration = Math.max(1, endHour - startHour);
+                          return (
+                            <div
+                              key={event.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEventClick(event);
+                              }}
+                              className="px-2 py-1 rounded text-xs text-white truncate cursor-pointer hover:opacity-80 mb-1"
+                              style={{
+                                backgroundColor: event.category_color || '#6B7280',
+                                height: `${duration * 60}px`,
+                                zIndex: 10
+                              }}
+                            >
+                              {event.title}
+                            </div>
+                          );
+                        })}
                     </div>
                   );
                 })}
