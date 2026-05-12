@@ -20,6 +20,7 @@ import { UserManagement } from './components/UserManagement';
 import { ModuleSettings } from './components/ModuleSettings';
 import { Calendar } from './components/Calendar';
 import { GeneralSettings } from './components/GeneralSettings';
+import { Stammdaten } from './components/Stammdaten';
 import { Importer } from './components/Importer';
 import { useAuth } from './contexts/AuthContext';
 import { customerApi, supplierApi } from './api';
@@ -87,6 +88,11 @@ function HomeView() {
 // General Settings View Component
 function GeneralSettingsView() {
   return <GeneralSettings />;
+}
+
+// Settings (Stammdaten) View Component
+function SettingsView() {
+  return <Stammdaten />;
 }
 
 // Profile View Component
@@ -651,6 +657,8 @@ export function MainApp() {
         return <MembershipView />;
       case 'calendar':
         return <CalendarView />;
+      case 'settings':
+        return <SettingsView />;
       case 'general':
         return <GeneralSettingsView />;
       case 'modules':
