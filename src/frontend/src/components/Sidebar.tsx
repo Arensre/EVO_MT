@@ -109,6 +109,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
         )}
 
         {/* 3) Vereinsaktivitäten (aufgklappbar) */}
+        {isModuleEnabled('calendar') && (
         <div className="mt-4">
           <button
             onClick={() => setActivitiesExpanded(!activitiesExpanded)}
@@ -137,6 +138,7 @@ export function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
           )}
         </div>
 
+        )}
         {/* 4) ERP */}
         {(isModuleEnabled('customers') || isModuleEnabled('suppliers')) && (
           <div className="mt-4">
