@@ -147,21 +147,42 @@ export function Calendar() {
     setIsModalOpen(true);
   };
 
+
+  const getMultiDayEventsForMonth = (year: number, month: number) => {
+    const daysInMonth = getDaysInMonth(year, month);
+    const monthStart = formatDateStr(year, month, 1);
+    const monthEnd = formatDateStr(year, month, daysInMonth);
+    
+    return events.filter(event => {
+      const start = event.start_date ? event.start_date.split('T')[0] : '';
+      const end = event.end_date ? event.end_date.split('T')[0] : start;
+      return start !== end && start <= monthEnd && end >= monthStart;
+    });
+  };
+
   const renderMonthView = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const daysInMonth = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
     const days = [];
-
+    const multiDayEvents = getMultiDayEventsForMonth(year, month);
+    
+    // Build days array (keep existing logic)
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="h-24 bg-gray-50"></div>);
     }
-
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = formatDateStr(year, month, day);
       const dayEvents = getEventsForDate(dateStr);
       const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+      
+      // Filter out multi-day events (they'll be shown in the bar above)
+      const singleDayEvents = dayEvents.filter(e => {
+        const start = e.start_date ? e.start_date.split('T')[0] : '';
+        const end = e.end_date ? e.end_date.split('T')[0] : start;
+        return start === end;
+      });
 
       days.push(
         <div
@@ -175,7 +196,7 @@ export function Calendar() {
             {day}
           </div>
           <div className="mt-1 space-y-1 min-h-[20px]">
-            {dayEvents.slice(0, 3).map((event) => (
+            {singleDayEvents.slice(0, 3).map((event) => (
               <div
                 key={event.id}
                 onClick={(e) => {
@@ -193,15 +214,39 @@ export function Calendar() {
                 {event.title}
               </div>
             ))}
-            {dayEvents.length > 3 && (
-              <div className="text-xs text-gray-500 px-1.5">+{dayEvents.length - 3} mehr</div>
+            {singleDayEvents.length > 3 && (
+              <div className="text-xs text-gray-500 px-1.5">+{singleDayEvents.length - 3} mehr</div>
             )}
           </div>
         </div>
       );
     }
 
-    return days;
+    return (
+      <>
+        {multiDayEvents.length > 0 && (
+          <div className="mb-4 space-y-2">
+            {multiDayEvents.map(event => (
+              <div
+                key={event.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEventClick(event);
+                }}
+                className="flex items-center justify-between px-3 py-2 rounded cursor-pointer hover:opacity-80"
+                style={{ backgroundColor: event.category_color || '#6B7280' }}
+              >
+                <span className="text-white font-medium text-sm truncate">{event.title}</span>
+                <span className="text-white/80 text-xs ml-2">
+                  {event.start_date?.split('T')[0]} - {event.end_date?.split('T')[0]}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="grid grid-cols-7 gap-1">{days}</div>
+      </>
+    );
   };
 
   const renderWeekView = () => {
