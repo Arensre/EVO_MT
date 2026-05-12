@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Edit2, Trash2, X, Calendar, Tag } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Calendar, Tag, ToggleLeft, ToggleRight } from 'lucide-react';
 
 interface EventCategory {
   id: number;
@@ -11,7 +11,16 @@ interface EventCategory {
   created_at: string;
 }
 
-export function CalendarSettings() {
+interface CalendarSettingsProps {
+  moduleSetting?: {
+    id: number;
+    module_name: string;
+    is_active: boolean;
+  };
+  onToggle?: (newState: boolean) => void;
+}
+
+export function CalendarSettings({ moduleSetting, onToggle }: CalendarSettingsProps) {
   const [categories, setCategories] = useState<EventCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -115,14 +124,38 @@ export function CalendarSettings() {
     <div className="space-y-6">
       {/* Module Header */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-emerald-100 rounded-lg">
-            <Calendar size={24} className="text-emerald-600" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-emerald-100 rounded-lg">
+              <Calendar size={24} className="text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Kalender</h2>
+              <p className="text-gray-600">Kalender und Terminkategorien verwalten</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Kalender</h2>
-            <p className="text-gray-600">Kalender und Terminkategorien verwalten</p>
-          </div>
+          {onToggle && moduleSetting && (
+            <button
+              onClick={() => onToggle(!moduleSetting.is_active)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                moduleSetting.is_active
+                  ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {moduleSetting.is_active ? (
+                <>
+                  <ToggleRight size={20} />
+                  <span>Modul aktiv</span>
+                </>
+              ) : (
+                <>
+                  <ToggleLeft size={20} />
+                  <span>Modul inaktiv</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 

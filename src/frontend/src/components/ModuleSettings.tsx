@@ -204,8 +204,8 @@ export function ModuleSettings() {
   // Calendar settings view
   if (activeTab === 'calendar') {
     return (
-      <div className="max-w-6xl mx-auto overflow-y-auto max-h-screen">
-        <div className="p-6 pb-0">
+      <div className="max-w-6xl mx-auto p-6 overflow-y-auto max-h-screen">
+        <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
             <Settings className="text-emerald-600" size={32} />
             Moduleinstellungen
@@ -216,7 +216,7 @@ export function ModuleSettings() {
         </div>
         
         {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6 px-6">
+        <div className="border-b border-gray-200 mb-6">
           <nav className="flex gap-8">
             {modules.map((module) => {
               const Icon = module.icon;
