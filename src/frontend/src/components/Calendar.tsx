@@ -89,16 +89,18 @@ export function Calendar() {
 
 
   const handlePrevMonth = () => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    console.log('handlePrevMonth:', currentDate.toISOString(), '->', newDate.toISOString());
-    setCurrentDate(newDate);
+    const d = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    d.setHours(12, 0, 0, 0); // Set to noon to avoid timezone edge cases
+    console.log('handlePrevMonth:', currentDate.toISOString(), '->', d.toISOString());
+    setCurrentDate(d);
   };
 
 
   const handleNextMonth = () => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-    console.log('handleNextMonth:', currentDate.toISOString(), '->', newDate.toISOString());
-    setCurrentDate(newDate);
+    const d = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    d.setHours(12, 0, 0, 0); // Set to noon to avoid timezone edge cases
+    console.log('handleNextMonth:', currentDate.toISOString(), '->', d.toISOString());
+    setCurrentDate(d);
   };
 
 
