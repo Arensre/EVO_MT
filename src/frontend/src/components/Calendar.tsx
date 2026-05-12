@@ -50,6 +50,7 @@ export function Calendar() {
         console.error('Failed to load categories:', error);
       }
     };
+
     loadCategories();
   }, []);
 // Filter events based on selected filters
@@ -86,13 +87,16 @@ export function Calendar() {
     }
   };
 
+
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
 
+
   const handleNextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
+
 
   const handleSave = async (eventData: Event) => {
     try {
@@ -113,10 +117,12 @@ export function Calendar() {
     }
   };
 
+
   const handleDelete = (id: number) => {
     if (!id) return;
     deleteEvent(id);
   };
+
 
   const deleteEvent = async (id: number) => {
     try {
@@ -131,13 +137,16 @@ export function Calendar() {
     }
   };
 
+
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
   };
 
+
   const getFirstDayOfMonth = (year: number, month: number) => {
     return new Date(year, month, 1).getDay();
   };
+
 
   const getEventsForDate = (dateStr: string) => {
     const dayEvents = filteredEvents.filter(event => {
@@ -171,9 +180,11 @@ export function Calendar() {
     return dayEvents;
   };
 
+
   const formatDateStr = (year: number, month: number, day: number) => {
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   };
+
 
   const handleDateClick = (year: number, month: number, day: number) => {
     setSelectedDate(new Date(year, month, day));
@@ -181,10 +192,12 @@ export function Calendar() {
     setIsModalOpen(true);
   };
 
+
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
   };
+
 
   const getCalendarWeek = (date: Date) => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -193,6 +206,7 @@ export function Calendar() {
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
   };
+
 
   const renderMonthView = () => {
   const year = currentDate.getFullYear();
@@ -364,11 +378,147 @@ export function Calendar() {
 };
 
   const renderWeekView = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const day = currentDate.getDate();
+    
+    // Get start of week (Monday)
+    const currentDayOfWeek = currentDate.getDay();
+    const mondayOffset = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+    const weekStart = new Date(year, month, day + mondayOffset);
+    
+    // Build week days
+    const weekDays: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      weekDays.push(d);
+    }
+    
+    // Time slots (08:00 to 22:00, every hour)
+    const timeSlots = [];
+    for (let hour = 8; hour <= 22; hour++) {
+      timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+    }
+    
+    // Filter events for this week
+    const weekStartStr = formatDateStr(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    const weekEndStr = formatDateStr(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate());
+    
+    const weekEvents = filteredEvents.filter(event => {
+      const eventStart = event.start_date ? event.start_date.split('T')[0] : '';
+      const eventEnd = event.end_date ? event.end_date.split('T')[0] : eventStart;
+      return eventStart <= weekEndStr && eventEnd >= weekStartStr;
+    });
+    
+    // Separate multi-day and single-day events
+    const multiDayEvents = weekEvents.filter(e => {
+      const start = e.start_date ? e.start_date.split('T')[0] : '';
+      const end = e.end_date ? e.end_date.split('T')[0] : start;
+      return start !== end;
+    });
+    
+    const singleDayEvents = weekEvents.filter(e => {
+      const start = e.start_date ? e.start_date.split('T')[0] : '';
+      const end = e.end_date ? e.end_date.split('T')[0] : start;
+      return start === end;
+    });
+    
+    const weekDayNames = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    
     return (
-      <div className="bg-white rounded-lg shadow p-6 text-center">
-        <CalendarIcon size={48} className="mx-auto text-emerald-600 mb-4" />
-        <p className="text-xl text-gray-700">Wochenansicht</p>
-        <p className="text-gray-500 mt-2">Coming soon...</p>
+      <div className="space-y-4">
+        {/* Multi-day events bar */}
+        {multiDayEvents.length > 0 && (
+          <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white p-3">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Mehrtägige Termine</h3>
+            <div className="flex gap-2">
+              {multiDayEvents.map(event => {
+                const eventStart = event.start_date ? event.start_date.split('T')[0] : '';
+                const eventEnd = event.end_date ? event.end_date.split('T')[0] : eventStart;
+                const startDayIndex = weekDays.findIndex(d => formatDateStr(d.getFullYear(), d.getMonth(), d.getDate()) === eventStart);
+                const endDayIndex = weekDays.findIndex(d => formatDateStr(d.getFullYear(), d.getMonth(), d.getDate()) === eventEnd);
+                const actualStartIndex = startDayIndex < 0 ? 0 : startDayIndex;
+                const actualEndIndex = endDayIndex < 0 ? 6 : endDayIndex;
+                const span = actualEndIndex - actualStartIndex + 1;
+                
+                return (
+                  <div
+                    key={event.id}
+                    onClick={() => handleEventClick(event)}
+                    className="px-3 py-2 rounded-lg text-white text-sm truncate cursor-pointer hover:opacity-80"
+                    style={{
+                      marginLeft: `${actualStartIndex * 14.28}%`,
+                      width: `${span * 14.28 - 1}%`,
+                      backgroundColor: event.category_color || '#6B7280'
+                    }}
+                  >
+                    {event.title}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        
+        {/* Week grid */}
+        <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
+          {/* Header row */}
+          <div className="grid grid-cols-8 border-b border-gray-200">
+            <div className="p-3 bg-gray-50 border-r border-gray-200"></div>
+            {weekDays.map((day, index) => (
+              <div key={index} className="p-3 text-center bg-gray-50 border-r last:border-r-0 border-gray-200">
+                <div className="text-sm font-medium text-gray-500">{weekDayNames[index]}</div>
+                <div className="text-lg font-semibold text-gray-800">{day.getDate()}</div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Time slots */}
+          <div className="relative">
+            {timeSlots.map((time, timeIndex) => (
+              <div key={time} className="grid grid-cols-8 min-h-[60px] border-b border-gray-100 last:border-b-0">
+                <div className="p-2 text-xs text-gray-400 border-r border-gray-200 flex items-center justify-center">
+                  {time}
+                </div>
+                {weekDays.map((day, dayIndex) => {
+                  const dateStr = formatDateStr(day.getFullYear(), day.getMonth(), day.getDate());
+                  const dayEvents = singleDayEvents.filter(e => {
+                    const eventDate = e.start_date ? e.start_date.split('T')[0] : '';
+                    const eventTime = e.start_time || '00:00';
+                    const eventHour = parseInt(eventTime.split(':')[0]);
+                    const slotHour = parseInt(time.split(':')[0]);
+                    return eventDate === dateStr && eventHour === slotHour;
+                  });
+                  
+                  return (
+                    <div
+                      key={dayIndex}
+                      onClick={() => handleDateClick(day.getFullYear(), day.getMonth(), day.getDate())}
+                      className="border-r last:border-r-0 border-gray-100 p-1 relative hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      {dayEvents.map(event => (
+                        <div
+                          key={event.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEventClick(event);
+                          }}
+                          className="px-2 py-1 rounded text-xs text-white truncate cursor-pointer hover:opacity-80 mb-1"
+                          style={{ backgroundColor: event.category_color || '#6B7280' }}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   };
@@ -422,6 +572,7 @@ export function Calendar() {
       </div>
     );
   };
+
 
   const monthNames = [
     'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
