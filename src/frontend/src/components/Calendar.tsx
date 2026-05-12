@@ -89,12 +89,16 @@ export function Calendar() {
 
 
   const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    console.log('handlePrevMonth:', currentDate.toISOString(), '->', newDate.toISOString());
+    setCurrentDate(newDate);
   };
 
 
   const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    console.log('handleNextMonth:', currentDate.toISOString(), '->', newDate.toISOString());
+    setCurrentDate(newDate);
   };
 
 
@@ -212,11 +216,17 @@ export function Calendar() {
 
 
   const renderMonthView = () => {
-    // Calculate calendar data fresh each render
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const daysInMonth = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
+    
+    // DEBUG: Log the current state
+    console.log('=== renderMonthView ===');
+    console.log('currentDate:', currentDate.toISOString());
+    console.log('year:', year, 'month:', month, 'daysInMonth:', daysInMonth);
+    console.log('firstDay:', firstDay);
+    console.log('new Date(year, month, 1).getDay():', new Date(year, month, 1).getDay());
     
     // Build week by week
     const weeks = [];
@@ -278,7 +288,7 @@ export function Calendar() {
                 </div>
               )}
               {/* Multi-day events for this week */}
-              <div className={`border-b border-gray-100 ${showCalendarWeeks ? "pl-10" : ""}`}>
+              <div className={`${showCalendarWeeks ? "pl-10" : ""}`}>
                 {multiDayEvents
                   .filter(event => {
                     const eventStart = event.start_date ? event.start_date.split('T')[0] : '';
