@@ -196,4 +196,81 @@ router.get('/categories/list', requireAuth, async (req, res) => {
   }
 });
 
+// Get all categories (including inactive for admin)
+router.get('/categories/all', requireAuth, requirePermission('settings', 'read'), async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM event_categories ORDER BY name'
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching all categories:', error);
+    res.status(500).json({ error: 'Fehler beim Laden der Kategorien' });
+  }
+});
+
+// Create category
+router.post('/categories', requireAuth, requirePermission('settings', 'write'), async (req, res) => {
+  try {
+    const { name, color, description, is_active } = req.body;
+    
+    if (!name || !color) {
+      return res.status(400).json({ error: 'Name und Farbe sind erforderlich' });
+    }
+    
+    const result = await pool.query(
+      'INSERT INTO event_categories (name, color, description, is_active) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, color, description || null, is_active !== false]
+    );
+    
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating category:', error);
+    res.status(500).json({ error: 'Fehler beim Erstellen der Kategorie' });
+  }
+});
+
+// Update category
+router.put('/categories/:id', requireAuth, requirePermission('settings', 'write'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, color, description, is_active } = req.body;
+    
+    const result = await pool.query(
+      'UPDATE event_categories SET name = $1, color = $2, description = $3, is_active = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5 RETURNING *',
+      [name, color, description || null, is_active !== false, id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Kategorie nicht gefunden' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating category:', error);
+    res.status(500).json({ error: 'Fehler beim Aktualisieren der Kategorie' });
+  }
+});
+
+// Delete category
+router.delete('/categories/:id', requireAuth, requirePermission('settings', 'delete'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query(
+      'DELETE FROM event_categories WHERE id = $1 RETURNING id',
+      [id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Kategorie nicht gefunden' });
+    }
+    
+    res.json({ message: 'Kategorie gelöscht' });
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    res.status(500).json({ error: 'Fehler beim Löschen der Kategorie' });
+  }
+});
+
 module.exports = router;
