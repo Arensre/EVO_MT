@@ -100,7 +100,7 @@ export function Calendar() {
   };
 
   const getEventsForDate = (dateStr: string) => {
-    const dayEvents = events.filter(event => event.start_date === dateStr);
+    const dayEvents = events.filter(event => event.start_date && event.start_date.startsWith(dateStr));
     if (dayEvents.length > 0) {
     }
     return dayEvents;
