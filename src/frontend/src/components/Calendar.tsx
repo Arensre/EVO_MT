@@ -144,7 +144,9 @@ export function Calendar() {
 
 
   const getFirstDayOfMonth = (year: number, month: number) => {
-    return new Date(year, month, 1).getDay();
+    // Convert Sunday=0 to Monday=0 system
+    const day = new Date(year, month, 1).getDay();
+    return day === 0 ? 6 : day - 1;
   };
 
 
@@ -620,7 +622,7 @@ export function Calendar() {
     'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
   ];
 
-  const weekDays = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  const weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
   return (
     <div className="max-w-7xl mx-auto p-6">
