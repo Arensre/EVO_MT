@@ -5,7 +5,7 @@ import { Home, Users, Truck, Settings, UsersRound, ChevronLeft, ChevronRight, Ch
 import { useAuth } from '../contexts/AuthContext';
 import type { View } from '../types';
 
-const APP_VERSION = '1.21.7';
+const APP_VERSION = '1.21.8';
 
 interface SidebarProps {
   activeView: View;

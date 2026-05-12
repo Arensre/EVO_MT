@@ -248,7 +248,7 @@ export function Calendar() {
     }
     
     return { year, month, daysInMonth, firstDay, weeks };
-  }, [currentDate, getDaysInMonth, getFirstDayOfMonth]);
+  }, [currentDate]);
 
   const renderMonthView = () => {
   // Use memoized calendar data
