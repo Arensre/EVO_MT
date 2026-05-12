@@ -67,7 +67,8 @@ export function EventModal({ isOpen, onClose, onSave, onDelete, event, initialDa
     if (event) {
       setFormData({
         ...event,
-        end_date: event.end_date || event.start_date,
+        start_date: event.start_date ? event.start_date.split('T')[0] : '',
+        end_date: event.end_date ? event.end_date.split('T')[0] : (event.start_date ? event.start_date.split('T')[0] : ''),
       });
     } else if (initialDate) {
       const dateStr = initialDate.toISOString().split('T')[0];
