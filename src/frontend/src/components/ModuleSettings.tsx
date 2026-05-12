@@ -252,7 +252,7 @@ export function ModuleSettings() {
           </nav>
         </div>
         
-        <CalendarSettings />
+        <CalendarSettings moduleSetting={localSettings['calendar'] || { id: 0, module_name: 'calendar', is_enabled: true, required_fields: {} }} onToggle={() => handleToggleModule('calendar')} />
       </div>
     );
   }

@@ -15,9 +15,9 @@ interface CalendarSettingsProps {
   moduleSetting?: {
     id: number;
     module_name: string;
-    is_active: boolean;
+    is_enabled: boolean;
   };
-  onToggle?: (newState: boolean) => void;
+  onToggle?: () => void;
 }
 
 export function CalendarSettings({ moduleSetting, onToggle }: CalendarSettingsProps) {
@@ -96,7 +96,7 @@ export function CalendarSettings({ moduleSetting, onToggle }: CalendarSettingsPr
       name: category.name,
       color: category.color,
       description: category.description || '',
-      is_active: category.is_active
+      is_active: category.is_active ?? false
     });
   };
 
@@ -136,14 +136,14 @@ export function CalendarSettings({ moduleSetting, onToggle }: CalendarSettingsPr
           </div>
           {onToggle && moduleSetting && (
             <button
-              onClick={() => onToggle(!moduleSetting.is_active)}
+              onClick={() => onToggle()}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                moduleSetting.is_active
+                moduleSetting?.is_enabled
                   ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              {moduleSetting.is_active ? (
+              {moduleSetting?.is_enabled ? (
                 <>
                   <ToggleRight size={20} />
                   <span>Modul aktiv</span>
